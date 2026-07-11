@@ -8,6 +8,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "dev": "pnpm --filter @use-everywhere/demo dev",
+    "docs": "pnpm --filter @use-everywhere/docs start",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
