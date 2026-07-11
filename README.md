@@ -1,6 +1,18 @@
 # use-everywhere
 
+<p>
+  <a href="https://github.com/rxova/use-everywhere/actions/workflows/ci.yml">
+    <img src="https://github.com/rxova/use-everywhere/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" />
+  </a>
+  <a href="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml">
+    <img src="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml/badge.svg?branch=main" alt="Docs" />
+  </a>
+  <img src="https://img.shields.io/badge/coverage-%E2%89%A5%2090%25%20per%20file-0f8f6a" alt="coverage >= 90% per file" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict" />
+</p>
+
 State and messages that exist in every tab, window, and worker — with a React API.
+[→ Documentation](https://rxova.github.io/use-everywhere/)
 
 Two transports behind one library:
 

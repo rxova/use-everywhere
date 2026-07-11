@@ -19,11 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6 # version comes from packageManager in package.json
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
+      - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
       # Build the libraries first: TypeDoc resolves use-everywhere -> core through dist types.
       - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
