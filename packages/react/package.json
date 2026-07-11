@@ -2,6 +2,28 @@
   "name": "use-everywhere",
   "version": "0.1.0",
   "description": "React hooks for state and messages shared across tabs, windows, and workers",
+  "license": "MIT",
+  "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rxova/use-everywhere.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "bugs": "https://github.com/rxova/use-everywhere/issues",
+  "keywords": [
+    "react",
+    "hooks",
+    "broadcastchannel",
+    "cross-tab",
+    "shared-state",
+    "postmessage",
+    "cross-origin",
+    "presence"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",

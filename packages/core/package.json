@@ -2,6 +2,27 @@
   "name": "@use-everywhere/core",
   "version": "0.1.0",
   "description": "Cross-tab shared state, events, presence, and cross-origin window channels",
+  "license": "MIT",
+  "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rxova/use-everywhere.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "bugs": "https://github.com/rxova/use-everywhere/issues",
+  "keywords": [
+    "broadcastchannel",
+    "cross-tab",
+    "shared-state",
+    "postmessage",
+    "cross-origin",
+    "presence",
+    "pubsub"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
