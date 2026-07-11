@@ -1,0 +1,136 @@
+import { describe, expect, it } from 'vitest';
+import { createSharedStore } from '../shared-store.js';
+import { MemoryHub } from '../transport/memory.js';
+import { tick } from './helpers/tick.js';
+
+type State = { count: number; note: string };
+
+function makeClient(hub: MemoryHub, initial: State = { count: 0, note: '' }) {
+  return createSharedStore<State>('test', initial, { transport: () => hub.connect() });
+}
+
+describe('createSharedStore', () => {
+  it('propagates set() to other clients', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const b = makeClient(hub);
+    await tick(); // let hello/snapshot settle
+
+    a.set('count', 1);
+    await tick();
+
+    expect(b.getSnapshot().count).toBe(1);
+    expect(a.getSnapshot().count).toBe(1);
+  });
+
+  it('the state proxy syncs like set()', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const b = makeClient(hub);
+    await tick();
+
+    a.state.count++;
+    a.state.note = 'from a';
+    await tick();
+
+    expect(b.getSnapshot()).toEqual({ count: 1, note: 'from a' });
+  });
+
+  it('supports functional set()', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    a.set('count', 5);
+    a.set('count', (prev) => prev + 1);
+    expect(a.getSnapshot().count).toBe(6);
+  });
+
+  it('concurrent writes converge on every client (LWW + tie-break)', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const b = makeClient(hub);
+    const c = makeClient(hub);
+    await tick();
+
+    // Both write before either delivery happens: same counter, tie by clientId.
+    a.set('note', 'from a');
+    b.set('note', 'from b');
+    await tick();
+
+    const winner = [a, b].sort((x, y) => (x.clientId > y.clientId ? -1 : 1))[0]!;
+    const expected = winner === a ? 'from a' : 'from b';
+    expect(a.getSnapshot().note).toBe(expected);
+    expect(b.getSnapshot().note).toBe(expected);
+    expect(c.getSnapshot().note).toBe(expected);
+  });
+
+  it('late joiners hydrate from peer snapshots', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    a.set('count', 42);
+    a.set('note', 'existing');
+    await tick();
+
+    const late = makeClient(hub); // posts hello; a answers with a snapshot
+    await tick();
+
+    expect(late.getSnapshot()).toEqual({ count: 42, note: 'existing' });
+  });
+
+  it('notifies global and per-key subscribers with origin meta', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const b = makeClient(hub);
+    await tick();
+
+    const events: Array<{ key: string; value: unknown; self: boolean }> = [];
+    let keyPings = 0;
+    b.subscribe((key, value, meta) => events.push({ key, value, self: meta.self }));
+    b.subscribeKey('count', () => keyPings++);
+
+    a.set('count', 7);
+    b.set('note', 'local');
+    await tick();
+
+    expect(events).toContainEqual({ key: 'count', value: 7, self: false });
+    expect(events).toContainEqual({ key: 'note', value: 'local', self: true });
+    expect(keyPings).toBe(1); // note change must not ping count subscribers
+  });
+
+  it('registerKey loses to any existing remote write', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    a.set('count', 99);
+    await tick();
+
+    const b = makeClient(hub);
+    await tick(); // snapshot already delivered count=99
+    b.registerKey('count', 0);
+
+    expect(b.getSnapshot().count).toBe(99);
+  });
+
+  it('snapshots are immutable and replaced per change', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const before = a.getSnapshot();
+    a.set('count', 1);
+    const after = a.getSnapshot();
+
+    expect(before).not.toBe(after);
+    expect(before.count).toBe(0);
+    expect(Object.isFrozen(after)).toBe(true);
+  });
+
+  it('closed stores stop receiving', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const b = makeClient(hub);
+    await tick();
+
+    b.close();
+    a.set('count', 3);
+    await tick();
+
+    expect(b.getSnapshot().count).toBe(0);
+  });
+});

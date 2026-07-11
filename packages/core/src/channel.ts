@@ -1,0 +1,63 @@
+import { getBus } from './bus.js';
+import { newMsgId } from './ids.js';
+import type { CommonOptions, MessageMap, MessageMeta } from './types.js';
+
+export interface Channel<M extends MessageMap> {
+  readonly name: string;
+  readonly clientId: string;
+  /** Fire-and-forget to every other tab/window/worker on this origin. Not echoed to self. */
+  post<K extends keyof M & string>(type: K, payload: M[K]): void;
+  on<K extends keyof M & string>(
+    type: K,
+    handler: (payload: M[K], meta: MessageMeta) => void,
+  ): () => void;
+  close(): void;
+}
+
+/** Typed pub/sub over the same-origin bus. */
+export function createChannel<M extends MessageMap>(
+  name: string,
+  options: CommonOptions = {},
+): Channel<M> {
+  type Handler = (payload: unknown, meta: MessageMeta) => void;
+  const bus = getBus(name, options);
+  const handlers = new Map<string, Set<Handler>>();
+
+  const unsubscribe = bus.subscribe((wire) => {
+    if (wire.scope !== 'event') return;
+    const set = handlers.get(wire.type);
+    if (!set) return;
+    const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
+    for (const fn of set) fn(wire.payload, meta);
+  });
+
+  return {
+    name,
+    clientId: bus.clientId,
+    post(type, payload) {
+      bus.post({
+        v: 1,
+        scope: 'event',
+        type,
+        payload,
+        clientId: bus.clientId,
+        kind: bus.kind,
+        msgId: newMsgId(),
+      });
+    },
+    on(type, handler) {
+      let set = handlers.get(type);
+      if (!set) {
+        set = new Set();
+        handlers.set(type, set);
+      }
+      set.add(handler as Handler);
+      return () => set.delete(handler as Handler);
+    },
+    close() {
+      unsubscribe();
+      handlers.clear();
+      bus.release();
+    },
+  };
+}
