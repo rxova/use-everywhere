@@ -20,7 +20,7 @@ hook APIs. One class per file; types live in sibling `*.types.ts` files.
 
 ### Requirements
 
-- Node.js `>= 20` (see `.nvmrc` for the recommended version)
+- Node.js `>= 22.13` (pnpm 11 requires it; see `.nvmrc` for the recommended version)
 - pnpm (see `packageManager` in `package.json`)
 
 ### Install & common commands

@@ -38,7 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        # pnpm 11 needs Node >= 22.13, so 20 can't be exercised in CI.
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
