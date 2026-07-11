@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createSharedStore } from '../shared-store.js';
 import { BroadcastChannelTransport } from '../transport/broadcast-channel-transport.js';
 import { defaultTransport, isBroadcastChannelAvailable } from '../transport/default-transport.js';
@@ -20,9 +20,10 @@ describe('BroadcastChannelTransport (happy-dom)', () => {
     b.subscribe((d) => got.push(d));
 
     a.post({ hello: true });
-    await tick();
 
-    expect(got).toEqual([{ hello: true }]);
+    // happy-dom delivers BroadcastChannel messages on its own task queue,
+    // which can lag a single setTimeout(0) — wait for delivery, don't race it.
+    await vi.waitFor(() => expect(got).toEqual([{ hello: true }]));
     a.close();
     b.close();
   });
@@ -35,9 +36,7 @@ describe('BroadcastChannelTransport (happy-dom)', () => {
     await tick();
 
     a.set('count', 9);
-    await tick();
-
-    expect(b.getSnapshot().count).toBe(9);
+    await vi.waitFor(() => expect(b.getSnapshot().count).toBe(9));
     a.close();
     b.close();
   });
