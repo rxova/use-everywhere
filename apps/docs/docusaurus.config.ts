@@ -28,7 +28,8 @@ const config: Config = {
   trailingSlash: false,
 
   onBrokenLinks: 'warn',
-  markdown: { hooks: { onBrokenMarkdownLinks: 'warn' } },
+  markdown: { hooks: { onBrokenMarkdownLinks: 'warn' }, mermaid: true },
+  themes: ['@docusaurus/theme-mermaid'],
 
   i18n: { defaultLocale: 'en', locales: ['en'] },
 
