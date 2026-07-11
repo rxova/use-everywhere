@@ -1,12 +1,11 @@
 export { useSharedState } from './use-shared-state.js';
+export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
 export { getSharedStore, DEFAULT_NAME } from './registry.js';
+export type { AnyStore } from './registry.types.js';
 export { useChannel, useMessage, useSend } from './use-message.js';
 export { usePeers, useClientId } from './use-peers.js';
-export {
-  useOpenedWindow,
-  type UseOpenedWindow,
-  type OpenedWindowStatus,
-} from './use-opened-window.js';
+export { useOpenedWindow } from './use-opened-window.js';
+export type { UseOpenedWindow, OpenedWindowStatus } from './use-opened-window.types.js';
 
 // Full core surface, so React apps need a single dependency.
 export * from '@use-everywhere/core';

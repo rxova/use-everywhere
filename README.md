@@ -13,11 +13,11 @@ Two transports behind one library:
 
 ## Packages
 
-| Package | Purpose |
-| --- | --- |
-| `use-everywhere` (`packages/react`) | React hooks; re-exports the full core surface |
-| `@use-everywhere/core` (`packages/core`) | Framework-agnostic engine |
-| `@use-everywhere/demo` (`apps/demo`) | Vite demo app, including a real cross-origin payment flow |
+| Package                                  | Purpose                                                   |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `use-everywhere` (`packages/react`)      | React hooks; re-exports the full core surface             |
+| `@use-everywhere/core` (`packages/core`) | Framework-agnostic engine                                 |
+| `@use-everywhere/demo` (`apps/demo`)     | Vite demo app, including a real cross-origin payment flow |
 
 ## Quick start
 
@@ -31,7 +31,14 @@ pnpm dev        # demo at http://localhost:5173
 ## React API
 
 ```tsx
-import { useSharedState, useChannel, useMessage, usePeers, useOpenedWindow, openWindow } from 'use-everywhere';
+import {
+  useSharedState,
+  useChannel,
+  useMessage,
+  usePeers,
+  useOpenedWindow,
+  openWindow,
+} from 'use-everywhere';
 
 // useState, but the value exists in every tab/window/worker on this origin.
 const [count, setCount] = useSharedState('count', 0);
@@ -76,7 +83,7 @@ Design notes:
 - **No Provider.** A BroadcastChannel is already global to the origin —
   identity is the channel name, so hooks share module-level singletons.
 - Values must survive structured clone (no functions, DOM nodes, etc.).
-- The UI-level payment lock prevents *accidental* double payment; server-side
+- The UI-level payment lock prevents _accidental_ double payment; server-side
   idempotency keys are still required for real safety.
 
 ## Trying the cross-origin payment demo

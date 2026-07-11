@@ -1,24 +1,7 @@
 import { getBus } from './bus.js';
 import { newer } from './clock.js';
-import type { CommonOptions, MessageMeta, Version } from './types.js';
-
-export interface SharedStore<S extends Record<string, unknown>> {
-  readonly clientId: string;
-  /** Live proxy for imperative use: `store.state.count++` syncs everywhere. */
-  readonly state: S;
-  /** Immutable snapshot, replaced whenever a change is applied. Safe for useSyncExternalStore. */
-  getSnapshot(): Readonly<S>;
-  set<K extends keyof S & string>(key: K, value: S[K] | ((prev: S[K]) => S[K])): void;
-  subscribe(fn: (key: keyof S & string, value: unknown, meta: MessageMeta) => void): () => void;
-  subscribeKey(key: keyof S & string, fn: () => void): () => void;
-  /**
-   * Register a key lazily at version [0, clientId] — any patch or snapshot a
-   * peer has already made for it wins over the initial value. No-op if the
-   * key already exists.
-   */
-  registerKey<K extends keyof S & string>(key: K, initial: S[K]): void;
-  close(): void;
-}
+import type { MessageMeta, Version } from './common.types.js';
+import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 
 /**
  * State synced across every same-origin tab/window/worker: per-key
@@ -28,10 +11,11 @@ export interface SharedStore<S extends Record<string, unknown>> {
 export function createSharedStore<S extends Record<string, unknown>>(
   name: string,
   initial: S,
-  options: CommonOptions = {},
+  options: SharedStoreOptions = {},
 ): SharedStore<S> {
   const bus = getBus(name, options);
   const clientId = bus.clientId;
+  const accept = options.accept;
 
   const state: Record<string, unknown> = { ...initial };
   const versions: Record<string, Version> = {};
@@ -58,9 +42,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   const unsubscribe = bus.subscribe((wire) => {
     if (wire.scope !== 'state') return;
     const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
-    if (wire.type === 'patch') {
-      applyRemote(wire.key, wire.value, wire.version, meta);
-    } else if (wire.type === 'hello') {
+    if (wire.type === 'hello') {
       // A late joiner arrived: answer with full state + versions.
       bus.post({
         v: 1,
@@ -71,7 +53,12 @@ export function createSharedStore<S extends Record<string, unknown>>(
         state: { ...state },
         versions: { ...versions },
       });
-    } else if (wire.type === 'snapshot') {
+      return;
+    }
+    if (accept && !accept(meta)) return;
+    if (wire.type === 'patch') {
+      applyRemote(wire.key, wire.value, wire.version, meta);
+    } else {
       for (const k in wire.state) {
         const version = wire.versions[k];
         if (version) applyRemote(k, wire.state[k], version, meta);
@@ -83,7 +70,16 @@ export function createSharedStore<S extends Record<string, unknown>>(
     const version: Version = [(versions[key]?.[0] ?? 0) + 1, clientId];
     versions[key] = version;
     state[key] = value;
-    bus.post({ v: 1, scope: 'state', type: 'patch', key, value, version, clientId, kind: bus.kind });
+    bus.post({
+      v: 1,
+      scope: 'state',
+      type: 'patch',
+      key,
+      value,
+      version,
+      clientId,
+      kind: bus.kind,
+    });
     notify(key, value, { clientId, kind: bus.kind, self: true });
   }
 
@@ -104,9 +100,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
     getSnapshot: () => snapshot,
     set(key, value) {
       const next =
-        typeof value === 'function'
-          ? (value as (prev: unknown) => unknown)(state[key])
-          : value;
+        typeof value === 'function' ? (value as (prev: unknown) => unknown)(state[key]) : value;
       setKey(key, next);
     },
     subscribe(fn) {
@@ -120,7 +114,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
         keyListeners.set(key, set);
       }
       set.add(fn);
-      return () => set!.delete(fn);
+      return () => set.delete(fn);
     },
     registerKey(key, initialValue) {
       if (key in versions) return;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { connectToOpener, type OpenerConnection } from '@use-everywhere/core';
 import { otherOrigin } from '../origins.js';
 import type { FromPayment, Receipt, ToPayment } from '../payment-types.js';
@@ -19,7 +19,7 @@ function getConnection(): Conn | null {
 }
 
 export function PaymentPage() {
-  const conn = useMemo(getConnection, []);
+  const conn = getConnection(); // module-level cache, stable across renders
   const [order, setOrder] = useState<ToPayment['order'] | null>(null);
   const [card, setCard] = useState('');
   const [state, setState] = useState<'form' | 'charging' | 'done'>('form');
@@ -34,8 +34,8 @@ export function PaymentPage() {
       <div className="wrap">
         <h1>Secure payment</h1>
         <p className="tagline">
-          This page must be opened from the checkout demo — it has no opener window to
-          report the payment back to.
+          This page must be opened from the checkout demo — it has no opener window to report the
+          payment back to.
         </p>
       </div>
     );
@@ -59,8 +59,8 @@ export function PaymentPage() {
     <div className="wrap" style={{ maxWidth: 420 }}>
       <h1 style={{ fontSize: 24 }}>Secure payment</h1>
       <p className="tagline">
-        You are on <code style={{ fontFamily: 'var(--mono)' }}>{location.origin}</code> — a different
-        origin than the shop that opened this window.
+        You are on <code style={{ fontFamily: 'var(--mono)' }}>{location.origin}</code> — a
+        different origin than the shop that opened this window.
       </p>
       <div className="card" style={{ marginTop: 20 }}>
         <h2>{order ? `Order #${order.orderId}` : 'Waiting for order details…'}</h2>

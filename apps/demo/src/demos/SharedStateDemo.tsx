@@ -58,9 +58,13 @@ export function SharedStateDemo() {
       <div className="card">
         <h2>useSharedState('count')</h2>
         <div className="row">
-          <button onClick={() => setCount((c) => c - 1)} aria-label="decrement">−</button>
+          <button onClick={() => setCount((c) => c - 1)} aria-label="decrement">
+            −
+          </button>
           <div className="count">{count}</div>
-          <button onClick={() => setCount((c) => c + 1)} aria-label="increment">+</button>
+          <button onClick={() => setCount((c) => c + 1)} aria-label="increment">
+            +
+          </button>
         </div>
       </div>
 
@@ -78,11 +82,13 @@ export function SharedStateDemo() {
         <h2>useSharedState('workerTicks') — written by a Web Worker</h2>
         <div className="row">
           <button onClick={toggleWorker}>{workerOn ? 'Stop worker' : 'Start worker'}</button>
-          <div className="count" style={{ fontSize: 24 }}>{workerTicks}</div>
+          <div className="count" style={{ fontSize: 24 }}>
+            {workerTicks}
+          </div>
         </div>
         <p className="hint">
-          The worker runs the same core library and does <code>state.workerTicks++</code> once
-          a second. Square dots in the strip above are workers.
+          The worker runs the same core library and does <code>state.workerTicks++</code> once a
+          second. Square dots in the strip above are workers.
         </p>
       </div>
 

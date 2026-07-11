@@ -1,30 +1,14 @@
-import { defaultTransport } from './transport/broadcast-channel.js';
+import type { BusOptions, Bus, BusWire, SharedBus } from './bus.types.js';
+import type { PeerKind } from './common.types.js';
 import { newClientId } from './ids.js';
-import { isBusWire, defaultKind, type BusWire, type CommonOptions, type PeerKind } from './types.js';
+import { defaultTransport } from './transport/default-transport.js';
 
-export interface BusOptions extends CommonOptions {
-  /** Presence heartbeat interval in ms. Default 2000. */
-  heartbeatMs?: number;
+export function isBusWire(data: unknown): data is BusWire {
+  return typeof data === 'object' && data !== null && (data as { v?: unknown }).v === 1;
 }
 
-/**
- * One client identity on one named same-origin bus. Store, presence, and
- * channel engines for the same name share a bus (and thus one clientId and
- * one BroadcastChannel). The bus owns the presence heartbeat, so any client
- * on the bus is visible to peers even if it never creates a Presence.
- */
-export interface Bus {
-  readonly name: string;
-  readonly clientId: string;
-  readonly kind: PeerKind;
-  post(wire: BusWire): void;
-  subscribe(fn: (wire: BusWire) => void): () => void;
-  /** Decrement the refcount; the bus shuts down when it reaches zero. */
-  release(): void;
-}
-
-interface SharedBus extends Bus {
-  acquire(): void;
+export function defaultKind(): PeerKind {
+  return typeof document === 'undefined' ? 'worker' : 'tab';
 }
 
 const registry = new Map<string, SharedBus>();

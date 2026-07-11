@@ -1,18 +1,6 @@
-import { getBus, type BusOptions } from './bus.js';
-import type { Peer } from './types.js';
-
-export interface PresenceOptions extends BusOptions {
-  /** Peers silent for longer than this are dropped. Default 5000ms. */
-  pruneAfterMs?: number;
-}
-
-export interface Presence {
-  readonly clientId: string;
-  /** Stable array snapshot (replaced on change) — safe for useSyncExternalStore. */
-  getPeers(): readonly Peer[];
-  subscribe(fn: () => void): () => void;
-  close(): void;
-}
+import { getBus } from './bus.js';
+import type { Peer } from './common.types.js';
+import type { Presence, PresenceOptions } from './presence.types.js';
 
 /**
  * Tracks the other tabs/windows/workers on this bus. Any message from a peer
@@ -41,17 +29,20 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
     if (!existing) notify();
   });
 
-  const prune = setInterval(() => {
-    const cutoff = Date.now() - pruneAfterMs;
-    let changed = false;
-    for (const [id, peer] of peers) {
-      if (peer.lastSeen < cutoff) {
-        peers.delete(id);
-        changed = true;
+  const prune = setInterval(
+    () => {
+      const cutoff = Date.now() - pruneAfterMs;
+      let changed = false;
+      for (const [id, peer] of peers) {
+        if (peer.lastSeen < cutoff) {
+          peers.delete(id);
+          changed = true;
+        }
       }
-    }
-    if (changed) notify();
-  }, Math.max(500, Math.floor(pruneAfterMs / 2)));
+      if (changed) notify();
+    },
+    Math.max(500, Math.floor(pruneAfterMs / 2)),
+  );
 
   return {
     clientId: bus.clientId,

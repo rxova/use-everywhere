@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPresence } from '../presence.js';
-import { MemoryHub } from '../transport/memory.js';
+import { MemoryHub } from '../transport/memory-hub.js';
 
 describe('createPresence', () => {
   beforeEach(() => vi.useFakeTimers());

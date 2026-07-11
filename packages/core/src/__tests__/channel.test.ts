@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createChannel } from '../channel.js';
-import { MemoryHub } from '../transport/memory.js';
+import { MemoryHub } from '../transport/memory-hub.js';
 import { tick } from './helpers/tick.js';
 
 type Messages = {

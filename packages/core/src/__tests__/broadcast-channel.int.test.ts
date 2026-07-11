@@ -1,12 +1,16 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { createSharedStore } from '../shared-store.js';
-import { BroadcastChannelTransport, isBroadcastChannelAvailable } from '../transport/broadcast-channel.js';
+import { BroadcastChannelTransport } from '../transport/broadcast-channel-transport.js';
+import { defaultTransport, isBroadcastChannelAvailable } from '../transport/default-transport.js';
 import { tick } from './helpers/tick.js';
 
 describe('BroadcastChannelTransport (happy-dom)', () => {
-  it('is available in this environment', () => {
+  it('is available in this environment and picked by defaultTransport', () => {
     expect(isBroadcastChannelAvailable()).toBe(true);
+    const transport = defaultTransport('bc-default');
+    expect(transport).toBeInstanceOf(BroadcastChannelTransport);
+    transport.close();
   });
 
   it('delivers between two transports on the same channel name', async () => {

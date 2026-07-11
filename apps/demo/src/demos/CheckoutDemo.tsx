@@ -20,22 +20,23 @@ export function CheckoutDemo() {
       features: 'popup,width=440,height=640',
     }),
   );
+  const { status: payStatus, result: payResult, post: payPost } = pay;
 
   // Once the payment window is connected, hand it the order details.
   useEffect(() => {
-    if (pay.status === 'connected') pay.post('order', ORDER);
-  }, [pay.status, pay.post]);
+    if (payStatus === 'connected') payPost('order', ORDER);
+  }, [payStatus, payPost]);
 
   // Fold the window's outcome back into the cross-tab state machine.
   useEffect(() => {
-    if (pay.status === 'done' && pay.result) {
-      setReceipt(pay.result);
+    if (payStatus === 'done' && payResult) {
+      setReceipt(payResult);
       setPayment('paid');
-    } else if (pay.status === 'closed-early' || pay.status === 'error') {
+    } else if (payStatus === 'closed-early' || payStatus === 'error') {
       setPayment('idle');
       setPayingTab(null);
     }
-  }, [pay.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [payStatus, payResult, setReceipt, setPayment, setPayingTab]);
 
   const startPayment = () => {
     if (payment !== 'idle') return;
@@ -68,18 +69,27 @@ export function CheckoutDemo() {
         {payment === 'processing' && 'Processing…'}
         {payment === 'paid' && 'Paid'}
       </button>
-      <div className={`status ${payment === 'processing' ? 'processing' : ''} ${payment === 'paid' ? 'paid' : ''}`}>
+      <div
+        className={`status ${payment === 'processing' ? 'processing' : ''} ${payment === 'paid' ? 'paid' : ''}`}
+      >
         {payment === 'processing' &&
-          (mine ? '⏳ complete the payment in the opened window…' : `🔒 payment in progress in tab ${payingTab}`)}
+          (mine
+            ? '⏳ complete the payment in the opened window…'
+            : `🔒 payment in progress in tab ${payingTab}`)}
         {payment === 'paid' &&
           receipt &&
           `✓ paid — receipt ${receipt.receiptId} (card •••• ${receipt.last4})`}
-        {pay.status === 'closed-early' && payment === 'idle' && 'payment window closed before finishing'}
+        {pay.status === 'closed-early' &&
+          payment === 'idle' &&
+          'payment window closed before finishing'}
       </div>
-      <button className="reset" onClick={reset}>reset demo</button>
+      <button className="reset" onClick={reset}>
+        reset demo
+      </button>
       <p className="hint">
-        The payment page opens on <code style={{ fontFamily: 'var(--mono)' }}>{otherOrigin()}</code> — a
-        different origin, so this runs on postMessage with origin + nonce checks, not BroadcastChannel.
+        The payment page opens on <code style={{ fontFamily: 'var(--mono)' }}>{otherOrigin()}</code>{' '}
+        — a different origin, so this runs on postMessage with origin + nonce checks, not
+        BroadcastChannel.
       </p>
     </div>
   );

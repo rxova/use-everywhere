@@ -5,5 +5,18 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true, // lets @testing-library/react auto-cleanup between tests
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      all: true,
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['src/index.ts', 'src/**/*.types.ts', 'src/__tests__/**'],
+      thresholds: {
+        perFile: true,
+        statements: 90,
+        branches: 90,
+        functions: 90,
+        lines: 90,
+      },
+    },
   },
 });

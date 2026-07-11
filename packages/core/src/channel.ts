@@ -1,18 +1,7 @@
 import { getBus } from './bus.js';
+import type { Channel } from './channel.types.js';
+import type { CommonOptions, MessageMap, MessageMeta } from './common.types.js';
 import { newMsgId } from './ids.js';
-import type { CommonOptions, MessageMap, MessageMeta } from './types.js';
-
-export interface Channel<M extends MessageMap> {
-  readonly name: string;
-  readonly clientId: string;
-  /** Fire-and-forget to every other tab/window/worker on this origin. Not echoed to self. */
-  post<K extends keyof M & string>(type: K, payload: M[K]): void;
-  on<K extends keyof M & string>(
-    type: K,
-    handler: (payload: M[K], meta: MessageMeta) => void,
-  ): () => void;
-  close(): void;
-}
 
 /** Typed pub/sub over the same-origin bus. */
 export function createChannel<M extends MessageMap>(

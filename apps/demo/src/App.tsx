@@ -9,8 +9,8 @@ export function App() {
         use-everywhere<span className="paren">( )</span>
       </h1>
       <p className="tagline">
-        State that exists in every tab, window, and worker — plus a secure channel to
-        windows on other origins. Open this page in a second tab and watch them sync.
+        State that exists in every tab, window, and worker — plus a secure channel to windows on
+        other origins. Open this page in a second tab and watch them sync.
       </p>
       <PresenceStrip />
       <div className="grid">

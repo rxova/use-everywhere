@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryHub } from '../transport/memory.js';
+import { MemoryHub } from '../transport/memory-hub.js';
 import { tick } from './helpers/tick.js';
 
 describe('MemoryTransport', () => {

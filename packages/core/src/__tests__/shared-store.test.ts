@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSharedStore } from '../shared-store.js';
-import { MemoryHub } from '../transport/memory.js';
+import { MemoryHub } from '../transport/memory-hub.js';
 import { tick } from './helpers/tick.js';
 
 type State = { count: number; note: string };
@@ -94,6 +94,29 @@ describe('createSharedStore', () => {
     expect(events).toContainEqual({ key: 'count', value: 7, self: false });
     expect(events).toContainEqual({ key: 'note', value: 'local', self: true });
     expect(keyPings).toBe(1); // note change must not ping count subscribers
+  });
+
+  it('registerKey adds a fresh key at version zero', () => {
+    const hub = new MemoryHub();
+    const a = createSharedStore<{ count: number; extra?: string }>(
+      'test',
+      { count: 0 },
+      { transport: () => hub.connect() },
+    );
+
+    a.registerKey('extra', 'hello');
+    expect(a.getSnapshot().extra).toBe('hello');
+
+    a.registerKey('extra', 'ignored'); // no-op: first registration wins
+    expect(a.getSnapshot().extra).toBe('hello');
+  });
+
+  it('the proxy rejects symbol keys', () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    expect(() => {
+      (a.state as Record<symbol, unknown>)[Symbol('nope')] = 1;
+    }).toThrow(TypeError);
   });
 
   it('registerKey loses to any existing remote write', async () => {

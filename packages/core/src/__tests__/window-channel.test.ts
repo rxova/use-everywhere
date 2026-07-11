@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { HandshakeTimeoutError, WindowClosedError } from '../errors.js';
+import { HandshakeTimeoutError } from '../errors/handshake-timeout-error.js';
+import { WindowClosedError } from '../errors/window-closed-error.js';
 import { CID_PARAM, connectToOpener, openWindow } from '../window-channel.js';
 import { FakeWindow, fakeWindowPair } from './helpers/fake-window.js';
 import { tick } from './helpers/tick.js';
@@ -95,7 +96,14 @@ describe('openWindow + connectToOpener', () => {
     const openerGot: unknown[] = [];
     opened.on('progress', (payload) => openerGot.push(payload));
 
-    const forged = { __ue: 1, cid, t: 'msg', type: 'progress', payload: { step: 'evil' }, msgId: 'x' };
+    const forged = {
+      __ue: 1,
+      cid,
+      t: 'msg',
+      type: 'progress',
+      payload: { step: 'evil' },
+      msgId: 'x',
+    };
     opener.injectMessage(forged, 'https://evil.example', child); // wrong origin
     opener.injectMessage({ ...forged, cid: 'stolen' }, PAY, child); // wrong cid
     opener.injectMessage(forged, PAY, {}); // wrong source window
@@ -158,16 +166,16 @@ describe('openWindow + connectToOpener', () => {
     const seams = { localWindow: opener, openFn: () => child };
 
     expect(() => openWindow(PAY_URL, { peerOrigin: '*', ...seams })).toThrow(/unsafe/);
-    expect(() =>
-      openWindow(PAY_URL, { peerOrigin: 'https://other.example', ...seams }),
-    ).toThrow(/does not match/);
+    expect(() => openWindow(PAY_URL, { peerOrigin: 'https://other.example', ...seams })).toThrow(
+      /does not match/,
+    );
   });
 
   it('connectToOpener throws without an opener or without a cid', () => {
     const child = new FakeWindow(PAY);
-    expect(() =>
-      connectToOpener({ peerOrigin: SHOP, opener: null, localWindow: child }),
-    ).toThrow(/no window.opener/);
+    expect(() => connectToOpener({ peerOrigin: SHOP, opener: null, localWindow: child })).toThrow(
+      /no window.opener/,
+    );
 
     expect(() =>
       connectToOpener({ peerOrigin: SHOP, opener: new FakeWindow(SHOP), localWindow: child }),

@@ -1,35 +1,19 @@
-import { HandshakeTimeoutError, WindowClosedError } from './errors.js';
+import type { MessageMap } from './common.types.js';
+import { HandshakeTimeoutError } from './errors/handshake-timeout-error.js';
+import { WindowClosedError } from './errors/window-closed-error.js';
 import { newMsgId } from './ids.js';
-import type { MessageMap } from './types.js';
+import type {
+  ConnectToOpenerOptions,
+  MessageEventLike,
+  OpenedWindow,
+  OpenerConnection,
+  OpenWindowOptions,
+  WindowEventTarget,
+  WindowLike,
+  WindowWire,
+} from './window-channel.types.js';
 
 export const CID_PARAM = 'ue-cid';
-
-/** Wire envelope between opener and child. `cid` is the opener-generated nonce. */
-type WindowWire =
-  | { __ue: 1; cid: string; t: 'ready' }
-  | { __ue: 1; cid: string; t: 'ready-ack' }
-  | { __ue: 1; cid: string; t: 'msg'; type: string; payload: unknown; msgId: string }
-  | { __ue: 1; cid: string; t: 'result'; payload: unknown }
-  | { __ue: 1; cid: string; t: 'close' };
-
-interface MessageEventLike {
-  data: unknown;
-  origin: string;
-  source: unknown;
-}
-
-/** The subset of Window we post to (the other side). */
-export interface WindowLike {
-  postMessage(data: unknown, targetOrigin: string): void;
-  closed?: boolean;
-  close?(): void;
-}
-
-/** The subset of Window we listen on (our side). */
-export interface WindowEventTarget {
-  addEventListener(type: string, listener: (event: MessageEventLike) => void): void;
-  removeEventListener(type: string, listener: (event: MessageEventLike) => void): void;
-}
 
 function isWindowWire(data: unknown, cid: string): data is WindowWire {
   return (
@@ -54,37 +38,6 @@ function markHandled(promise: Promise<unknown>): void {
   promise.catch(() => {});
 }
 
-export interface OpenWindowOptions {
-  /** Exact origin of the page being opened, e.g. 'https://pay.example.com'. Required. */
-  peerOrigin: string;
-  /** window.open feature string, e.g. 'popup,width=480,height=640'. */
-  features?: string;
-  /** Give up on the ready handshake after this long. Default 15000ms. */
-  readyTimeoutMs?: number;
-  /** Dev only: accept messages from any origin and post with targetOrigin '*'. */
-  allowAnyOrigin?: boolean;
-  /** Test seam. Defaults to window.open. */
-  openFn?: (url: string, target: string, features?: string) => WindowLike | null;
-  /** Test seam. Defaults to the global window. */
-  localWindow?: WindowEventTarget;
-}
-
-export interface OpenedWindow<Out extends MessageMap, In extends MessageMap, R> {
-  /** The opened window, or null if the popup was blocked. */
-  readonly window: WindowLike | null;
-  /** Resolves once the child completes the ready handshake. */
-  readonly ready: Promise<void>;
-  /** Queued until the handshake completes — nothing is dropped while the child loads. */
-  post<K extends keyof Out & string>(type: K, payload: Out[K]): void;
-  on<K extends keyof In & string>(type: K, handler: (payload: In[K]) => void): () => void;
-  /** The child's finish() value. Rejects WindowClosedError / HandshakeTimeoutError. */
-  readonly result: Promise<R>;
-  /** Resolves when the child window is gone (with or without a result). */
-  readonly closed: Promise<void>;
-  /** Close the child window. */
-  close(): void;
-}
-
 /**
  * Open a window (possibly on another origin) and get a typed 1:1 channel to it.
  * The child must call connectToOpener(). Every received message is validated:
@@ -107,7 +60,8 @@ export function openWindow<Out extends MessageMap, In extends MessageMap, R = un
 
   const localWindow = options.localWindow ?? (window as unknown as WindowEventTarget);
   const openFn =
-    options.openFn ?? ((u: string, target: string, features?: string) => window.open(u, target, features));
+    options.openFn ??
+    ((u: string, target: string, features?: string) => window.open(u, target, features));
   const targetOrigin = allowAnyOrigin ? '*' : peerOrigin;
 
   const handlers = new Map<string, Set<(payload: unknown) => void>>();
@@ -219,39 +173,12 @@ export function openWindow<Out extends MessageMap, In extends MessageMap, R = un
         handlers.set(type, set);
       }
       set.add(handler as (payload: unknown) => void);
-      return () => set!.delete(handler as (payload: unknown) => void);
+      return () => set.delete(handler as (payload: unknown) => void);
     },
     close() {
       childWindow.close?.();
     },
   };
-}
-
-export interface ConnectToOpenerOptions {
-  /** Exact origin of the page that opened this window. Required. */
-  peerOrigin: string;
-  /** Give up on the ready handshake after this long. Default 15000ms. */
-  readyTimeoutMs?: number;
-  /** Dev only: accept messages from any origin and post with targetOrigin '*'. */
-  allowAnyOrigin?: boolean;
-  /** Test seam. Defaults to window.opener. */
-  opener?: WindowLike | null;
-  /** Test seam. Defaults to the global window. */
-  localWindow?: WindowEventTarget;
-  /** Test seam. Defaults to the ue-cid query parameter. */
-  cid?: string;
-}
-
-export interface OpenerConnection<In extends MessageMap, Out extends MessageMap, R> {
-  /** Resolves once the opener acknowledges the ready handshake. */
-  readonly ready: Promise<void>;
-  /** Queued until the handshake completes. */
-  post<K extends keyof Out & string>(type: K, payload: Out[K]): void;
-  on<K extends keyof In & string>(type: K, handler: (payload: In[K]) => void): () => void;
-  /** Deliver the terminal result to the opener. Does not close the window. */
-  finish(result: R): void;
-  /** Tell the opener we're going away, then close this window. */
-  close(): void;
 }
 
 /**
@@ -266,17 +193,13 @@ export function connectToOpener<In extends MessageMap, Out extends MessageMap, R
   validatePeerOrigin(peerOrigin, allowAnyOrigin);
 
   const opener =
-    options.opener !== undefined
-      ? options.opener
-      : ((window.opener ?? null) as WindowLike | null);
+    options.opener !== undefined ? options.opener : ((window.opener ?? null) as WindowLike | null);
   if (!opener) {
     throw new Error('no window.opener — this page was not opened via openWindow()');
   }
   const cid =
     options.cid ??
-    (typeof location !== 'undefined'
-      ? new URLSearchParams(location.search).get(CID_PARAM)
-      : null);
+    (typeof location !== 'undefined' ? new URLSearchParams(location.search).get(CID_PARAM) : null);
   if (!cid) {
     throw new Error(`missing ${CID_PARAM} parameter — this page was not opened via openWindow()`);
   }
@@ -313,7 +236,8 @@ export function connectToOpener<In extends MessageMap, Out extends MessageMap, R
   localWindow.addEventListener('message', onMessage);
 
   // Announce readiness until the opener acks (it may attach late in dev, we may load fast).
-  const sayReady = () => opener.postMessage({ __ue: 1, cid, t: 'ready' } satisfies WindowWire, targetOrigin);
+  const sayReady = () =>
+    opener.postMessage({ __ue: 1, cid, t: 'ready' } satisfies WindowWire, targetOrigin);
   sayReady();
   const retryTimer = setInterval(sayReady, 250);
   const giveUpTimer = setTimeout(() => {
@@ -327,7 +251,8 @@ export function connectToOpener<In extends MessageMap, Out extends MessageMap, R
     else outQueue.push(wire);
   };
 
-  const sayClose = () => opener.postMessage({ __ue: 1, cid, t: 'close' } satisfies WindowWire, targetOrigin);
+  const sayClose = () =>
+    opener.postMessage({ __ue: 1, cid, t: 'close' } satisfies WindowWire, targetOrigin);
   localWindow.addEventListener('pagehide', sayClose);
 
   return {
@@ -342,7 +267,7 @@ export function connectToOpener<In extends MessageMap, Out extends MessageMap, R
         handlers.set(type, set);
       }
       set.add(handler as (payload: unknown) => void);
-      return () => set!.delete(handler as (payload: unknown) => void);
+      return () => set.delete(handler as (payload: unknown) => void);
     },
     finish(value) {
       sendOrQueue({ __ue: 1, cid, t: 'result', payload: value });

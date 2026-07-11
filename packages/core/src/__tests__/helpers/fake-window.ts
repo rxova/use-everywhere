@@ -1,4 +1,4 @@
-import type { WindowEventTarget, WindowLike } from '../../window-channel.js';
+import type { WindowEventTarget, WindowLike } from '../../window-channel.types.js';
 
 type Listener = (event: { data: unknown; origin: string; source: unknown }) => void;
 
