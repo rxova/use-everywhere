@@ -48,6 +48,20 @@ describe('createPresence', () => {
     a.close();
   });
 
+  it('unsubscribing stops notifications', async () => {
+    const hub = new MemoryHub();
+    const options = { transport: () => hub.connect() };
+    const a = createPresence('test', options);
+    let calls = 0;
+    const unsubscribe = a.subscribe(() => calls++);
+    unsubscribe();
+
+    createPresence('test', options);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(calls).toBe(0);
+  });
+
   it('notifies subscribers on membership changes only', async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };

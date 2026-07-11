@@ -125,6 +125,85 @@ describe('window-channel edge cases', () => {
     expect(ups).toEqual([]);
   });
 
+  it('messages with no registered handler are ignored on both sides', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    const opened = openWindow<{ down: number }, { up: number }, void>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const conn = connectToOpener<{ down: number }, { up: number }, void>({
+      peerOrigin: SHOP,
+      opener,
+      localWindow: child,
+      cid: new URL(openedUrl).searchParams.get(CID_PARAM)!,
+    });
+    await tick();
+
+    expect(() => {
+      opened.post('down', 1);
+      conn.post('up', 2);
+    }).not.toThrow();
+    await tick();
+  });
+
+  it('a second handler for the same type joins the existing set', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    const opened = openWindow<{ down: number }, { up: number }, void>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const conn = connectToOpener<{ down: number }, { up: number }, void>({
+      peerOrigin: SHOP,
+      opener,
+      localWindow: child,
+      cid: new URL(openedUrl).searchParams.get(CID_PARAM)!,
+    });
+    await tick();
+
+    const downs: number[] = [];
+    const ups: number[] = [];
+    conn.on('down', (n) => downs.push(n));
+    conn.on('down', (n) => downs.push(n * 10));
+    opened.on('up', (n) => ups.push(n));
+    opened.on('up', (n) => ups.push(n * 10));
+
+    opened.post('down', 1);
+    conn.post('up', 2);
+    await tick();
+
+    expect(downs).toEqual([1, 10]);
+    expect(ups).toEqual([2, 20]);
+  });
+
+  it('a close after the result keeps the delivered result', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    const opened = openWindow<Record<string, never>, Record<string, never>, string>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const conn = connectToOpener<Record<string, never>, Record<string, never>, string>({
+      peerOrigin: SHOP,
+      opener,
+      localWindow: child,
+      cid: new URL(openedUrl).searchParams.get(CID_PARAM)!,
+    });
+    await tick();
+
+    conn.finish('done');
+    await tick();
+    child.close(); // normal flow: result first, then the window goes away
+    await tick();
+
+    await expect(opened.result).resolves.toBe('done');
+    await expect(opened.closed).resolves.toBeUndefined();
+  });
+
   it('stays settled when close signals arrive twice', async () => {
     const { opener, child } = fakeWindowPair(SHOP, PAY);
     let openedUrl = '';

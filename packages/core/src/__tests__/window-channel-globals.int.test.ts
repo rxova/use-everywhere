@@ -38,4 +38,11 @@ describe('window-channel global fallbacks (happy-dom)', () => {
     expect(closeSpy).toHaveBeenCalledOnce();
     (window as { opener: unknown }).opener = null;
   });
+
+  it('connectToOpener throws when the global window has no opener', () => {
+    (window as { opener: unknown }).opener = undefined;
+    expect(() => connectToOpener({ peerOrigin: 'http://shop.example' })).toThrow(
+      /no window.opener/,
+    );
+  });
 });

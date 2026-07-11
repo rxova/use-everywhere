@@ -19,6 +19,20 @@ describe('MemoryTransport', () => {
     expect(got.c).toEqual(['hi']);
   });
 
+  it('posting after close is a silent no-op', async () => {
+    const hub = new MemoryHub();
+    const a = hub.connect();
+    const b = hub.connect();
+    const got: unknown[] = [];
+    b.subscribe((d) => got.push(d));
+
+    a.close();
+    a.post('ghost');
+    await tick();
+
+    expect(got).toEqual([]);
+  });
+
   it('stops delivering after close', async () => {
     const hub = new MemoryHub();
     const a = hub.connect();

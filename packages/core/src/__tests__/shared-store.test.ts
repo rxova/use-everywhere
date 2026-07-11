@@ -96,6 +96,65 @@ describe('createSharedStore', () => {
     expect(keyPings).toBe(1); // note change must not ping count subscribers
   });
 
+  it('unsubscribing global and per-key listeners stops notifications', () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    let globalCalls = 0;
+    let keyCalls = 0;
+    const offGlobal = a.subscribe(() => globalCalls++);
+    const offKey = a.subscribeKey('count', () => keyCalls++);
+    offGlobal();
+    offKey();
+
+    a.set('count', 1);
+
+    expect(globalCalls).toBe(0);
+    expect(keyCalls).toBe(0);
+  });
+
+  it('multiple per-key subscribers share one listener set', () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    let first = 0;
+    let second = 0;
+    a.subscribeKey('count', () => first++);
+    a.subscribeKey('count', () => second++);
+
+    a.set('count', 1);
+
+    expect(first).toBe(1);
+    expect(second).toBe(1);
+  });
+
+  it('set() on a key missing from the initial shape starts its clock at 1', async () => {
+    const hub = new MemoryHub();
+    const a = createSharedStore<{ count: number; late?: string }>(
+      'test',
+      { count: 0 },
+      { transport: () => hub.connect() },
+    );
+    a.set('late', 'hello');
+    expect(a.getSnapshot().late).toBe('hello');
+  });
+
+  it('ignores snapshot entries that carry no version', async () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    const raw = hub.connect();
+    raw.post({
+      v: 1,
+      scope: 'state',
+      type: 'snapshot',
+      clientId: 'zz',
+      kind: 'tab',
+      state: { count: 77 },
+      versions: {}, // malformed peer: value without a version
+    });
+    await tick();
+
+    expect(a.getSnapshot().count).toBe(0);
+  });
+
   it('registerKey adds a fresh key at version zero', () => {
     const hub = new MemoryHub();
     const a = createSharedStore<{ count: number; extra?: string }>(
