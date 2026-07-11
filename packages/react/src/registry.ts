@@ -21,6 +21,11 @@ const stores = new Map<string, AnyStore>();
 const presences = new Map<string, Presence>();
 const channels = new Map<string, Channel<MessageMap>>();
 
+/** Imperative access to the store behind useSharedState (patch logs, non-React code). */
+export function getSharedStore(name: string = DEFAULT_NAME): AnyStore {
+  return getStore(name);
+}
+
 export function getStore(name: string): AnyStore {
   let store = stores.get(name);
   if (!store) {

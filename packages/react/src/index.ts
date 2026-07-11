@@ -1,4 +1,5 @@
 export { useSharedState } from './use-shared-state.js';
+export { getSharedStore, DEFAULT_NAME } from './registry.js';
 export { useChannel, useMessage, useSend } from './use-message.js';
 export { usePeers, useClientId } from './use-peers.js';
 export {

@@ -8,13 +8,16 @@ Two transports behind one library:
   clocks and a late-joiner handshake, typed pub/sub events, and peer presence.
 - **window.opener / postMessage** (cross-origin): a secure 1:1 channel to a
   window you opened — e.g. a payment page on another domain that must report
-  back to the checkout that opened it.
+  back to the checkout that opened it. Every message is validated by origin,
+  envelope brand, a per-connection nonce, and the source window.
 
 ## Packages
 
-- `packages/core` — `@use-everywhere/core`, framework-agnostic engine
-- `packages/react` — `use-everywhere`, React hooks (re-exports core)
-- `apps/demo` — Vite demo app, including a cross-origin payment flow
+| Package | Purpose |
+| --- | --- |
+| `use-everywhere` (`packages/react`) | React hooks; re-exports the full core surface |
+| `@use-everywhere/core` (`packages/core`) | Framework-agnostic engine |
+| `@use-everywhere/demo` (`apps/demo`) | Vite demo app, including a real cross-origin payment flow |
 
 ## Quick start
 
@@ -24,6 +27,68 @@ pnpm build
 pnpm test
 pnpm dev        # demo at http://localhost:5173
 ```
+
+## React API
+
+```tsx
+import { useSharedState, useChannel, useMessage, usePeers, useOpenedWindow, openWindow } from 'use-everywhere';
+
+// useState, but the value exists in every tab/window/worker on this origin.
+const [count, setCount] = useSharedState('count', 0);
+
+// Typed fire-and-forget events between tabs.
+const channel = useChannel<{ 'cart-updated': { items: number } }>('shop');
+useMessage(channel, 'cart-updated', ({ items }) => refresh(items));
+channel.post('cart-updated', { items: 3 });
+
+// Who else is here? (other tabs = circles, workers = squares in the demo)
+const peers = usePeers();
+
+// The payment-window flow: open a window on ANOTHER origin, await its result.
+const pay = useOpenedWindow(() =>
+  openWindow<ToPayment, FromPayment, Receipt>('https://pay.example.com/checkout', {
+    peerOrigin: 'https://pay.example.com',
+  }),
+);
+// pay.open() from a click handler; pay.status: idle → opening → connected → done
+// pay.result is the child's finish() value; closing early yields 'closed-early'.
+```
+
+On the opened (child) page:
+
+```ts
+import { connectToOpener } from 'use-everywhere';
+
+const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
+  peerOrigin: 'https://shop.example.com',
+});
+conn.on('order', (order) => render(order));
+conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's result
+```
+
+Design notes:
+
+- **Shared state never crosses origins.** Two origins are two trust domains;
+  the cross-origin channel is explicit, per-message, and typed. Same-origin
+  state sync uses per-key `[counter, clientId]` clocks (last-writer-wins,
+  deterministic tie-break) and a hello/snapshot handshake so late-joining tabs
+  hydrate instantly.
+- **No Provider.** A BroadcastChannel is already global to the origin —
+  identity is the channel name, so hooks share module-level singletons.
+- Values must survive structured clone (no functions, DOM nodes, etc.).
+- The UI-level payment lock prevents *accidental* double payment; server-side
+  idempotency keys are still required for real safety.
+
+## Trying the cross-origin payment demo
+
+`pnpm dev`, then open <http://localhost:5173>. The checkout's "Pay in secure
+window" button opens `http://127.0.0.1:5173/payment.html` — same Vite server,
+but `localhost` and `127.0.0.1` are **different origins**, so the payment page
+genuinely cannot use BroadcastChannel to reach the shop. Complete the fake card
+form and the opener resolves with a receipt; close the window mid-payment and
+the checkout unlocks with a "window closed" notice. Open the shop in a second
+tab first to also see the cross-tab lock: paying in one tab locks the button in
+all of them.
 
 The original single-file prototypes live in `prototypes/` (open directly in a
 browser, no build needed).
