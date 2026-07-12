@@ -4,9 +4,9 @@ sidebar_position: 3
 
 # The mental model
 
-Everything in use-everywhere follows from two ideas. I want to hand you both
-up front, because once they click, the whole API stops being something you
-look up and starts being something you can predict.
+Everything in use-everywhere follows from two ideas. Once they click, the
+whole API stops being something you look up and starts being something you
+can predict.
 
 ## Idea 1: a value that exists in more than one place
 
@@ -55,8 +55,8 @@ Shared state deliberately never crosses the origin line. A foreign page that
 could merge writes into your state tree would be a
 [confused deputy](../under-the-hood/security-model.md); across origins you
 exchange explicit, validated messages instead — request/result shaped, like
-the payment flow. My shorthand for the whole design: **across trust
-boundaries, explicit beats magic.**
+the payment flow. The design in one line: **across trust boundaries,
+explicit beats magic.**
 
 ## What a "name" really is
 
@@ -82,7 +82,7 @@ graph LR
   BUSA <--> BUSW
 ```
 
-Three things follow, and each one answers a question people ask me a lot:
+Three things follow, and each one answers a common question:
 
 1. **The name is the identity.** Two components using store `'checkout'` in
    the same tab share one store instance; two _tabs_ using `'checkout'` are

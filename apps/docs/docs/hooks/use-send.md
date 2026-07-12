@@ -80,5 +80,7 @@ instead — one `setCount` and every tab (including yours) updates.
 - [`useMessage`](./use-message.md) — the listening half, and the meta
   argument.
 - [`useChannel`](./use-channel.md) — where the typing comes from.
+- [`defineChannel`](./define-channel.md) — bind name and types once and skip
+  the trio's ceremony.
 - [Messages & presence guide](../guides/messages-and-presence.md) — the trio
   in context.

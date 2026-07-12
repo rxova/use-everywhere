@@ -6,9 +6,10 @@ slug: /
 # Getting started
 
 **use-everywhere** is `useState`, except the value exists in every tab,
-window, and worker on your origin at once. I built it after shipping the
-duplicate-tab payment bug one too many times — the full story is in
-[Why this exists](./why.md) — and the pitch fits in one sentence:
+window, and worker on your origin at once. It exists because the browser's
+cross-tab APIs are good but low-level, and there was no `useState`-shaped
+way to use them — the full reasoning is in [Why this exists](./why.md). The
+pitch fits in one sentence:
 
 :::tip The promise
 One object. Every tab. Writes anywhere show up everywhere, tabs opened later
@@ -81,7 +82,7 @@ one charge and two.
 | "Who else is here?"                                   | [`usePeers`](../hooks/use-peers.md)                | Live peer list via heartbeats                         |
 | "How do I hear back from a window on another domain?" | [`useOpenedWindow`](../hooks/use-opened-window.md) | Validated 1:1 postMessage channel with a result       |
 
-When you're torn between the first two, I use this test every time:
+When you're torn between the first two, use this test:
 
 :::tip The litmus test
 If a tab opened later needs to know it, it's **state**. If only

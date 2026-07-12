@@ -44,9 +44,10 @@ pnpm dev        # demo at http://localhost:5173
 
 ```tsx
 import { useState } from 'react';
-import { useSharedState, useChannel, useMessage, usePeers } from 'use-everywhere';
+import { useSharedState, defineChannel, usePeers } from 'use-everywhere';
 
 type ShopEvents = { 'cart-updated': { items: number } };
+const shop = defineChannel<ShopEvents>('shop'); // bind name + types once, at module level
 
 function StatusBar() {
   // useState, but the value exists in every tab/window/worker on this origin.
@@ -54,8 +55,7 @@ function StatusBar() {
 
   // Typed fire-and-forget events: fires when any OTHER tab posts 'cart-updated'.
   const [cartItems, setCartItems] = useState(0);
-  const channel = useChannel<ShopEvents>('shop');
-  useMessage(channel, 'cart-updated', (payload) => setCartItems(payload.items));
+  shop.useMessage('cart-updated', (payload) => setCartItems(payload.items));
 
   // Who else is here? (other tabs = circles, workers = squares in the demo)
   const peers = usePeers();

@@ -5,7 +5,7 @@ sidebar_position: 5
 # Testing
 
 "Cross-tab behavior" sounds like something you'd need Playwright and three
-browser windows to test. Let me talk you out of that. The library is built so
+browser windows to test. You don't need either. The library is built so
 that **every engine accepts an injected transport, and the window channel
 accepts injected windows** — the same seams its own test suite uses are
 public API. In this guide we'll simulate five tabs in a unit test, put a real
@@ -112,7 +112,7 @@ await expect(opened.result).resolves.toEqual({ receiptId: 'r-1' });
 This is exactly how the library tests slow-loading children (queueing),
 forged messages (origin/nonce/source gates), popup blocking
 (`openFn: () => null`), and premature closes — all without a browser window.
-Your tests get the same superpowers.
+The same seams are available to your tests.
 
 For React, `useOpenedWindow(factory)` takes any factory, so tests can return
 a hand-rolled fake `OpenedWindow` object with controllable promises and
