@@ -218,6 +218,32 @@ expect(JSON.parse(map.get('k')!).state).toEqual({ theme: 'neon' });
 A key that was only ever _registered_ — someone's `initial`, never written — is
 deliberately not persisted, so don't expect to find it there.
 
+## End-to-end, in real tabs
+
+Some things only a browser can prove: that `pagehide` really fires when a tab
+closes, that `localStorage` really survives the last one, that a real
+`BroadcastChannel` really reaches a real second tab. The repo runs those as
+Playwright specs (`pnpm e2e`).
+
+The one rule is **one browser context**:
+
+```ts
+test('exactly one tab drives', async ({ context }) => {
+  const tabs = [await context.newPage(), await context.newPage(), await context.newPage()];
+  for (const tab of tabs) await tab.goto('/');
+  // …
+});
+```
+
+Separate contexts are separate storage partitions — tabs in different contexts
+would neither hear each other's broadcasts nor share a disk, and every test
+would pass for the wrong reason.
+
+Closing a page fires `pagehide`, so `page.close()` exercises the real handover
+path. Measured against the demo, a survivor takes the seat in **well under
+100ms**, where the lease alone would have taken 3 seconds — which is the whole
+point of resigning on the way out.
+
 ## SSR
 
 The hooks read initial values through `getServerSnapshot`, and every engine

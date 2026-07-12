@@ -54,6 +54,27 @@ jobs:
       - name: Size budgets
         run: pnpm size
 
+  e2e:
+    # The assertions unit tests cannot make: a real BroadcastChannel, real tabs,
+    # real localStorage. One browser context — separate contexts are separate
+    # storage partitions and would not see each other's broadcasts.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: End-to-end
+        run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   test:
     runs-on: ubuntu-latest
     strategy:

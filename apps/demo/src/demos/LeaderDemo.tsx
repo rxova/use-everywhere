@@ -24,11 +24,14 @@ export function LeaderDemo() {
         and it is handed over instantly; kill it and the others take ~3s to notice.
       </p>
 
-      <p style={{ fontSize: '2rem', margin: '0.4rem 0', fontVariantNumeric: 'tabular-nums' }}>
+      <p
+        data-testid="ticks"
+        style={{ fontSize: '2rem', margin: '0.4rem 0', fontVariantNumeric: 'tabular-nums' }}
+      >
         {ticks}
       </p>
 
-      <p>
+      <p data-testid="leader-status">
         {isLeader ? (
           <strong>♔ this tab is driving</strong>
         ) : leaderId ? (
@@ -37,9 +40,17 @@ export function LeaderDemo() {
           <span>no leader yet…</span>
         )}
       </p>
+      <p data-testid="leader-id" hidden>
+        {leaderId ?? ''}
+      </p>
 
       <label>
-        <input type="checkbox" checked={eligible} onChange={(e) => setEligible(e.target.checked)} />{' '}
+        <input
+          data-testid="eligible"
+          type="checkbox"
+          checked={eligible}
+          onChange={(e) => setEligible(e.target.checked)}
+        />{' '}
         this tab may lead
       </label>
     </section>
