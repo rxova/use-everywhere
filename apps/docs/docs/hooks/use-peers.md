@@ -1,0 +1,108 @@
+---
+sidebar_position: 6
+---
+
+# usePeers
+
+`usePeers` returns a live list of the _other_ tabs, windows, and workers
+currently open on your origin. It's how you build "you have this open in
+another tab" banners, presence dots, and "payment in progress in tab X"
+notices — without inventing your own heartbeat protocol.
+
+```tsx
+import { usePeers } from 'use-everywhere';
+
+function DuplicateTabBanner() {
+  const peers = usePeers();
+  const tabs = peers.filter((p) => p.kind === 'tab');
+  if (tabs.length === 0) return null;
+  return <p>This page is open in {tabs.length} other tab(s).</p>;
+}
+```
+
+## Signature
+
+```ts
+function usePeers(options?: { name?: string }): readonly Peer[];
+```
+
+## Options
+
+| Option | Type     | Default            | What it does                                                          |
+| ------ | -------- | ------------------ | --------------------------------------------------------------------- |
+| `name` | `string` | `'use-everywhere'` | Which bus to watch. Peers are counted per name — one bus, one roster. |
+
+The default matches the default store name, so `usePeers()` with no arguments
+sees every context that uses `useSharedState` with default options. If your
+app runs its state on a named store, pass the same name here.
+
+## Return value
+
+A read-only array of peers — everyone on the bus _except you_:
+
+```ts
+interface Peer {
+  id: string; // the peer's clientId — matches meta.clientId on its writes
+  kind: PeerKind; // 'tab' | 'worker'
+  lastSeen: number; // timestamp of its last sign of life
+}
+```
+
+The component re-renders **only when a peer joins or leaves**, not on every
+heartbeat — so rendering `peers.length` in your header costs nothing.
+
+## How liveness works (the two numbers to know)
+
+- Every client announces itself on join, pings every **2 seconds**, and says
+  goodbye on `pagehide` — so clean closes disappear from the list instantly.
+- A peer silent for **5 seconds** is pruned — that's the crashed tab, which
+  never gets to say goodbye.
+- Any traffic counts as proof of life (a state patch, an event), so busy tabs
+  never flicker offline.
+
+## Worked example: "payment in progress in another tab"
+
+Combine peers with shared state to say _which_ tab holds a lock:
+
+```tsx title="PaymentLockNotice.tsx"
+import { usePeers, useClientId, useSharedState } from 'use-everywhere';
+
+function PaymentLockNotice() {
+  const [owner] = useSharedState<string | null>('pay-owner', null);
+  const me = useClientId();
+  const peers = usePeers();
+
+  if (!owner || owner === me) return null;
+  const stillOpen = peers.some((p) => p.id === owner);
+  return (
+    <p>
+      Payment in progress in tab {owner.slice(0, 6)}
+      {stillOpen ? '' : ' (that tab has closed)'}
+    </p>
+  );
+}
+```
+
+Because state patches and presence share one client id per bus, the `owner`
+written by another tab is directly comparable to the ids in `peers` — no
+mapping table needed.
+
+## Gotchas
+
+- **You are not in the list.** `usePeers` is "who _else_ is here"; your own
+  id comes from [`useClientId`](./use-client-id.md).
+- **A crashed tab lingers up to ~5 seconds** before pruning. Design copy
+  accordingly ("open in another tab" is fine; "guaranteed exactly one tab" is
+  not — see the [single-flight recipe](../guides/recipes.md#the-duplicate-tab-lock-single-flight)
+  for how to do locking with state instead).
+- **Per name.** `usePeers({ name: 'checkout' })` and `usePeers()` watch
+  different buses and can disagree — pick the bus your app actually uses.
+- **SSR returns an empty array** (a frozen one, so the reference is stable).
+
+## Where to next
+
+- [`useClientId`](./use-client-id.md) — your own id on the bus.
+- [Messages & presence guide](../guides/messages-and-presence.md) — presence
+  in a fuller feature.
+- [How sync works](../under-the-hood/how-sync-works.md#presence-heartbeats-with-piggybacking)
+  — the heartbeat mechanics.

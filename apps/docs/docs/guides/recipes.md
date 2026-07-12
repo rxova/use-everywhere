@@ -4,14 +4,16 @@ sidebar_position: 4
 
 # Recipes
 
-Small, complete patterns you can lift into an app. Each one names the
-primitive it leans on and why that primitive is the right one.
+Small, complete patterns you can lift straight into an app. Each one names
+the primitive it leans on and _why_ that primitive is the right one — because
+picking state vs. message vs. presence is most of the skill here, and these
+six cover the choices I make over and over.
 
 ## Log out everywhere
 
-A logout must reach every tab _currently open_ — a tab opened tomorrow gets
-its answer from the session cookie, not from an old event. That makes it a
-**message**, not state:
+The classic. A logout must reach every tab _currently open_ — a tab opened
+tomorrow gets its answer from the session cookie, not from an old event. By
+the litmus test, that makes it a **message**, not state:
 
 ```tsx
 type AuthEvents = { 'logged-out': undefined };
@@ -35,12 +37,15 @@ function useLogoutEverywhere() {
 ```
 
 Note the last line: channel messages are never delivered back to the sender,
-so the initiating tab must handle itself explicitly.
+so the initiating tab handles itself explicitly. Forgetting this line is the
+number-one first-day bug with events.
 
 ## The duplicate-tab lock (single-flight)
 
-Stop two tabs from submitting the same payment, export, or wizard. This must
-survive a tab opening mid-flight, so it is **state**:
+Stop two tabs from submitting the same payment, export, or wizard. This is
+the bug that started the whole library. The lock must survive a tab opening
+_mid-flight_ — the fresh tab has to render "busy" from its first frame — so
+it is **state**:
 
 ```tsx
 function useSingleFlight(key: string) {
@@ -68,17 +73,18 @@ function useSingleFlight(key: string) {
 Every tab renders from the same `status`, so the button disables everywhere
 the instant one tab starts. Two clicks in the same millisecond? The version
 clock picks one deterministic winner — see
-[How sync works](../concepts/how-sync-works.md).
+[How sync works](../under-the-hood/how-sync-works.md).
 
 :::caution
 This prevents _accidental_ double submission. Anything involving money still
-needs a server-side idempotency key.
+needs a server-side idempotency key — a hostile user has DevTools.
 :::
 
 ## Live draft that follows the user
 
 A user drafts a message in one tab, opens the same page in another, and
-expects the draft to be there. State, with hydration doing all the work:
+expects the draft to be there. It has to exist for a tab that opens later —
+state again, and hydration does literally all the work:
 
 ```tsx
 function DraftEditor() {
@@ -87,14 +93,16 @@ function DraftEditor() {
 }
 ```
 
-Nothing else required: the new tab posts `hello`, receives a snapshot, and the
+Nothing else required: the new tab says `hello`, receives a snapshot, and the
 textarea starts full. Remember the value evaporates with the last tab — if
-drafts must survive a browser restart, persist them separately.
+drafts must survive a browser restart,
+[persist them separately](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab).
 
 ## A worker as a background engine
 
 Move polling or heavy computation into a Web Worker and let every tab render
-its output. The worker is just another peer:
+its output. No worker protocol to design — the worker is just another peer
+writing to the same store:
 
 ```ts title="price-worker.ts"
 import { createSharedStore } from '@use-everywhere/core';
@@ -112,12 +120,12 @@ const [ticker] = useSharedState('ticker', {}, { store: 'prices' });
 
 Because the worker announces `kind: 'worker'`, presence can show it (square
 dot in the demo) and any store scoped to `'tabs'` will ignore it. One caveat:
-each tab that spawns the worker gets its _own_ worker — spawn it from a single
-place, or use a `SharedWorker` where support allows.
+each tab that spawns the worker gets its _own_ worker — spawn it from a
+single place, or use a `SharedWorker` where support allows.
 
 ## "You have this open in another tab"
 
-Presence, verbatim:
+Presence, verbatim — this one is almost embarrassingly short:
 
 ```tsx
 function DuplicateTabBanner() {
@@ -147,4 +155,14 @@ const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
 
 Combine it with the single-flight lock above and the payment button locks in
 every tab while one tab's window is open — that combination is exactly what
-the demo app ships.
+the demo app ships, and it's the library's whole origin story in about
+twenty lines.
+
+## Where to next
+
+- [Hooks](../hooks/overview.md) — the full reference behind every hook these
+  recipes use.
+- [Testing](./testing.md) — assert these patterns with simulated tabs, no
+  browser needed.
+- [Limitations](../under-the-hood/limitations.md) — the boundaries the
+  recipes are designed around.
