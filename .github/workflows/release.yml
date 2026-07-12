@@ -49,10 +49,11 @@ jobs:
 
       - name: Publish to npm with provenance
         if: steps.version.outputs.released == 'true'
-        env:
-          NPM_CONFIG_PROVENANCE: 'true'
         run: |
-          pnpm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_TOKEN }}"
+          # Auth via npm trusted publishing (OIDC): npm >= 11.5.1 exchanges the
+          # Actions id-token for credentials — no token secret involved.
+          # Provenance is generated automatically on trusted publishes.
+          npm install -g npm@latest
           pnpm changeset publish
 
       - name: Push release commit and tags
