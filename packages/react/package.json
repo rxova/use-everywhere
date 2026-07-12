@@ -40,8 +40,41 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "size": "size-limit"
   },
+  "size-limit": [
+    {
+      "name": "everything (import *)",
+      "path": "dist/index.js",
+      "import": "*",
+      "limit": "4.2 kB"
+    },
+    {
+      "name": "useSharedState",
+      "path": "dist/index.js",
+      "import": "{ useSharedState }",
+      "limit": "1.5 kB"
+    },
+    {
+      "name": "useChannel + useMessage + useSend",
+      "path": "dist/index.js",
+      "import": "{ useChannel, useMessage, useSend }",
+      "limit": "1 kB"
+    },
+    {
+      "name": "usePeers + useClientId",
+      "path": "dist/index.js",
+      "import": "{ usePeers, useClientId }",
+      "limit": "1.1 kB"
+    },
+    {
+      "name": "useOpenedWindow + openWindow",
+      "path": "dist/index.js",
+      "import": "{ useOpenedWindow, openWindow }",
+      "limit": "1.4 kB"
+    }
+  ],
   "dependencies": {
     "@use-everywhere/core": "workspace:*"
   },
@@ -49,6 +82,7 @@
     "react": ">=18"
   },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^12.1.0",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.2.3",
@@ -56,6 +90,7 @@
     "happy-dom": "^20.10.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "size-limit": "^12.1.0",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "vitest": "^4.1.10"
