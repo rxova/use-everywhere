@@ -7,6 +7,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "size": "pnpm -r size",
     "dev": "pnpm --filter @use-everywhere/demo dev",
     "docs": "pnpm --filter @use-everywhere/docs start",
     "lint": "eslint .",
