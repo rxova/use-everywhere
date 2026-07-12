@@ -49,7 +49,7 @@ describe('create-package-changeset script', () => {
 
       expect(result.packageName).toBe('@use-everywhere/core');
       expect(result.bump).toBe('minor');
-      expect(created).toContain('"@use-everywhere/core": minor');
+      expect(created).toContain("'@use-everywhere/core': minor");
       expect(created).toContain('Core specific update');
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -63,7 +63,7 @@ describe('create-package-changeset script', () => {
       const created = await readFile(result.filePath, 'utf8');
 
       expect(result.packageName).toBe('use-everywhere');
-      expect(created).toContain('"use-everywhere": patch');
+      expect(created).toContain("'use-everywhere': patch");
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -79,7 +79,7 @@ describe('create-package-changeset script', () => {
       const created = await readFile(result.filePath, 'utf8');
 
       expect(result.packageName).toBe('use-everywhere');
-      expect(created).toContain('"use-everywhere": patch');
+      expect(created).toContain("'use-everywhere': patch");
       expect(created).toContain('React summary');
     } finally {
       await rm(root, { recursive: true, force: true });

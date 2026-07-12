@@ -158,7 +158,9 @@ const buildChangesetFileContent = (
   bump: VersionBump,
   summary: string,
 ): string => {
-  return `---\n"${packageName}": ${bump}\n---\n\n${summary.trim()}\n`;
+  // Single quotes: Prettier (singleQuote: true) formats YAML frontmatter and
+  // would flag double-quoted package names at commit time.
+  return `---\n'${packageName}': ${bump}\n---\n\n${summary.trim()}\n`;
 };
 
 const createFileName = (packageName: string): string => {

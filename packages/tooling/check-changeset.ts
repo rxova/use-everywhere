@@ -57,7 +57,7 @@ const extractFrontmatterPackageCount = (markdown: string): number => {
   const packageLines = frontmatter
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => /^"[^"]+"\s*:\s*(patch|minor|major)(?:\s+#.*)?$/.test(line));
+    .filter((line) => /^("[^"]+"|'[^']+')\s*:\s*(patch|minor|major)(?:\s+#.*)?$/.test(line));
 
   return packageLines.length;
 };
