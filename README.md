@@ -111,3 +111,11 @@ all of them.
 
 The original single-file prototypes live in `prototypes/` (open directly in a
 browser, no build needed).
+
+## Branching & releases
+
+`main` always represents the latest version published to npm; day-to-day work
+happens on `development`. Merging `development` into `main` triggers the
+release automation, which applies pending [changesets](https://github.com/changesets/changesets)
+(patch/minor/major per package), publishes to npm with provenance, and tags the
+release. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full flow.

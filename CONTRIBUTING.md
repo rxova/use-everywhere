@@ -50,8 +50,36 @@ Coverage thresholds (90% statements/branches/functions/lines, enforced per
 file) are part of the test run — new code needs tests, and CI runs the same
 gates on Node 20/22/24.
 
+## Branching & Releases
+
+- **`main` always represents the latest published npm version.** Nothing lands
+  on `main` except merges from `development` and the release commits/tags the
+  automation creates.
+- **`development`** is the integration branch: branch off it, PR back into it.
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org)
+  (enforced by commitlint on commit).
+
+### How a release happens
+
+1. Every user-facing change merged into `development` includes a
+   [changeset](https://github.com/changesets/changesets): run `pnpm changeset`
+   and pick the bump (`patch` / `minor` / `major`) per affected package, with a
+   short summary. Internal-only changes (CI, docs, tests) need no changeset.
+2. When `development` is merged into `main`, the Release workflow
+   (`.github/workflows/release.yml`) applies all pending changesets: bumps
+   versions, writes changelogs, builds, publishes `use-everywhere` and
+   `@use-everywhere/core` to npm **with provenance**, tags, creates GitHub
+   releases, and pushes the version commit back to `main`.
+3. Merge `main` back into `development` afterwards so the bumped versions flow
+   downstream.
+
+If the merge contains no changesets, the workflow is a no-op — nothing is
+published and versions stay put.
+
 ## Pull Requests
 
+- Target `development` (never `main` directly).
 - Keep PRs focused; explain the why, not just the what.
+- Include a changeset (`pnpm changeset`) for anything user-facing.
 - Update guides in `apps/docs/docs` when behavior changes; the API reference
   regenerates itself from source.
