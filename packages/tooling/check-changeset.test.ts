@@ -85,6 +85,22 @@ describe('check-changeset script', () => {
     await rm(tempRoot, { recursive: true, force: true });
   });
 
+  it('passes when the changeset uses single-quoted package names (Prettier style)', async () => {
+    const { tempRoot, baseSha } = await initRepo();
+    await mkdir(join(tempRoot, '.changeset'), { recursive: true });
+    await writeFile(
+      join(tempRoot, '.changeset', 'test.md'),
+      "---\n'use-everywhere': minor\n---\nchange\n",
+      'utf8',
+    );
+
+    const headSha = commitAll(tempRoot, 'add single-quoted changeset');
+    const result = runScript(tempRoot, baseEnv(baseSha, headSha));
+
+    expect(result.code).toBe(0);
+    await rm(tempRoot, { recursive: true, force: true });
+  });
+
   it('fails when a changeset file contains multiple packages', async () => {
     const { tempRoot, baseSha } = await initRepo();
     await mkdir(join(tempRoot, '.changeset'), { recursive: true });
