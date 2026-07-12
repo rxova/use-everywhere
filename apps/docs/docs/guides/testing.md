@@ -118,6 +118,106 @@ For React, `useOpenedWindow(factory)` takes any factory, so tests can return
 a hand-rolled fake `OpenedWindow` object with controllable promises and
 assert the full status machine: `idle → opening → connected → done`.
 
+## Testing leader election
+
+Leadership is timing, so drive the clock. `createLeader` with an injected
+transport is one simulated tab, exactly like the store:
+
+```ts
+import { createLeader, MemoryHub } from '@use-everywhere/core';
+
+it('a joiner adopts the incumbent instead of stealing the seat', async () => {
+  vi.useFakeTimers();
+  const hub = new MemoryHub();
+  const tab = () => createLeader('feed', { transport: () => hub.connect() });
+
+  const first = tab();
+  await vi.advanceTimersByTimeAsync(1000); // one heartbeat: it leads
+  expect(first.getSnapshot().isLeader).toBe(true);
+
+  const second = tab();
+  await vi.advanceTimersByTimeAsync(0); // the incumbent answers at once
+
+  expect(second.getSnapshot().leaderId).toBe(first.clientId);
+  expect(first.getSnapshot().isLeader).toBe(true); // the crown did not move
+});
+```
+
+To test **failover**, don't call `close()` — that resigns, which is the _fast_
+path. A real crash is silence, so simulate it with a raw hub connection that
+claims the seat and then says nothing:
+
+```ts
+const ghost = hub.connect();
+ghost.post({
+  v: 1,
+  scope: 'leader',
+  type: 'claim',
+  term: [9, 'ghost'],
+  clientId: 'ghost',
+  kind: 'tab',
+});
+await vi.advanceTimersByTimeAsync(0);
+expect(survivor.getSnapshot().leaderId).toBe('ghost');
+
+await vi.advanceTimersByTimeAsync(4000); // past the 3s lease
+expect(survivor.getSnapshot().isLeader).toBe(true);
+```
+
+:::warning Don't use fake timers for the React hooks
+Fake timers, `act()`, and BroadcastChannel's async delivery interact badly.
+For `useLeader` component tests, pass short **real** timings instead —
+`{ heartbeatMs: 20, leaseMs: 60 }` — and await real `setTimeout`s. The suite
+stays fast and you dodge the whole interaction.
+:::
+
+Registry singletons live for the page, so give every test its own bus name.
+
+## Testing persistence
+
+Persistence takes an adapter, and an adapter is just three methods — so hand it
+a `Map` and assert on exactly what hit the disk:
+
+```ts
+import { createSharedStore, webStorageAdapter, type StorageLike } from '@use-everywhere/core';
+
+const map = new Map<string, string>();
+const storage: StorageLike = {
+  getItem: (k) => map.get(k) ?? null,
+  setItem: (k, v) => void map.set(k, v),
+  removeItem: (k) => void map.delete(k),
+};
+```
+
+Seed it to test **restore**. Note that the stored versions are what make the
+outcome deterministic — a counter of 3 beats a live tab still at 1:
+
+```ts
+map.set('k', JSON.stringify({ v: 1, state: { theme: 'dark' }, versions: { theme: [3, 'old'] } }));
+
+const store = createSharedStore(
+  'settings',
+  {},
+  {
+    transport: () => hub.connect(),
+    persist: { adapter: webStorageAdapter(storage, 'k') },
+  },
+);
+
+expect(store.getSnapshot().theme).toBe('dark'); // synchronous: there on the first read
+```
+
+Read it back to test **write-through**, remembering the debounce:
+
+```ts
+store.set('theme', 'neon');
+await vi.advanceTimersByTimeAsync(150); // past debounceMs
+expect(JSON.parse(map.get('k')!).state).toEqual({ theme: 'neon' });
+```
+
+A key that was only ever _registered_ — someone's `initial`, never written — is
+deliberately not persisted, so don't expect to find it there.
+
 ## SSR
 
 The hooks read initial values through `getServerSnapshot`, and every engine

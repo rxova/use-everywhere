@@ -158,6 +158,102 @@ every tab while one tab's window is open — that combination is exactly what
 the demo app ships: the duplicate-tab payment problem, handled in about
 twenty lines.
 
+## One socket, not five
+
+Every open tab opening its own WebSocket is the classic multi-tab bug. Elect
+one tab to hold the connection, and let the rest read what it writes:
+
+```tsx
+import { useLeaderEffect, useSharedState } from 'use-everywhere';
+
+function useLivePrices() {
+  const [prices, setPrices] = useSharedState<Record<string, number>>('prices', {});
+
+  useLeaderEffect(() => {
+    const socket = new WebSocket('wss://example.com/prices');
+    socket.onmessage = (e) => setPrices(JSON.parse(e.data));
+    return () => socket.close();
+  });
+
+  return prices; // every tab reads it; exactly one tab fetched it
+}
+```
+
+The leader writes to shared state, so followers render the same data without a
+connection of their own. When the leading tab closes, another picks the socket
+up within a heartbeat.
+
+Keep throttled background tabs out of the running if reconnecting is expensive:
+
+```tsx
+useLeader({ eligible: !document.hidden });
+```
+
+## Refresh the auth token exactly once
+
+Same shape, higher stakes. Five tabs racing to refresh one token means four
+wasted round trips and, with a rotating refresh token, four invalidated
+sessions:
+
+```tsx
+function TokenRefresher() {
+  const [token, setToken] = useSharedState<string | null>('token', null);
+
+  useLeaderEffect(() => {
+    const id = setInterval(async () => setToken(await refresh()), 10 * 60_000);
+    return () => clearInterval(id);
+  });
+
+  return null; // mount once, anywhere
+}
+```
+
+Every tab reads `token` from shared state; one tab does the refreshing. Note the
+caveat: leadership is [advisory](../under-the-hood/limitations.md#leadership-is-advisory-not-a-distributed-lock),
+so if refreshing twice is genuinely harmful, your endpoint still needs to be
+idempotent.
+
+## A draft that survives closing the last tab
+
+`useSharedState` keeps a draft in sync across tabs, but it dies with the last
+one. Give the store a disk and it comes back:
+
+```tsx
+import { defineStore, localStorageAdapter } from 'use-everywhere';
+
+const drafts = defineStore<{ body: string }>('drafts', {
+  persist: localStorageAdapter('app:drafts'),
+  persistDebounceMs: 250,
+});
+
+function Composer() {
+  const [body, setBody] = drafts.useSharedState('body', '');
+  return <textarea value={body} onChange={(e) => setBody(e.target.value)} />;
+}
+```
+
+Type in one tab, watch it appear in the other, close both, reopen — the text is
+there on the first paint. The stored value carries its version clock, so if a
+live tab has moved on since you last closed, the live tab still wins. See
+[defineStore](../hooks/define-store.md).
+
+## See what the tabs are saying
+
+When two tabs disagree and you cannot work out why, stop adding `console.log`
+to five tabs:
+
+```tsx
+import { Inspector } from 'use-everywhere/devtools';
+
+{
+  import.meta.env.DEV && <Inspector defaultOpen />;
+}
+```
+
+The version column is the one to read: `3·a1b2c3` means counter 3, written by
+client `a1b2c3`. When a write appears to vanish, it lost the last-writer-wins
+race — and the clocks tell you to whom.
+
 ## Where to next
 
 - [Hooks](../hooks/overview.md) — the full reference behind every hook these
