@@ -1,0 +1,8 @@
+{
+  "label": "Core API",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Everything that isn't a hook: the engines the hooks are built on, the version clock, the transports, and the debug seam. All of it works without React."
+  }
+}

@@ -52,18 +52,12 @@ it's an **event** — [`useMessage`](./use-message.md).
 
 ## Beyond the hooks
 
-Installing `use-everywhere` also re-exports the entire framework-agnostic
-core, so it's one dependency for everything:
+Installing `use-everywhere` re-exports the entire framework-agnostic core, so
+it's one dependency for everything — the engines the hooks are built on
+(`createSharedStore`, `createLeader`, …), the version clock (`newer`), the
+transports, and the debug seam. None of it needs React.
 
-- `createSharedStore`, `createChannel`, `createPresence` — the same engines
-  the hooks use, for code outside React (workers, plain modules).
-- `openWindow` / `connectToOpener` — the two ends of the cross-origin window
-  channel.
-- `getSharedStore(name?, scope?)` — imperative access to the exact store
-  instance behind `useSharedState`, for patch logs and non-component writes.
-- `DEFAULT_NAME` — the `'use-everywhere'` string the hooks default to, so
-  non-React code can target the same store.
-- `MemoryHub` and the error classes — see [Testing](../guides/testing.md).
+That's its own section: **[Core API](../core/overview.md)**.
 
 ## Where to next
 
