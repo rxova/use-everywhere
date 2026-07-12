@@ -33,6 +33,8 @@ jobs:
         run: pnpm format:check
       - name: Typecheck
         run: pnpm typecheck
+      - name: Size budgets
+        run: pnpm size
 
   test:
     runs-on: ubuntu-latest
