@@ -8,6 +8,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "size": "pnpm -r size",
+    "changeset:pkg": "node --import tsx ./packages/tooling/create-package-changeset.ts",
     "dev": "pnpm --filter @use-everywhere/demo dev",
     "docs": "pnpm --filter @use-everywhere/docs start",
     "lint": "eslint .",
@@ -25,6 +26,7 @@
     "globals": "^17.7.0",
     "husky": "^9.1.7",
     "prettier": "^3.9.5",
+    "tsx": "^4.23.0",
     "typescript-eslint": "^8.63.0"
   }
 }
