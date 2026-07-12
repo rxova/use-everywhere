@@ -43,29 +43,43 @@ pnpm dev        # demo at http://localhost:5173
 ## React API
 
 ```tsx
-import {
-  useSharedState,
-  useChannel,
-  useMessage,
-  usePeers,
-  useOpenedWindow,
-  openWindow,
-} from 'use-everywhere';
+import { useState } from 'react';
+import { useSharedState, useChannel, useMessage, usePeers } from 'use-everywhere';
 
-// useState, but the value exists in every tab/window/worker on this origin.
-const [count, setCount] = useSharedState('count', 0);
+type ShopEvents = { 'cart-updated': { items: number } };
 
-// Typed fire-and-forget events between tabs.
-const channel = useChannel<{ 'cart-updated': { items: number } }>('shop');
-useMessage(channel, 'cart-updated', ({ items }) => refresh(items));
-channel.post('cart-updated', { items: 3 });
+function StatusBar() {
+  // useState, but the value exists in every tab/window/worker on this origin.
+  const [count, setCount] = useSharedState('count', 0);
 
-// Who else is here? (other tabs = circles, workers = squares in the demo)
-const peers = usePeers();
+  // Typed fire-and-forget events: fires when any OTHER tab posts 'cart-updated'.
+  const [cartItems, setCartItems] = useState(0);
+  const channel = useChannel<ShopEvents>('shop');
+  useMessage(channel, 'cart-updated', (payload) => setCartItems(payload.items));
 
-// The payment-window flow: open a window on ANOTHER origin, await its result.
-const pay = useOpenedWindow(() =>
-  openWindow<ToPayment, FromPayment, Receipt>('https://pay.example.com/checkout', {
+  // Who else is here? (other tabs = circles, workers = squares in the demo)
+  const peers = usePeers();
+
+  return (
+    <p>
+      count {count} · cart {cartItems} · {peers.length} other tabs
+      <button onClick={() => setCount((c) => c + 1)}>+1 everywhere</button>
+    </p>
+  );
+}
+```
+
+The payment-window flow — open a window on **another origin**, await its result:
+
+```tsx
+import { openWindow, useOpenedWindow } from 'use-everywhere';
+
+type ToPayment = { order: { orderId: string; amount: string } };
+type FromPayment = { progress: { step: string } };
+type Receipt = { receiptId: string; last4: string };
+
+const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+  openWindow('https://pay.example.com/checkout', {
     peerOrigin: 'https://pay.example.com',
   }),
 );
@@ -81,8 +95,8 @@ import { connectToOpener } from 'use-everywhere';
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
   peerOrigin: 'https://shop.example.com',
 });
-conn.on('order', (order) => render(order));
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's result
+conn.on('order', (order) => showOrderSummary(order)); // hand it to your UI
+conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay.result
 ```
 
 Design notes:

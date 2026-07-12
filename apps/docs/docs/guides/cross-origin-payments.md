@@ -40,18 +40,30 @@ function Checkout() {
 
 ## The payment page (child)
 
-```ts
+```tsx
+import { useEffect, useState } from 'react';
 import { connectToOpener } from '@use-everywhere/core';
 
+// Create the connection once, at module level (throws if opened directly,
+// without an opener — handle that case for users who bookmark the URL).
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
   peerOrigin: 'https://shop.example.com',
 });
 
-conn.on('order', (order) => render(order));
+function PaymentPage() {
+  const [order, setOrder] = useState<ToPayment['order'] | null>(null);
+  useEffect(() => conn.on('order', setOrder), []); // on() returns its unsubscribe
 
-// when the card is charged:
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's `result`
-conn.close();
+  const chargeCard = async () => {
+    conn.post('progress', { step: 'charging' });
+    const receipt = await submitToPaymentProcessor(); // your payment logic
+    conn.finish(receipt); // resolves the opener's `result`
+    conn.close();
+  };
+
+  if (!order) return <p>Loading order…</p>;
+  return <CardForm amount={order.amount} onSubmit={chargeCard} />;
+}
 ```
 
 ## What the library handles for you

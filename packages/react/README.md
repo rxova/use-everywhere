@@ -1,6 +1,7 @@
 # use-everywhere
 
-React hooks for state and messages that exist in every tab, window, and worker.
+React hooks for state and messages that exist in every tab, window, and
+worker — plus a secure channel to windows on other origins.
 
 ```bash
 npm i use-everywhere
@@ -8,57 +9,119 @@ npm i use-everywhere
 
 Two transports behind one library:
 
-- **BroadcastChannel** (same-origin): shared state with last-writer-wins version
-  clocks and a late-joiner handshake, typed pub/sub events, and peer presence.
+- **BroadcastChannel** (same-origin): shared state with last-writer-wins
+  version clocks and a late-joiner handshake, typed pub/sub events, and peer
+  presence.
 - **window.opener / postMessage** (cross-origin): a secure 1:1 channel to a
   window you opened — e.g. a payment page on another domain that must report
-  back to the checkout that opened it. Every message is validated by origin,
-  envelope brand, a per-connection nonce, and the source window.
+  back to the checkout that opened it.
 
-## Usage
+## Shared state: `useSharedState`
+
+`useState`, but the value exists in every tab on your origin. Late-joining
+tabs hydrate to the current value; concurrent writes converge to one winner.
 
 ```tsx
-import {
-  useSharedState,
-  useChannel,
-  useMessage,
-  usePeers,
-  useOpenedWindow,
-  openWindow,
-} from 'use-everywhere';
+import { useSharedState } from 'use-everywhere';
 
-// useState, but the value exists in every tab/window/worker on this origin.
-const [count, setCount] = useSharedState('count', 0);
-
-// Typed fire-and-forget events between tabs.
-const channel = useChannel<{ 'cart-updated': { items: number } }>('shop');
-useMessage(channel, 'cart-updated', ({ items }) => refresh(items));
-channel.post('cart-updated', { items: 3 });
-
-// Who else is here?
-const peers = usePeers();
-
-// Open a window on ANOTHER origin and await its result.
-const pay = useOpenedWindow(() =>
-  openWindow<ToPayment, FromPayment, Receipt>('https://pay.example.com/checkout', {
-    peerOrigin: 'https://pay.example.com',
-  }),
-);
-// pay.open() from a click handler; pay.status: idle → opening → connected → done
-// pay.result is the child's finish() value; closing early yields 'closed-early'.
+function Counter() {
+  const [count, setCount] = useSharedState('count', 0);
+  return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
+}
 ```
 
-On the opened (child) page:
+The third argument delimits how far a value travels:
 
-```ts
+```tsx
+useSharedState('draft', '', { scope: 'everywhere' }); // tabs + windows + workers (default)
+useSharedState('draft', '', { scope: 'tabs' }); // ignore writes from workers
+useSharedState('draft', '', { scope: 'tab' }); // this tab only
+```
+
+## Events: `useChannel` + `useMessage`
+
+Typed fire-and-forget messages for things that _happen_ (state is for things
+that _are_). Not echoed to the sender; no history for late joiners.
+
+```tsx
+import { useChannel, useMessage } from 'use-everywhere';
+import { useState } from 'react';
+
+type ShopEvents = { 'cart-updated': { items: number } };
+
+function CartBadge() {
+  const [items, setItems] = useState(0);
+  const channel = useChannel<ShopEvents>('shop');
+
+  // Fires when any OTHER tab posts 'cart-updated'.
+  useMessage(channel, 'cart-updated', (payload) => setItems(payload.items));
+
+  const addToCart = () => {
+    setItems((n) => n + 1); // this tab
+    channel.post('cart-updated', { items: items + 1 }); // every other tab
+  };
+
+  return <button onClick={addToCart}>Cart ({items})</button>;
+}
+```
+
+## Presence: `usePeers`
+
+```tsx
+import { usePeers } from 'use-everywhere';
+
+function DuplicateTabWarning() {
+  const peers = usePeers();
+  if (peers.length === 0) return null;
+  return <p>⚠ This page is open in {peers.length} other tab(s).</p>;
+}
+```
+
+## Cross-origin windows: `useOpenedWindow`
+
+Open a window on another domain, exchange typed messages, and await its
+result — the whole lifecycle folded into render state.
+
+```tsx
+import { openWindow, useOpenedWindow } from 'use-everywhere';
+
+type ToPayment = { order: { orderId: string; amount: string } };
+type FromPayment = { progress: { step: string } };
+type Receipt = { receiptId: string; last4: string };
+
+function PayButton() {
+  const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+    openWindow('https://pay.example.com/checkout', {
+      peerOrigin: 'https://pay.example.com', // required — '*' throws
+    }),
+  );
+
+  if (pay.status === 'done') return <p>Paid — receipt {pay.result!.receiptId}</p>;
+  if (pay.status === 'closed-early') return <p>Payment window was closed.</p>;
+
+  return (
+    <button onClick={pay.open} disabled={pay.status !== 'idle'}>
+      {pay.status === 'idle' ? 'Pay in secure window' : 'Waiting for payment…'}
+    </button>
+  );
+}
+```
+
+On the opened page (the other domain), use the core API:
+
+```tsx
 import { connectToOpener } from 'use-everywhere';
 
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
   peerOrigin: 'https://shop.example.com',
 });
-conn.on('order', (order) => render(order));
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's result
+conn.on('order', (order) => setOrder(order)); // e.g. a useState setter
+conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay.result
 ```
+
+Messages sent before the (possibly slow-loading) child connects are queued,
+never dropped, and every received message is validated by origin, envelope,
+per-connection nonce, and source window.
 
 ## Design notes
 
@@ -66,14 +129,21 @@ conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's res
   the cross-origin channel is explicit, per-message, and typed.
 - **No Provider.** A BroadcastChannel is already global to the origin —
   identity is the channel name, so hooks share module-level singletons.
-- Values must survive structured clone (no functions, DOM nodes, etc.).
+  Imperative access to the same stores: `getSharedStore(name)`.
+- SSR-safe: hooks render initial values on the server via
+  `getServerSnapshot`; no `BroadcastChannel` needed there.
+- Values must survive structured clone (no functions, DOM nodes); state lives
+  as long as at least one context holds it — nothing is persisted.
+- Testing is first-class: inject a `MemoryHub` transport to simulate many tabs
+  in one test. See the [testing guide](https://rxova.github.io/use-everywhere/guides/testing).
 
 This package re-exports the full framework-agnostic surface of
 [`@use-everywhere/core`](https://www.npmjs.com/package/@use-everywhere/core),
 so you never need to install core directly.
 
-Full docs, demo app (including a real cross-origin payment flow), and source:
-[github.com/rxova/use-everywhere](https://github.com/rxova/use-everywhere)
+📖 **[Documentation](https://rxova.github.io/use-everywhere/)** — mental
+model, how sync works, security model, recipes, and generated API reference.
+Source and demo app: [github.com/rxova/use-everywhere](https://github.com/rxova/use-everywhere)
 
 ## License
 
