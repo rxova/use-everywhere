@@ -1,6 +1,6 @@
 {
   "name": "@use-everywhere/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cross-tab shared state, events, presence, and cross-origin window channels",
   "license": "MIT",
   "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
