@@ -111,6 +111,10 @@ export function openWindow<Out extends MessageMap, In extends MessageMap, R = un
   localWindow.addEventListener('message', onMessage);
 
   function settleClosed() {
+    // Defense in depth: every caller is disarmed by the first invocation
+    // (listener removed, poller and timer cleared), so re-entry cannot happen
+    // through the public API.
+    /* v8 ignore next */
     if (closedSettled) return;
     closedSettled = true;
     clearInterval(closePoller);
@@ -147,9 +151,14 @@ export function openWindow<Out extends MessageMap, In extends MessageMap, R = un
   }, 400);
 
   const readyTimer = setTimeout(() => {
+    // Defense in depth: the ready handler and settleClosed both clear this
+    // timer, so it can only fire while neither has happened — and result can
+    // only settle through paths that also clear it.
+    /* v8 ignore next */
     if (isReady || closedSettled) return;
     const err = new HandshakeTimeoutError();
     rejectReady(err);
+    /* v8 ignore next */
     if (!resultSettled) {
       resultSettled = true;
       rejectResult(err);

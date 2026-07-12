@@ -7,7 +7,7 @@
   <a href="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml">
     <img src="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml/badge.svg?branch=main" alt="Docs" />
   </a>
-  <img src="https://img.shields.io/badge/coverage-%E2%89%A5%2090%25%20per%20file-0f8f6a" alt="coverage >= 90% per file" />
+  <img src="https://img.shields.io/badge/coverage-%E2%89%A5%2095%25%20per%20file-0f8f6a" alt="coverage >= 95% per file" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict" />
 </p>
 

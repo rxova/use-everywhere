@@ -48,6 +48,20 @@ describe('createPresence', () => {
     a.close();
   });
 
+  it('a bye for an unknown peer changes nothing', async () => {
+    const hub = new MemoryHub();
+    const a = createPresence('test', { transport: () => hub.connect() });
+    let calls = 0;
+    a.subscribe(() => calls++);
+
+    const raw = hub.connect();
+    raw.post({ v: 1, scope: 'presence', type: 'bye', clientId: 'stranger', kind: 'tab' });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(calls).toBe(0);
+    expect(a.getPeers()).toEqual([]);
+  });
+
   it('unsubscribing stops notifications', async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };
