@@ -1,6 +1,7 @@
 import { getBus } from './bus.js';
 import { newer } from './clock.js';
 import type { MessageMeta, Version } from './common.types.js';
+import type { Persisted } from './persist.types.js';
 import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 
 /**
@@ -21,12 +22,14 @@ export function createSharedStore<S extends Record<string, unknown>>(
   const versions: Record<string, Version> = {};
   for (const k in state) versions[k] = [0, clientId];
   let snapshot: Readonly<S> = Object.freeze({ ...state }) as S;
+  let versionsSnapshot: Readonly<Record<string, Version>> = Object.freeze({ ...versions });
 
   const listeners = new Set<(key: keyof S & string, value: unknown, meta: MessageMeta) => void>();
   const keyListeners = new Map<string, Set<() => void>>();
 
   function notify(key: string, value: unknown, meta: MessageMeta) {
     snapshot = Object.freeze({ ...state }) as S;
+    versionsSnapshot = Object.freeze({ ...versions });
     for (const fn of listeners) fn(key as keyof S & string, value, meta);
     const set = keyListeners.get(key);
     if (set) for (const fn of set) fn();
@@ -91,6 +94,83 @@ export function createSharedStore<S extends Record<string, unknown>>(
     },
   }) as S;
 
+  const persist = options.persist;
+  let flushPersist: (() => void) | undefined;
+
+  if (persist) {
+    const { adapter, keys, debounceMs = 100 } = persist;
+    const shouldPersist = (key: string) => !keys || keys.includes(key);
+
+    const hydrate = (saved: Persisted | undefined) => {
+      if (!saved) return;
+      for (const key in saved.state) {
+        const version = saved.versions[key];
+        if (!version || !shouldPersist(key)) continue;
+        // Through the same LWW gate as any remote write, so a live tab holding
+        // something newer still wins. `accept` is deliberately bypassed: it
+        // gates what other clients may tell us, and this is our own past.
+        applyRemote(key, saved.state[key], version, { clientId, kind: bus.kind, self: true });
+        // Re-broadcast, carrying the *persisted* version. Not an optimisation:
+        // hello/snapshot only flows incumbent -> joiner, so a live tab sitting
+        // on a staler value would never otherwise hear about the restored one,
+        // and the two would diverge permanently. applyRemote gates on
+        // wire.version and uses clientId only for meta, so this is legal.
+        bus.post({
+          v: 1,
+          scope: 'state',
+          type: 'patch',
+          key,
+          value: saved.state[key],
+          version,
+          clientId,
+          kind: bus.kind,
+        });
+      }
+    };
+
+    const collect = (): Persisted => {
+      const out: Persisted = { v: 1, state: {}, versions: {} };
+      for (const key in versions) {
+        const version = versions[key];
+        // Counter 0 means "registered, never written" — somebody's `initial`,
+        // not data. Persisting it would let a restored initial lose to another
+        // tab's initial on the clientId tie-break, which is a silent
+        // divergence. Everything we write has counter >= 1, so it strictly
+        // beats any [0, *] that registerKey can mint.
+        if (!version || version[0] === 0 || !shouldPersist(key)) continue;
+        out.state[key] = state[key];
+        out.versions[key] = version;
+      }
+      return out;
+    };
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    flushPersist = () => {
+      clearTimeout(timer);
+      timer = undefined;
+      void adapter.write(collect());
+    };
+
+    const saved = adapter.read();
+    if (saved instanceof Promise) {
+      void saved.then(hydrate);
+    } else {
+      hydrate(saved);
+    }
+
+    // Attached after hydration, or the restore would immediately re-persist
+    // what it just read. Fires for local *and* remote writes, so every tab
+    // keeps the converged state on disk.
+    listeners.add(() => {
+      if (timer !== undefined) return;
+      timer = setTimeout(flushPersist as () => void, debounceMs);
+    });
+
+    if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
+      addEventListener('pagehide', flushPersist);
+    }
+  }
+
   // Late-joiner handshake: ask everyone for their state.
   bus.post({ v: 1, scope: 'state', type: 'hello', clientId, kind: bus.kind });
 
@@ -98,6 +178,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
     clientId,
     state: proxy,
     getSnapshot: () => snapshot,
+    getVersions: () => versionsSnapshot,
     set(key, value) {
       const next =
         typeof value === 'function' ? (value as (prev: unknown) => unknown)(state[key]) : value;
@@ -117,12 +198,23 @@ export function createSharedStore<S extends Record<string, unknown>>(
       return () => set.delete(fn);
     },
     registerKey(key, initialValue) {
+      // Guards on `versions`, not `state` — which is what makes hydration
+      // win: it writes versions[key] during construction, strictly before any
+      // hook can register the same key, so this is a no-op and the restored
+      // value survives to first paint.
       if (key in versions) return;
       versions[key] = [0, clientId];
       state[key] = initialValue;
       snapshot = Object.freeze({ ...state }) as S;
+      versionsSnapshot = Object.freeze({ ...versions });
     },
     close() {
+      if (flushPersist) {
+        flushPersist();
+        if (typeof document !== 'undefined' && typeof removeEventListener === 'function') {
+          removeEventListener('pagehide', flushPersist);
+        }
+      }
       unsubscribe();
       listeners.clear();
       keyListeners.clear();

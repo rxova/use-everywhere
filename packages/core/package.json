@@ -47,7 +47,7 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "4 kB"
+      "limit": "4.5 kB"
     },
     {
       "name": "createLeader",
@@ -59,7 +59,7 @@
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "1.3 kB"
+      "limit": "1.6 kB"
     },
     {
       "name": "createChannel",
@@ -95,6 +95,12 @@
       "name": "observeBus + enableDebug",
       "path": "dist/index.js",
       "import": "{ observeBus, enableDebug }",
+      "limit": "500 B"
+    },
+    {
+      "name": "localStorageAdapter",
+      "path": "dist/index.js",
+      "import": "{ localStorageAdapter }",
       "limit": "500 B"
     }
   ],

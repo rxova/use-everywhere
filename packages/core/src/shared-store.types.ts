@@ -1,4 +1,5 @@
-import type { CommonOptions, MessageMeta } from './common.types.js';
+import type { CommonOptions, MessageMeta, Version } from './common.types.js';
+import type { PersistOptions } from './persist.types.js';
 
 export interface SharedStoreOptions extends CommonOptions {
   /**
@@ -7,6 +8,8 @@ export interface SharedStoreOptions extends CommonOptions {
    * e.g. accept only writes from other tabs, not from workers.
    */
   accept?: (meta: MessageMeta) => boolean;
+  /** Restore this store on creation and write it back as it changes. */
+  persist?: PersistOptions;
 }
 
 export interface SharedStore<S extends Record<string, unknown>> {
@@ -15,6 +18,8 @@ export interface SharedStore<S extends Record<string, unknown>> {
   readonly state: S;
   /** Immutable snapshot, replaced whenever a change is applied. Safe for useSyncExternalStore. */
   getSnapshot(): Readonly<S>;
+  /** The per-key version clocks behind the snapshot. Referentially stable, like getSnapshot. */
+  getVersions(): Readonly<Record<string, Version>>;
   set<K extends keyof S & string>(key: K, value: S[K] | ((prev: S[K]) => S[K])): void;
   subscribe(fn: (key: keyof S & string, value: unknown, meta: MessageMeta) => void): () => void;
   subscribeKey(key: keyof S & string, fn: () => void): () => void;

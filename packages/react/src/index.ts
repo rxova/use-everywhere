@@ -5,6 +5,8 @@ export type { AnyStore } from './registry.types.js';
 export { useChannel, useMessage, useSend } from './use-message.js';
 export { defineChannel } from './define-channel.js';
 export type { ChannelHooks } from './define-channel.types.js';
+export { defineStore } from './define-store.js';
+export type { DefineStoreOptions, StoreHooks } from './define-store.types.js';
 export { usePeers, useClientId } from './use-peers.js';
 export { useLeader, useIsLeader, useLeaderEffect } from './use-leader.js';
 export type { UseLeaderOptions } from './use-leader.types.js';
