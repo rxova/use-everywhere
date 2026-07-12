@@ -4,6 +4,8 @@ export { createSharedStore } from './shared-store.js';
 export type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 export { createPresence } from './presence.js';
 export type { Presence, PresenceOptions } from './presence.types.js';
+export { createLeader } from './leader.js';
+export type { Leader, LeaderOptions, LeaderSnapshot } from './leader.types.js';
 export { openWindow, connectToOpener, CID_PARAM } from './window-channel.js';
 export type {
   OpenedWindow,

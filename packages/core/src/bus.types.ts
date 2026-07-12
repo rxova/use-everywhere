@@ -23,6 +23,16 @@ export type BusWire =
       versions: Record<string, Version>;
     }
   | { v: 1; scope: 'presence'; type: 'hello' | 'ping' | 'bye'; clientId: string; kind: PeerKind }
+  | { v: 1; scope: 'leader'; type: 'hello'; clientId: string; kind: PeerKind }
+  | {
+      v: 1;
+      scope: 'leader';
+      type: 'claim' | 'heartbeat' | 'resign';
+      /** The claimant's term. Arbitrated with newer() — the same clock the store uses. */
+      term: Version;
+      clientId: string;
+      kind: PeerKind;
+    }
   | {
       v: 1;
       scope: 'event';

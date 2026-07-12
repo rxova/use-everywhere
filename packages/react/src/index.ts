@@ -6,6 +6,9 @@ export { useChannel, useMessage, useSend } from './use-message.js';
 export { defineChannel } from './define-channel.js';
 export type { ChannelHooks } from './define-channel.types.js';
 export { usePeers, useClientId } from './use-peers.js';
+export { useLeader, useIsLeader, useLeaderEffect } from './use-leader.js';
+export type { UseLeaderOptions } from './use-leader.types.js';
+export { getLeader } from './registry.js';
 export { useOpenedWindow } from './use-opened-window.js';
 export type { UseOpenedWindow, OpenedWindowStatus } from './use-opened-window.types.js';
 

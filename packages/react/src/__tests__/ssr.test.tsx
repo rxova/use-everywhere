@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
+import { useLeader } from '../use-leader.js';
 import { usePeers } from '../use-peers.js';
 import { useSharedState } from '../use-shared-state.js';
 
@@ -19,5 +20,16 @@ describe('server rendering', () => {
 
     expect(html).toContain('ssr-initial'); // shared value falls back to the initial
     expect(html).toMatch(/>0</); // peers render empty on the server
+  });
+
+  it('renders no leader on the server — there is no election to join', () => {
+    function Crown() {
+      const { leaderId, isLeader } = useLeader({ name: 'ssr-leader' });
+      return <span>{isLeader ? 'me' : (leaderId ?? 'none')}</span>;
+    }
+
+    const html = renderToString(<Crown />);
+
+    expect(html).toContain('none');
   });
 });

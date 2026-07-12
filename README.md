@@ -7,40 +7,39 @@
   <a href="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml">
     <img src="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml/badge.svg?branch=main" alt="Docs" />
   </a>
-  <img src="https://img.shields.io/badge/coverage-%E2%89%A5%2095%25%20per%20file-0f8f6a" alt="coverage >= 95% per file" />
+  <a href="https://www.npmjs.com/package/use-everywhere">
+    <img src="https://img.shields.io/npm/v/use-everywhere?color=0f8f6a" alt="npm" />
+  </a>
+  <img src="https://img.shields.io/badge/coverage-100%25-0f8f6a" alt="coverage 100%" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict" />
 </p>
 
-State and messages that exist in every tab, window, and worker — with a React API.
-[→ Documentation](https://rxova.github.io/use-everywhere/)
+**State, messages, and presence that exist in every tab, window, and worker — with a React API.**
 
-Two transports behind one library:
+Your app already runs in more than one tab. `useState` doesn't know that. This library gives you the primitives that do, without a server, a Provider, or a state-management rewrite.
 
-- **BroadcastChannel** (same-origin): shared state with last-writer-wins version
-  clocks and a late-joiner handshake, typed pub/sub events, and peer presence.
-- **window.opener / postMessage** (cross-origin): a secure 1:1 channel to a
-  window you opened — e.g. a payment page on another domain that must report
-  back to the checkout that opened it. Every message is validated by origin,
-  envelope brand, a per-connection nonce, and the source window.
-
-## Packages
-
-| Package                                  | Purpose                                                   |
-| ---------------------------------------- | --------------------------------------------------------- |
-| `use-everywhere` (`packages/react`)      | React hooks; re-exports the full core surface             |
-| `@use-everywhere/core` (`packages/core`) | Framework-agnostic engine                                 |
-| `@use-everywhere/demo` (`apps/demo`)     | Vite demo app, including a real cross-origin payment flow |
-
-## Quick start
+**[→ Read the documentation](https://rxova.github.io/use-everywhere/)**
 
 ```bash
-pnpm install
-pnpm build
-pnpm test
-pnpm dev        # demo at http://localhost:5173
+npm install use-everywhere
 ```
 
-## React API
+## What you get
+
+|                          |                                                                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shared state**         | `useState`, but the value lives in every tab on the origin. Per-key `[counter, clientId]` clocks give last-writer-wins with a deterministic tie-break; a hello/snapshot handshake hydrates late joiners instantly.        |
+| **Typed messages**       | Fire-and-forget pub/sub between tabs. Bind the name and the message map once with `defineChannel`, get typed `useSend`/`useMessage` back.                                                                                 |
+| **Presence**             | Who else is here, right now — tabs, windows, workers — with a heartbeat and automatic pruning.                                                                                                                            |
+| **Leader election**      | Exactly one tab owns the WebSocket, the polling loop, the token refresh. Lease-and-claim with a sticky incumbent: opening a tab doesn't steal the seat, closing one hands it over instantly. Opt-in, and opt-out per tab. |
+| **Cross-origin windows** | A secure 1:1 channel to a window you opened on **another domain** — a payment page that must report back to the checkout. Validated by origin, envelope brand, per-connection nonce, and source window.                   |
+| **Devtools**             | `observeBus` / `enableDebug` surface every wire crossing the bus, in both directions.                                                                                                                                     |
+
+Two transports behind one library: **BroadcastChannel** for same-origin, **postMessage** for the cross-origin window channel. Shared state deliberately never crosses origins — two origins are two trust domains, so that channel is explicit, per-message, and typed.
+
+## The main usages
+
+**State, messages, and presence.** No Provider: a BroadcastChannel is already global to the origin, so identity is the channel name and the hooks share module-level singletons.
 
 ```tsx
 import { useState } from 'react';
@@ -50,15 +49,12 @@ type ShopEvents = { 'cart-updated': { items: number } };
 const shop = defineChannel<ShopEvents>('shop'); // bind name + types once, at module level
 
 function StatusBar() {
-  // useState, but the value exists in every tab/window/worker on this origin.
-  const [count, setCount] = useSharedState('count', 0);
+  const [count, setCount] = useSharedState('count', 0); // exists in every tab
 
-  // Typed fire-and-forget events: fires when any OTHER tab posts 'cart-updated'.
   const [cartItems, setCartItems] = useState(0);
-  shop.useMessage('cart-updated', (payload) => setCartItems(payload.items));
+  shop.useMessage('cart-updated', (payload) => setCartItems(payload.items)); // fires when another tab posts
 
-  // Who else is here? (other tabs = circles, workers = squares in the demo)
-  const peers = usePeers();
+  const peers = usePeers(); // who else is here
 
   return (
     <p>
@@ -69,7 +65,24 @@ function StatusBar() {
 }
 ```
 
-The payment-window flow — open a window on **another origin**, await its result:
+**One tab does the work.** The classic multi-tab bug is N tabs opening N sockets. `useLeaderEffect` runs an effect only in the elected tab, and moves it when that tab goes away.
+
+```tsx
+import { useLeaderEffect, useIsLeader } from 'use-everywhere';
+
+function LiveFeed() {
+  useLeaderEffect(() => {
+    const socket = new WebSocket('wss://example.com/feed'); // exactly one, across all tabs
+    return () => socket.close(); // runs if this tab loses the seat
+  });
+
+  return <span>{useIsLeader() ? 'driving' : 'following'}</span>;
+}
+```
+
+Leadership is **advisory, not a distributed lock** — good for "don't open five sockets", not for guarding money. See [Limitations](https://rxova.github.io/use-everywhere/docs/under-the-hood/limitations).
+
+**A window on another origin.** Open it, hand it typed data, await its result.
 
 ```tsx
 import { openWindow, useOpenedWindow } from 'use-everywhere';
@@ -79,15 +92,13 @@ type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
 const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
-  openWindow('https://pay.example.com/checkout', {
-    peerOrigin: 'https://pay.example.com',
-  }),
+  openWindow('https://pay.example.com/checkout', { peerOrigin: 'https://pay.example.com' }),
 );
 // pay.open() from a click handler; pay.status: idle → opening → connected → done
 // pay.result is the child's finish() value; closing early yields 'closed-early'.
 ```
 
-On the opened (child) page:
+On the opened page:
 
 ```ts
 import { connectToOpener } from 'use-everywhere';
@@ -95,41 +106,40 @@ import { connectToOpener } from 'use-everywhere';
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
   peerOrigin: 'https://shop.example.com',
 });
-conn.on('order', (order) => showOrderSummary(order)); // hand it to your UI
+conn.on('order', (order) => showOrderSummary(order));
 conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay.result
 ```
 
-Design notes:
+## Packages
 
-- **Shared state never crosses origins.** Two origins are two trust domains;
-  the cross-origin channel is explicit, per-message, and typed. Same-origin
-  state sync uses per-key `[counter, clientId]` clocks (last-writer-wins,
-  deterministic tie-break) and a hello/snapshot handshake so late-joining tabs
-  hydrate instantly.
-- **No Provider.** A BroadcastChannel is already global to the origin —
-  identity is the channel name, so hooks share module-level singletons.
-- Values must survive structured clone (no functions, DOM nodes, etc.).
-- The UI-level payment lock prevents _accidental_ double payment; server-side
-  idempotency keys are still required for real safety.
+| Package                                 | Purpose                                                   |
+| --------------------------------------- | --------------------------------------------------------- |
+| [`use-everywhere`](packages/react)      | React hooks; re-exports the full core surface             |
+| [`@use-everywhere/core`](packages/core) | Framework-agnostic engine — no React dependency           |
+| `@use-everywhere/demo` (`apps/demo`)    | Vite demo app, including a real cross-origin payment flow |
 
-## Trying the cross-origin payment demo
+Everything is tree-shakeable and measured: the whole core surface is under 4 kB brotlied, and importing one primitive costs roughly one primitive.
 
-`pnpm dev`, then open <http://localhost:5173>. The checkout's "Pay in secure
-window" button opens `http://127.0.0.1:5173/payment.html` — same Vite server,
-but `localhost` and `127.0.0.1` are **different origins**, so the payment page
-genuinely cannot use BroadcastChannel to reach the shop. Complete the fake card
-form and the opener resolves with a receipt; close the window mid-payment and
-the checkout unlocks with a "window closed" notice. Open the shop in a second
-tab first to also see the cross-tab lock: paying in one tab locks the button in
-all of them.
+## Running it locally
 
-The original single-file prototypes live in `prototypes/` (open directly in a
-browser, no build needed).
+```bash
+pnpm install
+pnpm dev        # demo at http://localhost:5173
+pnpm test       # 100% coverage, enforced per file
+```
 
-## Branching & releases
+The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/payment.html` — the same Vite server, but `localhost` and `127.0.0.1` are **different origins**, so the payment page genuinely cannot reach the shop over BroadcastChannel. Complete the fake card form and the opener resolves with a receipt; close the window mid-payment and the checkout unlocks with a "window closed" notice. Open the shop in a second tab first to also see the cross-tab lock: paying in one tab locks the button in all of them.
 
-`main` always represents the latest version published to npm; day-to-day work
-happens on `development`. Merging `development` into `main` triggers the
-release automation, which applies pending [changesets](https://github.com/changesets/changesets)
-(patch/minor/major per package), publishes to npm with provenance, and tags the
-release. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full flow.
+## Caveats worth knowing up front
+
+- Values must survive [structured clone](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) — no functions, DOM nodes, or class instances.
+- Client-side locks are **UX, not security**. The payment lock prevents _accidental_ double payment; server-side idempotency keys are still required for real safety.
+- A backgrounded tab has its timers throttled, so a healthy leader can still lose its lease.
+
+## Contributing & releases
+
+`main` always represents the latest version published to npm; day-to-day work happens on `development`. Merging `development` into `main` triggers the release automation, which applies pending [changesets](https://github.com/changesets/changesets), publishes to npm with provenance, and tags the release. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE)
