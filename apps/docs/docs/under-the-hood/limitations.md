@@ -9,21 +9,78 @@ boundaries chosen on purpose — knowing a tool's edges is how you trust its
 middle. Here's where each boundary is, why it's there, and what to use on
 the other side of it.
 
-## State does not survive the last tab
+## State does not survive the last tab — unless you ask it to
 
-Replicas live in JS memory. Close every tab and the state is gone; reopen
-and you start from initial values. Nothing touches `localStorage`,
-IndexedDB, or a server — the library won't persist things behind your back.
+By default, replicas live in JS memory. Close every tab and the state is
+gone; reopen and you start from initial values. Nothing touches
+`localStorage` behind your back.
 
-**If you need persistence**: write through to storage yourself where the
-value changes, and pass the stored value as the _initial_ — hydration
-semantics do the rest (any live tab's newer value still wins over your
-stored one):
+**If you want it to survive**, say so:
 
 ```tsx
+import { defineStore, localStorageAdapter } from 'use-everywhere';
+
+const settings = defineStore('settings', { persist: localStorageAdapter('app:settings') });
+```
+
+See [defineStore](../hooks/define-store.md).
+
+Do **not** hand-roll it with a write-through effect:
+
+```tsx
+// Don't. This is subtly wrong.
 const [draft, setDraft] = useSharedState('draft', localStorage.getItem('draft') ?? '');
 useEffect(() => localStorage.setItem('draft', draft), [draft]);
 ```
+
+Two things break. Every tab runs that effect, so N tabs race to write the
+same key. And the stored string carries no version clock, so when you reopen,
+the restored value re-enters the world at counter zero — it cannot win the
+last-writer-wins race even when it genuinely is the newest thing anyone has.
+`defineStore` persists the clocks along with the values, which is the whole
+reason it converges.
+
+## Persistence is best-effort
+
+Storage can be unavailable: a sandboxed iframe, third-party cookies off, a
+full quota, a corrupt entry left by an older version of your app. In every
+one of those cases persistence degrades to a **silent no-op** and the store
+keeps working in memory. It will never be the thing that breaks your page —
+which also means it is not a guarantee. Don't put anything you can't afford
+to lose there; that's what your server is for.
+
+## Leadership is advisory, not a distributed lock
+
+[`useLeader`](../hooks/use-leader.md) elects one tab, and for a short window
+— roughly one round trip, when two claims genuinely cross — two tabs can both
+believe they hold the seat before one concedes.
+
+That is fine for "don't open five WebSockets" and wrong for "don't charge the
+card twice." Same energy as the note below about client-side locks: it is an
+efficiency mechanism, not a safety one. Anything that must happen exactly once
+needs a server-side idempotency key.
+
+## A hidden tab can lose a lease it deserved to keep
+
+Browsers throttle timers in backgrounded pages — to roughly 1 Hz, and harder
+after a few minutes. A perfectly healthy leader that is merely _hidden_ can
+therefore miss its heartbeats, get demoted by tabs that are still awake, and
+run the cleanup in `useLeaderEffect`.
+
+The 3-second default lease tolerates 1 Hz clamping. If the work is expensive
+to restart, keep hidden tabs out of the running entirely:
+
+```tsx
+useLeader({ eligible: !document.hidden });
+```
+
+## The Inspector is a devtool, not a feature
+
+[`<Inspector />`](../hooks/inspector.md) lives on the `use-everywhere/devtools`
+subpath so it stays out of your bundle unless you import it. Guard it behind a
+dev flag. It's built to observe without perturbing — it never joins the
+election it displays — but it is not a supported UI surface, and its markup
+and classnames are not a stable API.
 
 ## Last-writer-wins loses concurrent writes
 
@@ -115,7 +172,7 @@ When the _last_ one closes, the state is gone — replicas are JS memory, and
 there is deliberately no storage underneath. A later tab broadcasts `hello`,
 nobody answers, and it starts from initial values. If that matters for your
 data, use the write-through pattern in
-[State does not survive the last tab](#state-does-not-survive-the-last-tab).
+[State does not survive the last tab](#state-does-not-survive-the-last-tab--unless-you-ask-it-to).
 
 ### How big is it?
 

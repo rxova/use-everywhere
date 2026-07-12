@@ -32,6 +32,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./devtools": {
+      "types": "./dist/devtools/index.d.ts",
+      "import": "./dist/devtools/index.js"
     }
   },
   "files": [
@@ -85,6 +89,12 @@
       "path": "dist/index.js",
       "import": "{ defineStore, localStorageAdapter }",
       "limit": "2.3 kB"
+    },
+    {
+      "name": "Inspector (devtools subpath)",
+      "path": "dist/devtools/index.js",
+      "import": "{ Inspector }",
+      "limit": "5 kB"
     }
   ],
   "dependencies": {
@@ -106,5 +116,12 @@
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "vitest": "^4.1.10"
+  },
+  "typesVersions": {
+    "*": {
+      "devtools": [
+        "./dist/devtools/index.d.ts"
+      ]
+    }
   }
 }

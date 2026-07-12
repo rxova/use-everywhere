@@ -1,4 +1,6 @@
+import { Inspector } from 'use-everywhere/devtools';
 import { CheckoutDemo } from './demos/CheckoutDemo.js';
+import { LeaderDemo } from './demos/LeaderDemo.js';
 import { PresenceStrip } from './demos/PresenceStrip.js';
 import { SharedStateDemo } from './demos/SharedStateDemo.js';
 
@@ -15,12 +17,14 @@ export function App() {
       <PresenceStrip />
       <div className="grid">
         <SharedStateDemo />
+        <LeaderDemo />
         <CheckoutDemo />
       </div>
       <footer>
         Same-origin sync runs on <code>BroadcastChannel</code>; the payment window runs on
         cross-origin <code>postMessage</code>. No server involved.
       </footer>
+      {import.meta.env.DEV ? <Inspector defaultOpen /> : null}
     </div>
   );
 }

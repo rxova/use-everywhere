@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Hooks overview
 
-The React package ships seven hooks, and each one answers exactly one
+The React package ships ten hooks, and each one answers exactly one
 question. This section gives every hook its own page: what it is in plain
 English, every option it takes, what it returns, a worked example, and the
 gotchas worth knowing before you hit them.
@@ -19,10 +19,15 @@ gotchas worth knowing before you hit them.
 | [`useClientId`](./use-client-id.md)         | "Which one am I?"                               | This tab's stable id on a bus — matches `meta.clientId` everywhere |
 | [`useOpenedWindow`](./use-opened-window.md) | "Open a window on another domain and hear back" | The whole cross-origin window lifecycle as render state            |
 
-There's also one factory: [`defineChannel`](./define-channel.md) binds a
+There are also two factories. [`defineChannel`](./define-channel.md) binds a
 channel's name and message map once at module level and returns ready-made
 `useSend`/`useMessage` — the ergonomic way to use the event trio across many
-components.
+components. [`defineStore`](./define-store.md) does the same for a store, and
+is where you turn on [persistence](./define-store.md) so the state survives
+closing the last tab.
+
+And when it misbehaves, [`<Inspector />`](./inspector.md) shows you every
+message crossing the bus, in both directions.
 
 Three things hold for all of them:
 

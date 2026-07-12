@@ -96,7 +96,7 @@ function DraftEditor() {
 Nothing else required: the new tab says `hello`, receives a snapshot, and the
 textarea starts full. Remember the value evaporates with the last tab — if
 drafts must survive a browser restart,
-[persist them separately](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab).
+[persist them separately](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab--unless-you-ask-it-to).
 
 ## A worker as a background engine
 

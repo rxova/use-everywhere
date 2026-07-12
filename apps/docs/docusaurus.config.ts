@@ -54,6 +54,19 @@ const config: Config = {
         out: 'docs/api/react',
       },
     ],
+    [
+      // A third instance, deliberately — *not* a second entryPoint on api-react.
+      // Two entry points would flip TypeDoc into multi-module mode and rewrite
+      // every existing API URL, breaking every link on the site.
+      'docusaurus-plugin-typedoc',
+      {
+        ...typedocBase,
+        id: 'api-devtools',
+        entryPoints: ['../../packages/react/src/devtools/index.ts'],
+        tsconfig: '../../packages/react/tsconfig.json',
+        out: 'docs/api/devtools',
+      },
+    ],
   ],
 
   presets: [

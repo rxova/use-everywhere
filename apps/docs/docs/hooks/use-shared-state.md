@@ -126,7 +126,7 @@ class of bug, gone. (For the full pattern with an owner id, see the
   React elements: not fine.
 - **Nothing is persisted.** Close the last tab and the value is gone. To keep
   it, write through to `localStorage` and pass the stored value as `initial`
-  — [the pattern](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab).
+  — [the pattern](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab--unless-you-ask-it-to).
 - **Subscriptions are per key.** Components using the same key (and store and
   scope) share one subscription, and a `note` update never re-renders `count`
   consumers.

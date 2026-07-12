@@ -1,7 +1,14 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // Object form, not an array: given an array tsup infers a common base dir for
+  // the outputs, and if it infers a different one you silently get
+  // dist/index2.js while exports, size-limit, and TypeDoc all point at
+  // dist/devtools/index.js — a file that does not exist.
+  entry: {
+    index: 'src/index.ts',
+    'devtools/index': 'src/devtools/index.ts',
+  },
   format: ['esm'],
   dts: true,
   clean: true,
