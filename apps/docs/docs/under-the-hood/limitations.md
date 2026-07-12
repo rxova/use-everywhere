@@ -4,10 +4,10 @@ sidebar_position: 3
 
 # Limitations & FAQ
 
-Every library pitch needs an honesty section, and this is mine. The library
-is deliberately small, and most "missing" features are boundaries I chose on
-purpose — knowing a tool's edges is how you trust its middle. Here's where
-each boundary is, why it's there, and what to use on the other side of it.
+The library is deliberately small, and most "missing" features are
+boundaries chosen on purpose — knowing a tool's edges is how you trust its
+middle. Here's where each boundary is, why it's there, and what to use on
+the other side of it.
 
 ## State does not survive the last tab
 
@@ -31,7 +31,7 @@ Two tabs writing the same key at the same moment converge — by discarding
 one write (see [How sync works](./how-sync-works.md)). Perfect for status
 flags, counters, and drafts; wrong for merging concurrent edits to one text
 document. That problem needs CRDTs (Yjs, Automerge) — out of scope by
-design, and I'd rather say so plainly than pretend.
+design.
 
 Writes to _different keys_ never conflict, so splitting state across keys is
 the cheap way to reduce collisions.

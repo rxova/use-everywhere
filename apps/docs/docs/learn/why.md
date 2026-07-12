@@ -4,26 +4,45 @@ sidebar_position: 2
 
 # Why this exists
 
-Every few months I used to hit the same bug wearing a new costume.
+The bugs are familiar. A user opens checkout in a second tab and clicks
+**Pay** in both. A logout in one tab leaves five other tabs happily showing
+the inbox. A draft typed in tab A doesn't exist in tab B.
 
-A user opens checkout, gets impatient, opens checkout _again_ in a second
-tab, and clicks **Pay** in both. Or they log out in one tab, and five other
-tabs keep happily showing their inbox. Or a draft they typed in tab A simply
-doesn't exist in tab B, and they email support asking where their text went.
+They're all the same bug: **each browser tab runs its own copy of your
+app.** In-tab state is a thoroughly solved space — React state, Redux,
+Zustand, pick your favorite — but everything those tools manage lives inside
+one tab. The tab next door holds an independent copy, and the moment there
+are two tabs, "application state" is really "this tab's opinion about
+application state."
 
-These look like three different bugs. They're one bug: **each browser tab is
-its own little universe.** Your carefully managed React state, your Redux
-store, your Zustand atoms — all of it lives inside one tab, and the tab next
-door has a completely independent copy that has never heard of yours. The
-thing you called "application state" is actually "this tab's opinion about
-application state," and the moment there are two tabs, the opinions disagree.
+## The part the platform already solved
 
-## What we all write today (and why it's still broken)
+Here's the honest starting point: the browser already ships very good APIs
+for this.
 
-Let's make it concrete with the duplicate-tab payment, because it's the
-scariest version. Here's the "standard" hand-rolled solution — I'm not
-exaggerating for effect; versions of this live in production codebases
-everywhere, including some I wrote:
+- **`BroadcastChannel`** is a named, origin-wide message bus. Any tab,
+  window, iframe, or worker on your origin can post to a channel and hear
+  everyone else — structured-clone payloads, no polyfills, universal support.
+- **`window.postMessage`** is the deliberate, security-shaped bridge between
+  windows on _different_ origins — the only one there is, and a well-designed
+  one.
+
+These two APIs are exactly what runs under use-everywhere's hood. The
+library doesn't replace them or work around them; it's built on the premise
+that they're the right primitives.
+
+## The gap
+
+What's missing isn't transport — it's the abstraction. There is no
+`useState`-shaped way to say "this value exists in every tab." Both APIs are
+messaging primitives, and they intentionally leave the _state_ questions to
+you: what a freshly opened tab should see (there's no history), who sent a
+message (there's no identity), what happens when two tabs write at once
+(there's no conflict rule), and, across origins, when the other window is
+actually ready to listen.
+
+So every team answers those questions in app code. For the duplicate-tab
+payment, that typically looks like this:
 
 ```js
 // 1. take a cross-tab lock so only one tab can pay
@@ -59,67 +78,51 @@ addEventListener('storage', (e) => {
 //    show WHICH tab is paying… 😩
 ```
 
-Read that carefully, because the problems are instructive. We're juggling
-**three different browser APIs**. We have **two sources of truth that can
-disagree** — `localStorage` says paid while the channel said processing. And
-after all that, it's _still_ broken: a tab opened mid-payment shows an
-enabled Pay button, because `'processing'` was never persisted anywhere a
-late joiner could find it. The user in that fresh tab can double-pay. The bug
-we set out to fix is alive and well inside our fix.
+This code is fine. That's worth saying plainly: it takes a lock, tells the
+other tabs, gives late joiners a sidecar to read on load. With care and a
+few tests, it's a perfectly correct solution — variants of it (swap in
+`storage` events, or a `SharedWorker`) are running in production everywhere.
 
-The other folk solutions have their own warts, and you've probably met all
-of them:
+The question is whether you want to implement it _each time_. I don't. It's
+three browser APIs and two sources of truth to keep agreeing, per feature —
+and the edge cases (the tab opened mid-payment, the lock holder crashing,
+cleanup on unload) each deserve their own test. All of that for what is,
+from the product's point of view, one status flag. This is boilerplate in
+the truest sense: necessary, repetitive, and identical in shape from app to
+app — which is exactly what a library should absorb.
 
-- **`localStorage` + `storage` events** — the classic. But it's
-  stringly-typed (`JSON.parse` everywhere), the event doesn't fire in the tab
-  that wrote, it doesn't reach workers at all, and you're using a
-  _persistence_ API as a _messaging_ API, so you also inherit cleanup
-  problems.
-- **`SharedWorker`** — architecturally the "right" answer for a shared brain,
-  but it's a separate compilation unit, DevTools support is rough, and you've
-  now turned "sync a flag" into "maintain a worker protocol."
-- **Polling** — `setInterval` + `localStorage.getItem`. I've seen it. You've
-  seen it. We don't talk about it.
+## use-everywhere minds that gap
 
-What I actually wanted is embarrassingly simple to state:
+I'd rather have something that wraps those primitives nicely, so that's
+what this is:
 
 :::tip The spec, in one sentence
 One object. Every tab. Writes anywhere show up everywhere, tabs opened later
 see the current value, and simultaneous writes don't split-brain.
 :::
 
-## Why the platform alone doesn't get you there
+- **The whole snippet above becomes one hook** —
+  `useSharedState('pay-status', 'idle')` — one source of truth instead of
+  two, zero cleanup code.
+- **Late joiners are handled.** A new tab hydrates to the current value from
+  its first frame; initial values never overwrite real ones.
+- **Conflicts resolve deterministically.** Simultaneous writes converge on
+  the same winner in every tab — no split brain, no arbitration code.
+- **Typed end to end.** State, events, and cross-origin messages are all
+  checked against types you declare once.
+- **Presence is built in.** "Who else has this open?" is a hook, not a
+  heartbeat protocol you maintain.
+- **The cross-origin channel ships the handshake and the validation** —
+  ready signaling, queueing, origin checks, session nonces — that raw
+  `postMessage` leaves to each listener.
+- **It stays small and honest.** Zero dependencies, tree-shakeable, no
+  runtime or worker bundle — the two platform APIs plus the state machinery
+  they were missing. And everything is
+  [testable without a browser](../guides/testing.md).
 
-The browser gives you two relevant primitives, and both are _almost_ enough.
+Row by row, this is the gap being closed:
 
-**`BroadcastChannel`** is a named, origin-wide message bus — genuinely great,
-and criminally underused. Any tab, window, iframe, or worker on your origin
-can post to a named channel and hear everyone else. But it has three gaps,
-and I'd argue these three bullets generate every line of cross-tab plumbing
-ever written:
-
-- **No history.** A message posted before you subscribed is gone forever. A
-  freshly opened tab knows _nothing_ — that's the late-joiner problem, and
-  it's why raw BroadcastChannel code always grows a `localStorage` sidecar.
-- **No identity.** Messages don't say who sent them. Want to show "payment in
-  progress in _the other_ tab"? You're inventing tab IDs yourself.
-- **No conflict story.** Two tabs post "the new value is X" and "the new
-  value is Y" at the same moment; different tabs can receive them in
-  different orders — and disagree forever. That's a split brain.
-
-**`window.postMessage`** is the only bridge between windows on _different_
-origins — the checkout on `shop.example.com` talking to the payment window
-on `pay.example.com`. It's deliberately shaped like a security API, and its
-foot-guns have lost real money: `targetOrigin: '*'` delivering payment data
-to whatever page is in the window now, `message` listeners that never check
-`event.origin`, no "ready" signal (messages posted while the child loads are
-silently dropped), and no way to tell a fresh window from a stale one.
-
-## The tally
-
-Here's what you actually hand-write around those two APIs, every single time:
-
-| Need                            | The platform gives you         | You build                                 |
+| Need                            | The platform gives you         | Someone has to build                      |
 | ------------------------------- | ------------------------------ | ----------------------------------------- |
 | Current value for a new tab     | nothing (no history)           | snapshot protocol or localStorage sidecar |
 | Who sent this?                  | nothing                        | tab IDs                                   |
@@ -130,8 +133,8 @@ Here's what you actually hand-write around those two APIs, every single time:
 | Session binding                 | nothing                        | nonces                                    |
 | "The window closed"             | nothing reliable               | polling `child.closed`                    |
 
-That table _is_ the library. Every row, built once, tested, and hidden behind
-a `useState`-shaped API. The same-origin rows become
+That table _is_ the library — every row built once, tested, and hidden
+behind a `useState`-shaped API. The same-origin rows become
 [`useSharedState`](../hooks/use-shared-state.md),
 [`useMessage`](../hooks/use-message.md), and
 [`usePeers`](../hooks/use-peers.md); the cross-origin rows become
@@ -144,6 +147,7 @@ a `useState`-shaped API. The same-origin rows become
 - [The mental model](./mental-model.md) — the two ideas everything else
   follows from.
 - [How sync works](../under-the-hood/how-sync-works.md) — how version clocks
-  and the late-joiner handshake actually close the gaps above.
-- [Security model](../under-the-hood/security-model.md) — the four gates that
-  defuse the postMessage foot-guns.
+  and the late-joiner handshake close the gaps above.
+- [Security model](../under-the-hood/security-model.md) — how the
+  cross-origin channel uses `postMessage` the way it was designed to be
+  used.

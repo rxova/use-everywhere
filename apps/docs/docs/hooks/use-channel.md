@@ -75,6 +75,9 @@ arrays and to pass down as a prop without memoizing.
   _other_ clients' events. Update your own tab explicitly.
 - **One channel per concern reads best.** `'auth'`, `'cart'`, `'sync'` —
   small typed maps per feature beat one giant app-wide map.
+- **Using one channel from many components?** Bind the name and types once
+  with [`defineChannel`](./define-channel.md) instead of repeating
+  `useChannel<ShopEvents>('shop')` at every call site.
 
 ## Where to next
 

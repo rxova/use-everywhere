@@ -7,7 +7,7 @@ sidebar_position: 1
 The React package ships seven hooks, and each one answers exactly one
 question. This section gives every hook its own page: what it is in plain
 English, every option it takes, what it returns, a worked example, and the
-gotchas I'd want you to know before you hit them.
+gotchas worth knowing before you hit them.
 
 | Hook                                        | The question it answers                         | In one line                                                        |
 | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
@@ -18,6 +18,11 @@ gotchas I'd want you to know before you hit them.
 | [`usePeers`](./use-peers.md)                | "Who else is here?"                             | A live list of open tabs, windows, and workers                     |
 | [`useClientId`](./use-client-id.md)         | "Which one am I?"                               | This tab's stable id on a bus — matches `meta.clientId` everywhere |
 | [`useOpenedWindow`](./use-opened-window.md) | "Open a window on another domain and hear back" | The whole cross-origin window lifecycle as render state            |
+
+There's also one factory: [`defineChannel`](./define-channel.md) binds a
+channel's name and message map once at module level and returns ready-made
+`useSend`/`useMessage` — the ergonomic way to use the event trio across many
+components.
 
 Three things hold for all of them:
 

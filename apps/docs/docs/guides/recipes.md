@@ -7,7 +7,7 @@ sidebar_position: 4
 Small, complete patterns you can lift straight into an app. Each one names
 the primitive it leans on and _why_ that primitive is the right one — because
 picking state vs. message vs. presence is most of the skill here, and these
-six cover the choices I make over and over.
+six cover the choices that come up over and over.
 
 ## Log out everywhere
 
@@ -17,19 +17,20 @@ the litmus test, that makes it a **message**, not state:
 
 ```tsx
 type AuthEvents = { 'logged-out': undefined };
+const auth = defineChannel<AuthEvents>('auth');
 
 function useLogoutEverywhere() {
-  const channel = useChannel<AuthEvents>('auth');
+  const send = auth.useSend();
 
   // Every tab listens…
-  useMessage(channel, 'logged-out', () => {
+  auth.useMessage('logged-out', () => {
     window.location.assign('/login');
   });
 
   // …and any tab can trigger.
   return () => {
     void fetch('/api/logout', { method: 'POST' }).then(() => {
-      channel.post('logged-out', undefined);
+      send('logged-out', undefined);
       window.location.assign('/login'); // messages don't echo to the sender
     });
   };
@@ -37,15 +38,14 @@ function useLogoutEverywhere() {
 ```
 
 Note the last line: channel messages are never delivered back to the sender,
-so the initiating tab handles itself explicitly. Forgetting this line is the
-number-one first-day bug with events.
+so the initiating tab handles itself explicitly. Forgetting it is the most
+common first bug with events.
 
 ## The duplicate-tab lock (single-flight)
 
-Stop two tabs from submitting the same payment, export, or wizard. This is
-the bug that started the whole library. The lock must survive a tab opening
-_mid-flight_ — the fresh tab has to render "busy" from its first frame — so
-it is **state**:
+Stop two tabs from submitting the same payment, export, or wizard. The lock
+must survive a tab opening _mid-flight_ — the fresh tab has to render "busy"
+from its first frame — so it is **state**:
 
 ```tsx
 function useSingleFlight(key: string) {
@@ -125,7 +125,7 @@ single place, or use a `SharedWorker` where support allows.
 
 ## "You have this open in another tab"
 
-Presence, verbatim — this one is almost embarrassingly short:
+Presence, verbatim:
 
 ```tsx
 function DuplicateTabBanner() {
@@ -155,7 +155,7 @@ const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
 
 Combine it with the single-flight lock above and the payment button locks in
 every tab while one tab's window is open — that combination is exactly what
-the demo app ships, and it's the library's whole origin story in about
+the demo app ships: the duplicate-tab payment problem, handled in about
 twenty lines.
 
 ## Where to next

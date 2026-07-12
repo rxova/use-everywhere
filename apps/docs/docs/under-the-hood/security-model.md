@@ -75,7 +75,8 @@ catching copy-paste mismatches at call time.
 ## Why shared state stops at the origin line
 
 It's tempting to want `useSharedState` to just work across the payment
-window too. The library refuses, and I want to defend that refusal properly:
+window too. The library refuses by design, and the refusal is worth
+spelling out:
 
 1. **Confused deputy.** State merging is automatic — whatever arrives with a
    newer clock wins, no questions asked. Automatic writes from a foreign

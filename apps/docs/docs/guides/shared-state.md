@@ -33,8 +33,8 @@ useSharedState('draft', '', { scope: 'tab' }); // this tab only
 - **`everywhere`** — synced across every context on the origin. The default,
   and right for most things.
 - **`tabs`** — synced, but writes coming from workers are silently ignored.
-  I reach for this when a worker feeds a store that the UI _sometimes_ wants
-  to override locally.
+  Useful when a worker feeds a store that the UI _sometimes_ wants to
+  override locally.
 - **`tab`** — never leaves the tab, but still shared between every component
   in it. A zero-Provider way to share state within one page.
 

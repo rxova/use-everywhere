@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Cross-origin payments
 
-This is the flow that made me build the library, so let's do it properly.
+This is the flow the window channel exists for, so let's do it properly.
 The scenario: a checkout on **`shop.example.com`** opens a payment window on
 **`pay.example.com`**. The user pays there; the payment page must report back
 to the checkout that opened it.
@@ -105,8 +105,7 @@ opener's `result`, flipping its status to `'done'`.
 
 ## What just got handled for you
 
-Everything in this list is a bug I have personally shipped by hand-rolling
-it:
+Every item in this list is a classic hand-rolled `postMessage` bug:
 
 - **The slow-loading child.** `window.open` returns immediately; the child
   takes seconds to load; naive `postMessage` calls in that window are

@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # How sync works
 
-This is the page where I open the hood. You don't need any of it to _use_
+This page opens the hood. You don't need any of it to _use_
 the library — but when you want to reason about an edge case ("what if both
 tabs write at the same millisecond?", "what does a brand-new tab actually
 see?"), this walkthrough gives you the machinery: version clocks, the
@@ -33,7 +33,7 @@ picks the same winner. No coordinator, no election, no extra round trips.
 
 ## Watch it absorb the scary case
 
-I want to slow down here, because this is the part that kills split brain.
+This is the part that kills split brain, so it's worth slowing down.
 Tab A (`aaaaaa`) and tab B (`bbbbbb`) both hold `note` at version `[3, …]`,
 and both write before either patch arrives:
 
@@ -77,7 +77,7 @@ On creation, a store broadcasts `hello`. Every existing peer answers with a
 through the same `newer()` rule it uses for live patches, so receiving three
 overlapping snapshots is harmless: older entries simply lose.
 
-And here's the subtle part I'm most happy with: your initial value registers
+And here's the subtle part: your initial value registers
 at version `[0, myId]`. Anything a peer actually _wrote_ has a counter ≥ 1 —
 and therefore beats it. Think about what that means:
 `useSharedState('pay-status', 'idle')` in a brand-new tab hydrates to

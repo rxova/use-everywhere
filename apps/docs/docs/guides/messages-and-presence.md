@@ -13,29 +13,33 @@ everyone once — no echo — and see why it's a feature.
 ## Declare the contract once
 
 A channel is typed by a **message map** — event names to payload shapes.
-Declare it once, export it, and every tab speaks the same language:
+Declare it once, bind it to a name with
+[`defineChannel`](../hooks/define-channel.md), and every tab speaks the same
+language with nothing to repeat at call sites:
 
-```ts title="shop-events.ts"
+```ts title="shop-channel.ts"
+import { defineChannel } from 'use-everywhere';
+
 export type ShopEvents = {
   'cart-updated': { items: number };
   'logged-out': undefined; // no payload
 };
+
+export const shop = defineChannel<ShopEvents>('shop');
 ```
 
 ## Build the cart badge
 
 ```tsx title="CartBadge.tsx"
 import { useState } from 'react';
-import { useChannel, useMessage, useSend } from 'use-everywhere';
-import type { ShopEvents } from './shop-events';
+import { shop } from './shop-channel';
 
 function CartBadge() {
   const [items, setItems] = useState(0);
-  const channel = useChannel<ShopEvents>('shop');
-  const send = useSend(channel);
+  const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated' — never for our own posts.
-  useMessage(channel, 'cart-updated', (payload) => setItems(payload.items));
+  shop.useMessage('cart-updated', (payload) => setItems(payload.items));
 
   const addToCart = () => {
     setItems(items + 1); // 1. update this tab ourselves…
@@ -55,15 +59,21 @@ announces. If that ceremony feels wrong for your case, that's the signal the
 value should be [shared state](../hooks/use-shared-state.md) instead, where
 one setter updates every tab including yours.
 
-**The handler closes over `items` safely.** `useMessage` keeps your handler
-fresh across renders without resubscribing — no stale-closure bugs, no
-effect churn. Details in [`useMessage`](../hooks/use-message.md).
+**The handler closes over `items` safely.** `shop.useMessage` keeps your
+handler fresh across renders without resubscribing — no stale-closure bugs,
+no effect churn. Details in [`useMessage`](../hooks/use-message.md), which
+it delegates to.
 
 :::tip Still the litmus test
 A tab opened after `cart-updated` fired never hears it. Here that's fine —
 the badge is display sugar, and the cart's truth lives on the server. If a
 late joiner _must_ know, it's state, not a message.
 :::
+
+Prefer not to bind at module level? The standalone
+[`useChannel`](../hooks/use-channel.md) / [`useMessage`](../hooks/use-message.md) /
+[`useSend`](../hooks/use-send.md) hooks are the same machinery —
+`defineChannel` is sugar over them.
 
 ## Show who else is here
 
@@ -102,7 +112,7 @@ Every message handler receives a `meta` argument with the sender's
 across features, and it lets you write UI like this:
 
 ```tsx
-useMessage(channel, 'logged-out', (_payload, meta) => {
+shop.useMessage('logged-out', (_payload, meta) => {
   toast(`Signed out by tab ${meta.clientId.slice(0, 6)}`);
   window.location.assign('/login');
 });
@@ -110,8 +120,10 @@ useMessage(channel, 'logged-out', (_payload, meta) => {
 
 ## Where to next
 
+- [`defineChannel`](../hooks/define-channel.md) — the bound hooks used on
+  this page.
 - [`useChannel`](../hooks/use-channel.md), [`useMessage`](../hooks/use-message.md),
-  [`useSend`](../hooks/use-send.md) — the full reference for the trio.
+  [`useSend`](../hooks/use-send.md) — the standalone trio underneath.
 - [`usePeers`](../hooks/use-peers.md) / [`useClientId`](../hooks/use-client-id.md)
   — everything presence.
 - [Log out everywhere](./recipes.md#log-out-everywhere) — this page's
