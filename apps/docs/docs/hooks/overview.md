@@ -57,7 +57,7 @@ it's one dependency for everything — the engines the hooks are built on
 (`createSharedStore`, `createLeader`, …), the version clock (`newer`), the
 transports, and the debug seam. None of it needs React.
 
-That's its own section: **[Core API](../core/overview.md)**.
+That's its own section: **[Core (without React)](../core/overview.md)**.
 
 ## Where to next
 

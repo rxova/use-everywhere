@@ -80,7 +80,7 @@ function LiveFeed() {
 }
 ```
 
-Leadership is **advisory, not a distributed lock** — good for "don't open five sockets", not for guarding money. See [Limitations](https://rxova.github.io/use-everywhere/docs/under-the-hood/limitations).
+Leadership is **advisory, not a distributed lock** — good for "don't open five sockets", not for guarding money. See [Limitations](https://rxova.github.io/use-everywhere/under-the-hood/limitations).
 
 **A window on another origin.** Open it, hand it typed data, await its result.
 

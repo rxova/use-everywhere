@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Core API overview
+# Core without React
 
 The hooks are a thin React skin over an engine that doesn't know React exists.
 This section documents that engine — everything you can call from a worker, a

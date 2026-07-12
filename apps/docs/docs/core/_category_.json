@@ -1,5 +1,5 @@
 {
-  "label": "Core API",
+  "label": "Core (without React)",
   "position": 3,
   "link": {
     "type": "generated-index",
