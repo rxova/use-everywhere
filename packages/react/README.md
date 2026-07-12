@@ -38,32 +38,39 @@ useSharedState('draft', '', { scope: 'tabs' }); // ignore writes from workers
 useSharedState('draft', '', { scope: 'tab' }); // this tab only
 ```
 
-## Events: `useChannel` + `useMessage`
+## Events: `defineChannel`
 
 Typed fire-and-forget messages for things that _happen_ (state is for things
-that _are_). Not echoed to the sender; no history for late joiners.
+that _are_). Not echoed to the sender; no history for late joiners. Bind the
+channel's name and message map once at module level; every component gets
+fully typed hooks with nothing to repeat:
 
 ```tsx
-import { useChannel, useMessage } from 'use-everywhere';
+import { defineChannel } from 'use-everywhere';
 import { useState } from 'react';
 
 type ShopEvents = { 'cart-updated': { items: number } };
+const shop = defineChannel<ShopEvents>('shop');
 
 function CartBadge() {
   const [items, setItems] = useState(0);
-  const channel = useChannel<ShopEvents>('shop');
+  const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated'.
-  useMessage(channel, 'cart-updated', (payload) => setItems(payload.items));
+  shop.useMessage('cart-updated', (payload) => setItems(payload.items));
 
   const addToCart = () => {
-    setItems((n) => n + 1); // this tab
-    channel.post('cart-updated', { items: items + 1 }); // every other tab
+    setItems(items + 1); // this tab
+    send('cart-updated', { items: items + 1 }); // every other tab
   };
 
   return <button onClick={addToCart}>Cart ({items})</button>;
 }
 ```
+
+The standalone hooks — `useChannel(name)`, `useMessage(channel, type,
+handler)`, `useSend(channel)` — are the same machinery without the
+module-level binding, for one-off use.
 
 ## Presence: `usePeers`
 

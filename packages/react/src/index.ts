@@ -3,6 +3,8 @@ export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types
 export { getSharedStore, DEFAULT_NAME } from './registry.js';
 export type { AnyStore } from './registry.types.js';
 export { useChannel, useMessage, useSend } from './use-message.js';
+export { defineChannel } from './define-channel.js';
+export type { ChannelHooks } from './define-channel.types.js';
 export { usePeers, useClientId } from './use-peers.js';
 export { useOpenedWindow } from './use-opened-window.js';
 export type { UseOpenedWindow, OpenedWindowStatus } from './use-opened-window.types.js';
