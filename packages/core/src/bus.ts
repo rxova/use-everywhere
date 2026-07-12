@@ -1,5 +1,6 @@
 import type { BusOptions, Bus, BusWire, SharedBus } from './bus.types.js';
 import type { PeerKind } from './common.types.js';
+import { emitBusEvent } from './debug.js';
 import { newClientId } from './ids.js';
 import { defaultTransport } from './transport/default-transport.js';
 
@@ -22,12 +23,15 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
   let closed = false;
 
   const post = (wire: BusWire) => {
-    if (!closed) transport.post(wire);
+    if (closed) return;
+    emitBusEvent(name, 'out', wire);
+    transport.post(wire);
   };
 
   const unsubscribe = transport.subscribe((data) => {
     if (!isBusWire(data)) return;
     if (data.clientId === clientId) return;
+    emitBusEvent(name, 'in', data);
     // Introduce ourselves to joiners so they see existing peers immediately.
     if (data.scope === 'presence' && data.type === 'hello') {
       post({ v: 1, scope: 'presence', type: 'ping', clientId, kind });
@@ -78,6 +82,14 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
  * bus.release() exactly once when done. When a custom transport factory is
  * given (tests), every call creates an isolated bus — one call = one simulated client.
  */
+/**
+ * Names of the buses currently alive on this page. Buses built with a custom
+ * transport (tests) bypass the registry, so they are not listed.
+ */
+export function getBusNames(): string[] {
+  return [...registry.keys()];
+}
+
 export function getBus(name: string, options: BusOptions = {}): Bus {
   if (options.transport) {
     const bus = createBus(name, options, () => {});

@@ -84,6 +84,12 @@
       "path": "dist/index.js",
       "import": "{ MemoryHub }",
       "limit": "300 B"
+    },
+    {
+      "name": "observeBus + enableDebug",
+      "path": "dist/index.js",
+      "import": "{ observeBus, enableDebug }",
+      "limit": "500 B"
     }
   ],
   "devDependencies": {

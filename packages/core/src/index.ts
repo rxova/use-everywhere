@@ -17,6 +17,11 @@ export type {
 export { WindowClosedError } from './errors/window-closed-error.js';
 export { HandshakeTimeoutError } from './errors/handshake-timeout-error.js';
 export { newer } from './clock.js';
+export { DEFAULT_NAME } from './defaults.js';
+export { observeBus, enableDebug } from './debug.js';
+export { getBusNames } from './bus.js';
+export type { BusEvent, BusObserver, DebugOptions } from './debug.types.js';
+export type { BusWire } from './bus.types.js';
 export type { Transport } from './transport/transport.types.js';
 export { BroadcastChannelTransport } from './transport/broadcast-channel-transport.js';
 export { NoopTransport } from './transport/noop-transport.js';
