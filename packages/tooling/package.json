@@ -1,0 +1,18 @@
+{
+  "name": "@use-everywhere/tooling",
+  "version": "0.0.0",
+  "description": "Internal repo tooling for use-everywhere. Not published.",
+  "private": true,
+  "license": "MIT",
+  "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
+  }
+}
