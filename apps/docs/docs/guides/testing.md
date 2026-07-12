@@ -4,13 +4,15 @@ sidebar_position: 5
 
 # Testing
 
-Cross-tab behavior sounds hard to test — real BroadcastChannel needs a real
-origin, and `window.open` needs a real window. The library is built so that
-neither is true in practice: **every engine accepts an injected transport, and
-the window channel accepts injected windows.** The same seams the library's
-own test suite uses are public API.
+"Cross-tab behavior" sounds like something you'd need Playwright and three
+browser windows to test. Let me talk you out of that. The library is built so
+that **every engine accepts an injected transport, and the window channel
+accepts injected windows** — the same seams its own test suite uses are
+public API. In this guide we'll simulate five tabs in a unit test, put a real
+component next to a fake "other tab", and drive the whole cross-origin window
+lifecycle without opening a window.
 
-## Simulating many tabs in one test: `MemoryHub`
+## Simulate many tabs in one test: `MemoryHub`
 
 A `MemoryHub` is an in-process stand-in for the browser's channel: every
 transport connected to it receives every _other_ transport's posts,
@@ -34,20 +36,19 @@ it('two tabs converge', async () => {
 ```
 
 Each `createSharedStore` call with an injected transport is one simulated
-client — call it three times and you have three tabs. Passing `kind:
-'worker'` simulates a worker peer, which is how you test `scope: 'tabs'`
-filtering.
+client — call it three times and you have three tabs. Pass `kind: 'worker'`
+to simulate a worker peer; that's how you test `scope: 'tabs'` filtering.
 
 :::tip One tick is enough
 `MemoryHub` delivers on microtasks, so a single `await setTimeout(0)` flushes
 every pending message _including_ cascades (hello → snapshot → merge).
 :::
 
-## Testing React components
+## Test React components against a fake "other tab"
 
-Point the "other tab" at a real `BroadcastChannelTransport` and let your
-component use the default registry (happy-dom implements BroadcastChannel;
-jsdom does not):
+For component tests, let the component use the hooks as-is and create the
+"other tab" with an explicit real transport (happy-dom implements
+BroadcastChannel; jsdom does not):
 
 ```tsx
 import { BroadcastChannelTransport, createSharedStore } from 'use-everywhere';
@@ -73,13 +74,14 @@ it('updates when another tab writes', async () => {
 });
 ```
 
-Why the explicit transport on the peer? The hooks' registry shares one bus per
-name per environment — a second default client in the same test would _be_ the
-same client. An explicit transport factory creates an isolated client: a
-genuine "other tab" in one process.
+Why the explicit transport on the peer? The hooks' registry shares one bus
+per name per environment — a second default client in the same test would
+_be_ the same client. An explicit transport factory creates an isolated
+client: a genuine "other tab" in one process.
 
-Use distinct store names per test (`{ store: 't1' }`) — registry singletons
-live for the page, i.e. for the whole test file.
+One habit that will save you a debugging session: use distinct store names
+per test (`{ store: 't1' }`). Registry singletons live for the page — which
+in a test runner means the whole test file.
 
 ## Testing window flows without windows
 
@@ -107,13 +109,14 @@ conn.finish({ receiptId: 'r-1' });
 await expect(opened.result).resolves.toEqual({ receiptId: 'r-1' });
 ```
 
-This is how the library tests slow-loading children (queueing), forged
-messages (origin/nonce/source gates), popup blocking (`openFn: () => null`),
-and premature closes — all without a browser window.
+This is exactly how the library tests slow-loading children (queueing),
+forged messages (origin/nonce/source gates), popup blocking
+(`openFn: () => null`), and premature closes — all without a browser window.
+Your tests get the same superpowers.
 
-For React, `useOpenedWindow(factory)` takes any factory, so tests can return a
-hand-rolled fake `OpenedWindow` object with controllable promises and assert
-the full status machine: `idle → opening → connected → done`.
+For React, `useOpenedWindow(factory)` takes any factory, so tests can return
+a hand-rolled fake `OpenedWindow` object with controllable promises and
+assert the full status machine: `idle → opening → connected → done`.
 
 ## SSR
 
@@ -125,3 +128,12 @@ values. A one-line test keeps you honest:
 ```tsx
 expect(renderToString(<Widget />)).toContain('initial-value');
 ```
+
+## Where to next
+
+- [Recipes](./recipes.md) — patterns worth wrapping in exactly these kinds
+  of tests.
+- [`useOpenedWindow`](../hooks/use-opened-window.md) — the status machine
+  your fakes will be asserting.
+- [How sync works](../under-the-hood/how-sync-works.md) — what "hello →
+  snapshot → merge" actually does in that one awaited tick.

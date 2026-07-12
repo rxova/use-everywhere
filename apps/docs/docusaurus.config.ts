@@ -75,7 +75,7 @@ const config: Config = {
     navbar: {
       title: 'use-everywhere( )',
       items: [
-        { type: 'doc', docId: 'intro', position: 'left', label: 'Guides' },
+        { type: 'doc', docId: 'learn/getting-started', position: 'left', label: 'Docs' },
         { to: '/api/core', position: 'left', label: 'Core API' },
         { to: '/api/react', position: 'left', label: 'React API' },
         { href: 'https://github.com/rxova/use-everywhere', position: 'right', label: 'GitHub' },
