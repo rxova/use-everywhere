@@ -28,7 +28,7 @@ hook APIs. One class per file; types live in sibling `*.types.ts` files.
 ```bash
 pnpm install
 pnpm build          # build all workspaces (libraries first)
-pnpm test           # vitest with coverage — 90% per-file thresholds
+pnpm test           # vitest with coverage — 95% per-file thresholds
 pnpm typecheck
 pnpm lint
 pnpm format:check
@@ -46,9 +46,9 @@ pnpm --filter use-everywhere test
 ## Quality Gates
 
 The husky pre-commit hook runs `lint`, `typecheck`, `format:check`, and `test`.
-Coverage thresholds (90% statements/branches/functions/lines, enforced per
+Coverage thresholds (95% statements/branches/functions/lines, enforced per
 file) are part of the test run — new code needs tests, and CI runs the same
-gates on Node 20/22/24.
+gates on Node 22 and 24.
 
 ## Branching & Releases
 

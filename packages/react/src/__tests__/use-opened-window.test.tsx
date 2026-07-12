@@ -9,9 +9,11 @@ type Receipt = { receiptId: string };
 
 function fakeOpened() {
   let resolveReady!: () => void;
+  let rejectReady!: (err: unknown) => void;
   let resolveResult!: (r: Receipt) => void;
   let rejectResult!: (err: unknown) => void;
-  const ready = new Promise<void>((res) => (resolveReady = res));
+  const ready = new Promise<void>((res, rej) => ((resolveReady = res), (rejectReady = rej)));
+  ready.catch(() => {});
   const result = new Promise<Receipt>((res, rej) => ((resolveResult = res), (rejectResult = rej)));
   result.catch(() => {});
   const opened: OpenedWindow<Out, In, Receipt> = {
@@ -23,7 +25,7 @@ function fakeOpened() {
     on: vi.fn(() => () => {}),
     close: vi.fn(),
   };
-  return { opened, resolveReady, resolveResult, rejectResult };
+  return { opened, resolveReady, rejectReady, resolveResult, rejectResult };
 }
 
 function Harness({ factory }: { factory: () => OpenedWindow<Out, In, Receipt> }) {
@@ -119,6 +121,34 @@ describe('useOpenedWindow', () => {
     first.resolveReady();
     await flush();
     expect(status()).toBe('opening'); // still waiting on the second window
+  });
+
+  it('ignores a stale rejection after reopening', async () => {
+    const first = fakeOpened();
+    const second = fakeOpened();
+    const windows = [first, second];
+    render(<Harness factory={() => windows.shift()!.opened} />);
+
+    act(() => screen.getByTestId('open').click());
+    act(() => screen.getByTestId('open').click());
+
+    first.rejectResult(new WindowClosedError()); // the replaced window failing is noise
+    await flush();
+    expect(status()).toBe('opening');
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
+  it("a rejected ready is swallowed — the outcome arrives via result ('error')", async () => {
+    const fake = fakeOpened();
+    render(<Harness factory={() => fake.opened} />);
+    act(() => screen.getByTestId('open').click());
+
+    const blocked = new Error('popup blocked');
+    fake.rejectReady(blocked); // openWindow rejects both on popup block
+    fake.rejectResult(blocked);
+    await flush();
+
+    expect(status()).toBe('error');
   });
 
   it('forwards post/close to the current window and ignores a stale one on reopen', async () => {

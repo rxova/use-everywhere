@@ -204,6 +204,56 @@ describe('window-channel edge cases', () => {
     await expect(opened.closed).resolves.toBeUndefined();
   });
 
+  it('the child drops wrong-origin, wrong-cid, and unexpected wires', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    openWindow<{ down: number }, { up: number }, void>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const cid = new URL(openedUrl).searchParams.get(CID_PARAM)!;
+    const conn = connectToOpener<{ down: number }, { up: number }, void>({
+      peerOrigin: SHOP,
+      opener,
+      localWindow: child,
+      cid,
+    });
+    await tick();
+
+    const got: number[] = [];
+    conn.on('down', (n) => got.push(n));
+
+    const forged = { __ue: 1, cid, t: 'msg', type: 'down', payload: 99, msgId: 'x' };
+    child.injectMessage(forged, 'https://evil.example', opener); // wrong origin
+    child.injectMessage({ ...forged, cid: 'stolen' }, SHOP, opener); // wrong cid
+    child.injectMessage({ __ue: 1, cid, t: 'close' }, SHOP, opener); // wire type the child ignores
+    await tick();
+    expect(got).toEqual([]);
+
+    child.injectMessage(forged, SHOP, opener); // sanity: valid wire is accepted
+    expect(got).toEqual([99]);
+  });
+
+  it('the opener ignores wire types it never expects (a stray ready-ack)', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    const opened = openWindow<Record<string, never>, Record<string, never>, string>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const cid = new URL(openedUrl).searchParams.get(CID_PARAM)!;
+    connectToOpener({ peerOrigin: SHOP, opener, localWindow: child, cid });
+    await tick();
+
+    opener.injectMessage({ __ue: 1, cid, t: 'ready-ack' }, PAY, child); // opener never receives these
+
+    // channel still fully functional afterwards
+    opener.injectMessage({ __ue: 1, cid, t: 'result', payload: 'ok' }, PAY, child);
+    await expect(opened.result).resolves.toBe('ok');
+  });
+
   it('stays settled when close signals arrive twice', async () => {
     const { opener, child } = fakeWindowPair(SHOP, PAY);
     let openedUrl = '';

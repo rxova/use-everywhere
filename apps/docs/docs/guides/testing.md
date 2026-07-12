@@ -8,7 +8,7 @@ Cross-tab behavior sounds hard to test — real BroadcastChannel needs a real
 origin, and `window.open` needs a real window. The library is built so that
 neither is true in practice: **every engine accepts an injected transport, and
 the window channel accepts injected windows.** The same seams the library's
-own 88-test suite uses are public API.
+own test suite uses are public API.
 
 ## Simulating many tabs in one test: `MemoryHub`
 
