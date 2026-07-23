@@ -124,9 +124,14 @@ class of bug, gone. (For the full pattern with an owner id, see the
 - **Values must survive structured clone.** Plain objects, arrays, `Map`,
   `Set`, `Date`, typed arrays: fine. Functions, class instances, DOM nodes,
   React elements: not fine.
-- **Nothing is persisted.** Close the last tab and the value is gone. To keep
-  it, write through to `localStorage` and pass the stored value as `initial`
-  — [the pattern](../under-the-hood/limitations.md#state-does-not-survive-the-last-tab--unless-you-ask-it-to).
+- **Replace values, don't mutate them.** Syncing happens on assignment, not
+  in-place mutation: `setCart({ ...cart, items: 3 })` syncs;
+  `cart.items = 3` on a value you read does not. Development deep-freezes
+  shared values, so that mistake throws instead of failing silently —
+  [details](../guides/shared-state.md#replace-values-dont-mutate-them).
+- **Not persisted by default.** Close the last tab and the value is gone.
+  Opt in with [`defineStore`'s `persist`](./define-store.md) to keep it — with
+  its version clocks, so it re-hydrates correctly.
 - **Subscriptions are per key.** Components using the same key (and store and
   scope) share one subscription, and a `note` update never re-renders `count`
   consumers.
