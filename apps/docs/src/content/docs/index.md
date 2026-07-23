@@ -27,6 +27,33 @@ pnpm add use-everywhere        # React hooks (re-exports the full core)
 If you're not using React, `@use-everywhere/core` is the same engine with no
 framework attached — everything in these docs that isn't a hook lives there.
 
+Both packages ship **ESM and CommonJS**, so they resolve whether your toolchain
+uses `import` or `require` — including Jest and other CJS setups, no
+`transformIgnorePatterns` gymnastics required.
+
+### Next.js (App Router) and React Server Components
+
+The hooks are client-only — they use `useSyncExternalStore` and
+`BroadcastChannel`, neither of which exists on the server. The package entry is
+already marked `'use client'`, so importing the hooks never triggers a "you're
+importing a Server Component" error from inside the library. You still call them
+from your own **Client Component** — the one file that reads shared state needs
+`'use client'` at the top, same as any file using `useState`:
+
+```tsx title="app/counter.tsx"
+'use client';
+import { useSharedState } from 'use-everywhere';
+
+export function Counter() {
+  const [count, setCount] = useSharedState('count', 0);
+  return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
+}
+```
+
+Render `<Counter />` from any Server Component. Nothing renders shared state on
+the server: on the server the hooks return your `initial` value via
+`getServerSnapshot`, and the tabs converge the moment the client mounts.
+
 ## Make a counter that doesn't live in one tab
 
 Swap `useState` for `useSharedState` and give the value a key:
