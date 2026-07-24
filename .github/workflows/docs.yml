@@ -1,4 +1,10 @@
-name: Deploy docs to GitHub Pages
+name: Docs
+
+# Docs are published as part of rxova.org (the rxova/rxova-website aggregator),
+# not from this repo. On push to main we build the docs to catch breakage, then
+# notify the aggregator to rebuild rxova.org/packages/use-everywhere.
+# Requires secret AGGREGATOR_DISPATCH_TOKEN (fine-grained PAT with Contents:
+# write on rxova/rxova-website).
 
 on:
   push:
@@ -7,12 +13,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -24,16 +24,17 @@ jobs:
       # Build the libraries first: TypeDoc resolves use-everywhere -> core through dist types.
       - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
       - run: pnpm --filter @use-everywhere/docs build
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: apps/docs/build
 
-  deploy:
+  notify-website:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
+      - name: Trigger rxova.org rebuild
+        continue-on-error: true
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.AGGREGATOR_DISPATCH_TOKEN }}
+          repository: rxova/rxova-website
+          event-type: docs-use-everywhere
+          client-payload: '{"ref": "${{ github.sha }}"}'

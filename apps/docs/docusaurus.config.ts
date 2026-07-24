@@ -21,8 +21,10 @@ const config: Config = {
   tagline: 'State and messages that exist in every tab, window, and worker',
   favicon: 'img/favicon.svg',
 
-  url: 'https://rxova.github.io',
-  baseUrl: '/use-everywhere/',
+  // Defaults keep the standalone build working; the rxova.org aggregator sets
+  // DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/use-everywhere/.
+  url: process.env.DOCS_URL ?? 'https://rxova.github.io',
+  baseUrl: process.env.DOCS_BASE_URL ?? '/use-everywhere/',
   organizationName: 'rxova',
   projectName: 'use-everywhere',
   trailingSlash: false,
