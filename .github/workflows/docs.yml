@@ -9,6 +9,13 @@ name: Docs
 on:
   push:
     branches: [main]
+  # Docs breakage should fail the PR that causes it, not the aggregator deploy
+  # that ships it — a red rxova.org build blocks every project on the site.
+  pull_request:
+    paths:
+      - 'apps/docs/**'
+      - 'packages/*/src/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,11 +30,25 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Build the libraries first: TypeDoc resolves use-everywhere -> core through dist types.
       - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
-      - run: pnpm --filter @use-everywhere/docs build
+
+      # The two mermaid diagrams are rendered to static SVG at build time by
+      # rehype-mermaid, which drives headless chromium. Without this the build
+      # fails rather than silently degrading.
+      - run: pnpm --filter @use-everywhere/docs exec playwright install --with-deps chromium
+
+      # Build at the path the aggregator actually serves these docs from.
+      # Absolute references that only work at the domain root are invisible in a
+      # root build and break silently once mounted. starlight-links-validator
+      # runs as part of the build and fails on any broken internal link.
+      - name: Build docs at the aggregator base path
+        env:
+          DOCS_URL: https://rxova.org
+          DOCS_BASE_URL: /packages/use-everywhere/
+        run: pnpm --filter @use-everywhere/docs build
 
   notify-website:
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger rxova.org rebuild

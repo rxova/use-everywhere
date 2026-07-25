@@ -10,7 +10,7 @@
     "size": "pnpm -r size",
     "changeset:pkg": "node --import tsx ./packages/tooling/create-package-changeset.ts",
     "dev": "pnpm --filter @use-everywhere/demo dev",
-    "docs": "pnpm --filter @use-everywhere/docs start",
+    "docs": "pnpm --filter @use-everywhere/docs dev",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

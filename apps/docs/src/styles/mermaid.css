@@ -1,0 +1,94 @@
+/**
+ * Theme-aware mermaid diagrams.
+ *
+ * rehype-mermaid renders diagrams to SVG at build time, which is what keeps the
+ * output a static tree with no client-side mermaid bundle — but it also means
+ * one rendering has to serve both colour schemes. Mermaid bakes its default
+ * light palette into a <style> block inside each SVG, so a diagram that looks
+ * right on paper glares on the dark theme.
+ *
+ * Mermaid scopes its internal <style> with an id selector (`#mermaid-0 .node
+ * rect`), which outranks any class-based rule a page can write — so the colour
+ * declarations here need !important. That is the whole reason for it; nothing
+ * else in this file is fighting a specificity war.
+ *
+ * Restyling with --rx-* tokens makes the diagrams follow the theme toggle for
+ * free, because the tokens themselves flip.
+ *
+ * TODO: hoist into @rxova/brand — journey and react-inputs both have mermaid
+ * diagrams and will want exactly this.
+ */
+
+.sl-markdown-content svg[aria-roledescription] {
+  max-width: 100%;
+  height: auto;
+  /* Mermaid sizes the viewBox to the diagram; let it breathe on the page. */
+  margin-block: 1.5rem;
+}
+
+/* Node and cluster surfaces. */
+.sl-markdown-content svg[aria-roledescription] .node rect,
+.sl-markdown-content svg[aria-roledescription] .node circle,
+.sl-markdown-content svg[aria-roledescription] .node polygon,
+.sl-markdown-content svg[aria-roledescription] .node path,
+.sl-markdown-content svg[aria-roledescription] .label-container {
+  fill: var(--rx-card) !important;
+  stroke: var(--rx-rule-strong) !important;
+}
+
+.sl-markdown-content svg[aria-roledescription] .cluster rect {
+  fill: color-mix(in srgb, var(--rx-tag-bg) 60%, transparent) !important;
+  stroke: var(--rx-rule) !important;
+}
+
+/* All text: labels, cluster titles, edge labels, actor names. */
+.sl-markdown-content svg[aria-roledescription] text,
+.sl-markdown-content svg[aria-roledescription] .nodeLabel,
+.sl-markdown-content svg[aria-roledescription] .edgeLabel,
+.sl-markdown-content svg[aria-roledescription] .cluster-label,
+.sl-markdown-content svg[aria-roledescription] .messageText,
+.sl-markdown-content svg[aria-roledescription] .loopText {
+  fill: var(--rx-fg) !important;
+  color: var(--rx-fg) !important;
+}
+
+/* Edge labels sit on an opaque plate so connector lines don't run through the
+   text. Mermaid renders these as HTML inside a <foreignObject>, not as SVG
+   shapes, so the plate is a CSS background on a nested span rather than a rect
+   fill — both have to be covered. */
+.sl-markdown-content svg[aria-roledescription] .edgeLabel,
+.sl-markdown-content svg[aria-roledescription] .edgeLabel *,
+.sl-markdown-content svg[aria-roledescription] .labelBkg {
+  background-color: var(--rx-bg) !important;
+  color: var(--rx-fg) !important;
+}
+
+.sl-markdown-content svg[aria-roledescription] .edgeLabel rect,
+.sl-markdown-content svg[aria-roledescription] .labelBkg rect {
+  fill: var(--rx-bg) !important;
+}
+
+/* Connectors. */
+.sl-markdown-content svg[aria-roledescription] .edgePath path,
+.sl-markdown-content svg[aria-roledescription] .flowchart-link,
+.sl-markdown-content svg[aria-roledescription] line,
+.sl-markdown-content svg[aria-roledescription] .messageLine0,
+.sl-markdown-content svg[aria-roledescription] .messageLine1 {
+  stroke: var(--rx-faint) !important;
+}
+
+.sl-markdown-content svg[aria-roledescription] marker path,
+.sl-markdown-content svg[aria-roledescription] .arrowMarkerPath {
+  fill: var(--rx-faint) !important;
+  stroke: var(--rx-faint) !important;
+}
+
+/* Sequence-diagram participant boxes and lifelines. */
+.sl-markdown-content svg[aria-roledescription='sequence'] .actor {
+  fill: var(--rx-card) !important;
+  stroke: var(--rx-rule-strong) !important;
+}
+
+.sl-markdown-content svg[aria-roledescription='sequence'] .actor-line {
+  stroke: var(--rx-rule-strong) !important;
+}
