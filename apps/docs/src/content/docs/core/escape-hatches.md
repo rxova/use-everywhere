@@ -32,7 +32,7 @@ getSharedStore('session').set('loggedIn', false);
 `DEFAULT_NAME` is the string the hooks default to (`'use-everywhere'`), exported
 so you can target the same bus without hard-coding it.
 
-:::caution `defineStore` must come first
+:::caution[`defineStore` must come first]
 If a store needs [persistence](../hooks/define-store.md), `defineStore` has to
 run before anything creates it — and `getSharedStore(name)` **creates it**. Call
 `defineStore` at module scope. If it runs too late it throws, rather than

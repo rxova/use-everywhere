@@ -47,7 +47,7 @@ Both tabs picked the same winner _without talking to each other_. And a
 third tab receiving those two patches in **either order** also lands on
 `"from B"` — convergence never depends on delivery order.
 
-:::note What LWW means for you
+:::note[What LWW means for you]
 Tab A's write was _discarded_, not merged. For a counter, a form field, or a
 status flag, that's exactly right. For collaborative text editing it's not —
 that problem needs CRDTs or OT, which is

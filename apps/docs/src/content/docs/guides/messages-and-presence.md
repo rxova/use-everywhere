@@ -64,7 +64,7 @@ handler fresh across renders without resubscribing — no stale-closure bugs,
 no effect churn. Details in [`useMessage`](../hooks/use-message.md), which
 it delegates to.
 
-:::tip Still the litmus test
+:::tip[Still the litmus test]
 A tab opened after `cart-updated` fired never hears it. Here that's fine —
 the badge is display sugar, and the cart's truth lives on the server. If a
 late joiner _must_ know, it's state, not a message.

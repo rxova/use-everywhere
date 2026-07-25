@@ -64,6 +64,7 @@ const yamlString = (s) => `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 
 let lifted = 0
 let asidesMapped = 0
+let asideTitles = 0
 
 for (const file of walk(SRC)) {
   const raw = readFileSync(file, 'utf8')
@@ -80,12 +81,19 @@ for (const file of walk(SRC)) {
   }
   if (!title) throw new Error(`${file}: no title and no H1 to lift`)
 
-  // 2. Map the asides Starlight does not have.
-  body = body.replace(/^:::(\w+)/gm, (whole, kind) => {
-    const mapped = ASIDES[kind]
-    if (!mapped) return whole
-    asidesMapped++
-    return `:::${mapped}`
+  // 2. Map the asides Starlight does not have, and convert titled asides.
+  //
+  // Docusaurus writes the title as bare text after the type (`:::tip Some
+  // title`); Starlight wants it bracketed (`:::tip[Some title]`). Getting this
+  // wrong does not fail the build — remark simply does not recognise the
+  // directive, and the whole block collapses into a paragraph of literal
+  // `:::tip ... :::` text on the page.
+  body = body.replace(/^:::(\w+)([ \t]+(?!\[)(.+?))?[ \t]*$/gm, (whole, kind, _sp, rawTitle) => {
+    const mapped = ASIDES[kind] ?? kind
+    if (!ASIDES[kind] && !rawTitle) return whole
+    if (ASIDES[kind]) asidesMapped++
+    if (rawTitle) asideTitles++
+    return rawTitle ? `:::${mapped}[${rawTitle}]` : `:::${mapped}`
   })
 
   const front = [`title: ${yamlString(title.replace(/`/g, ''))}`]
@@ -107,3 +115,4 @@ for (const file of walk(SRC)) {
 console.log(`migrated ${walk(SRC).length} files`)
 console.log(`  titles lifted from H1: ${lifted}`)
 console.log(`  asides remapped:       ${asidesMapped}`)
+console.log(`  aside titles bracketed:${asideTitles}`)

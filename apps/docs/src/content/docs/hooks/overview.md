@@ -44,7 +44,7 @@ Three things hold for all of them:
 Not sure whether something belongs in state or in an event? Same test as
 always:
 
-:::tip The litmus test
+:::tip[The litmus test]
 If a tab opened later needs to know it, it's **state** —
 [`useSharedState`](./use-shared-state.md). If only currently-open tabs care,
 it's an **event** — [`useMessage`](./use-message.md).

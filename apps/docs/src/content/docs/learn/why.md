@@ -96,7 +96,7 @@ app — which is exactly what a library should absorb.
 I'd rather have something that wraps those primitives nicely, so that's
 what this is:
 
-:::tip The spec, in one sentence
+:::tip[The spec, in one sentence]
 One object. Every tab. Writes anywhere show up everywhere, tabs opened later
 see the current value, and simultaneous writes don't split-brain.
 :::

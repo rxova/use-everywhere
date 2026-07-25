@@ -39,7 +39,7 @@ Each `createSharedStore` call with an injected transport is one simulated
 client — call it three times and you have three tabs. Pass `kind: 'worker'`
 to simulate a worker peer; that's how you test `scope: 'tabs'` filtering.
 
-:::tip One tick is enough
+:::tip[One tick is enough]
 `MemoryHub` delivers on microtasks, so a single `await setTimeout(0)` flushes
 every pending message _including_ cascades (hello → snapshot → merge).
 :::
@@ -164,7 +164,7 @@ await vi.advanceTimersByTimeAsync(4000); // past the 3s lease
 expect(survivor.getSnapshot().isLeader).toBe(true);
 ```
 
-:::caution Don't use fake timers for the React hooks
+:::caution[Don't use fake timers for the React hooks]
 Fake timers, `act()`, and BroadcastChannel's async delivery interact badly.
 For `useLeader` component tests, pass short **real** timings instead —
 `{ heartbeatMs: 20, leaseMs: 60 }` — and await real `setTimeout`s. The suite

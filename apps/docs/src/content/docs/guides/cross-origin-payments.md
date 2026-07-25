@@ -133,7 +133,7 @@ confused-deputy bug waiting to happen. Messages only do what your explicit,
 typed handler does. **Across trust boundaries, explicit beats magic** — and
 the payment flow is request/result shaped anyway.
 
-:::note UX lock ≠ security
+:::note[UX lock ≠ security]
 Pairing this flow with the [single-flight lock](./recipes.md#the-duplicate-tab-lock-single-flight)
 prevents _accidental_ double payment across tabs. Real payment safety still
 requires server-side idempotency keys.
