@@ -25,7 +25,7 @@ The one same-origin knob is _filtering_, not security: `scope: 'tabs'` (or a
 custom `accept` predicate on `createSharedStore`) lets a store ignore writes
 from workers. That's a coordination tool — a worker is still your code.
 
-:::caution Don't put secrets in shared state
+:::caution[Don't put secrets in shared state]
 State is broadcast to every context on the origin and lives in plain JS
 memory. Treat it like you treat React state — fine for UI status, wrong for
 raw card numbers or tokens that deserve tighter handling.

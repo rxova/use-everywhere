@@ -10,7 +10,7 @@ cross-tab APIs are good but low-level, and there was no `useState`-shaped
 way to use them — the full reasoning is in [Why this exists](./why.md). The
 pitch fits in one sentence:
 
-:::tip The promise
+:::tip[The promise]
 One object. Every tab. Writes anywhere show up everywhere, tabs opened later
 see the current value, and simultaneous writes don't split-brain.
 :::
@@ -83,7 +83,7 @@ one charge and two.
 
 When you're torn between the first two, use this test:
 
-:::tip The litmus test
+:::tip[The litmus test]
 If a tab opened later needs to know it, it's **state**. If only
 currently-open tabs care, it's an **event**.
 :::

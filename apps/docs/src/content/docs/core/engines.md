@@ -108,7 +108,7 @@ createChannel('name', {
 `kind` defaults to `'tab'`, or `'worker'` when there's no `document`. It's what
 `accept` and `usePeers` filter on.
 
-:::caution One engine per name per tab
+:::caution[One engine per name per tab]
 Two stores with the same name in one tab would share a bus and a `clientId`, and
 a post is never looped back locally — so they would be **deaf to each other**.
 The React registry memoises for exactly this reason. Outside React, create one

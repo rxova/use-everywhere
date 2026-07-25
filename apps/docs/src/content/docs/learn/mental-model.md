@@ -113,7 +113,7 @@ answering a different question:
 - **Presence** ([`usePeers`](../hooks/use-peers.md)) — _"who else is here?"_
   A live list of peer `{ id, kind }`, maintained by heartbeats.
 
-:::tip The litmus test
+:::tip[The litmus test]
 If a late-joining tab must know it, it is **state**. If only currently-open
 tabs care, it is a **message**.
 :::
