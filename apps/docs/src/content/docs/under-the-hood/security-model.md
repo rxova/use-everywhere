@@ -1,5 +1,5 @@
 ---
-title: "Security model"
+title: 'Security model'
 sidebar:
   order: 2
 ---

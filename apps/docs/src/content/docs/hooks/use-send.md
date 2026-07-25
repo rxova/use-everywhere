@@ -1,5 +1,5 @@
 ---
-title: "useSend"
+title: 'useSend'
 sidebar:
   order: 5
 ---

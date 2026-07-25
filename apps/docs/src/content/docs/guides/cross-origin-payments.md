@@ -1,5 +1,5 @@
 ---
-title: "Cross-origin payments"
+title: 'Cross-origin payments'
 sidebar:
   order: 3
 ---

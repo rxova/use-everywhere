@@ -1,5 +1,5 @@
 ---
-title: "How sync works"
+title: 'How sync works'
 sidebar:
   order: 1
 ---

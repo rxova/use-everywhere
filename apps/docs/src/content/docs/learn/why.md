@@ -1,5 +1,5 @@
 ---
-title: "Why this exists"
+title: 'Why this exists'
 sidebar:
   order: 2
 ---

@@ -1,5 +1,5 @@
 ---
-title: "The mental model"
+title: 'The mental model'
 sidebar:
   order: 3
 ---

@@ -1,5 +1,5 @@
 ---
-title: "Messages & presence"
+title: 'Messages & presence'
 sidebar:
   order: 2
 ---

@@ -1,5 +1,5 @@
 ---
-title: "Core without React"
+title: 'Core without React'
 sidebar:
   order: 1
 ---

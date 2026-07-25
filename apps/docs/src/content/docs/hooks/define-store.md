@@ -1,5 +1,5 @@
 ---
-title: "defineStore"
+title: 'defineStore'
 sidebar:
   order: 11
 ---

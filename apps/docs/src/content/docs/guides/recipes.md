@@ -1,5 +1,5 @@
 ---
-title: "Recipes"
+title: 'Recipes'
 sidebar:
   order: 4
 ---

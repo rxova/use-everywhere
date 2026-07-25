@@ -1,5 +1,5 @@
 ---
-title: "Inspector"
+title: 'Inspector'
 sidebar:
   order: 12
 ---

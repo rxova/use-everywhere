@@ -1,5 +1,5 @@
 ---
-title: "The version clock"
+title: 'The version clock'
 sidebar:
   order: 3
 ---
