@@ -4,6 +4,9 @@ packages:
 allowBuilds:
   core-js: false
   esbuild: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - '@rxova/brand'
 # Transitive deps pulled in by Docusaurus/webpack that lag behind their
 # security patches. Drop an entry once the upstream range covers it.
 overrides:
