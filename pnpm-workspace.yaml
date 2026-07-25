@@ -4,3 +4,10 @@ packages:
 allowBuilds:
   core-js: false
   esbuild: true
+# Transitive deps pulled in by Docusaurus/webpack that lag behind their
+# security patches. Drop an entry once the upstream range covers it.
+overrides:
+  brace-expansion: ^5.0.8
+  esbuild: ^0.28.1
+  serialize-javascript: ^7.0.7
+  uuid: ^14.0.1
