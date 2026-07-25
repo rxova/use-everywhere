@@ -1,5 +1,5 @@
 ---
-title: "defineChannel"
+title: 'defineChannel'
 sidebar:
   order: 6
 ---

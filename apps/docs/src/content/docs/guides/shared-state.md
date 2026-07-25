@@ -1,5 +1,5 @@
 ---
-title: "Shared state"
+title: 'Shared state'
 sidebar:
   order: 1
 ---

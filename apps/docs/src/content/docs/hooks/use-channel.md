@@ -1,5 +1,5 @@
 ---
-title: "useChannel"
+title: 'useChannel'
 sidebar:
   order: 3
 ---

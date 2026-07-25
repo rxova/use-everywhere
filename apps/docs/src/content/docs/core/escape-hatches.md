@@ -1,5 +1,5 @@
 ---
-title: "Escape hatches"
+title: 'Escape hatches'
 sidebar:
   order: 6
 ---

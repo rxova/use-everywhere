@@ -1,16 +1,16 @@
-import { defineConfig } from 'astro/config'
-import starlight from '@astrojs/starlight'
-import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc'
-import starlightLinksValidator from 'starlight-links-validator'
-import rehypeMermaid from 'rehype-mermaid'
-import { sharedStarlightConfig } from '@rxova/brand'
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
+import starlightLinksValidator from 'starlight-links-validator';
+import rehypeMermaid from 'rehype-mermaid';
+import { sharedStarlightConfig } from '@rxova/brand';
 
 /**
  * Defaults keep the standalone build working; the rxova.org aggregator sets
  * DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/use-everywhere/.
  */
-const site = process.env.DOCS_URL ?? 'https://rxova.org'
-const base = process.env.DOCS_BASE_URL ?? '/'
+const site = process.env.DOCS_URL ?? 'https://rxova.org';
+const base = process.env.DOCS_BASE_URL ?? '/';
 
 /**
  * Three TypeDoc instances rather than one with three entry points — the same
@@ -25,7 +25,7 @@ const typeDocDefaults = {
     parametersFormat: 'table',
     enumMembersFormat: 'table',
   },
-}
+};
 
 export default defineConfig({
   site,
@@ -62,6 +62,14 @@ export default defineConfig({
           typeDocSidebarGroup,
         ],
       }),
+
+      // Overrides the shared default of '/favicon.svg'. There is no vector
+      // rxova mark yet — only the logo PNGs — so this site ships a downscaled
+      // PNG generated from @rxova/brand's asset. Starlight resolves `favicon`
+      // against this site's own public/ directory, so it cannot be served from
+      // the package. Drop this line once @rxova/brand ships a mark the shared
+      // config can point at directly.
+      favicon: '/favicon.png',
       plugins: [
         starlightTypeDoc({
           ...typeDocDefaults,
@@ -92,4 +100,4 @@ export default defineConfig({
       ],
     }),
   ],
-})
+});

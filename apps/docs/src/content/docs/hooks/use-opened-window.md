@@ -1,5 +1,5 @@
 ---
-title: "useOpenedWindow"
+title: 'useOpenedWindow'
 sidebar:
   order: 9
 ---

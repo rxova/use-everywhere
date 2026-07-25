@@ -1,5 +1,5 @@
 ---
-title: "usePeers"
+title: 'usePeers'
 sidebar:
   order: 7
 ---
