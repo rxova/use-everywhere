@@ -1,7 +1,16 @@
 {
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
-    "baseUrl": "."
+    // @docusaurus/tsconfig still sets `baseUrl`, which TS 6 deprecates. We
+    // can't drop it from a config we don't own, so silence it here; remove
+    // this once Docusaurus ships a TS 7-ready base config.
+    "ignoreDeprecations": "6.0",
+    // Re-roots the inherited `@site/*` alias onto this directory. Declared
+    // locally rather than via `baseUrl`, which TS 7 drops: since TS 5,
+    // `paths` resolves relative to the tsconfig that declares it.
+    "paths": {
+      "@site/*": ["./*"]
+    }
   },
   "include": ["docusaurus.config.ts", "sidebars.ts", "src"],
   "exclude": ["build", ".docusaurus"]
