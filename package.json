@@ -4,19 +4,33 @@
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
-    "size": "pnpm -r size",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "size": "turbo run size",
     "changeset:pkg": "node --import tsx ./packages/tooling/create-package-changeset.ts",
-    "dev": "pnpm --filter @use-everywhere/demo dev",
-    "docs": "pnpm --filter @use-everywhere/docs dev",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "dev": "turbo run dev --filter=@use-everywhere/demo",
+    "docs": "turbo run dev --filter=@use-everywhere/docs",
+    "docs:build": "turbo run build --filter=@use-everywhere/docs",
+    "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/.eslintcache",
+    "lint:fix": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/.eslintcache",
+    "format": "prettier --write . --cache --cache-location node_modules/.cache/prettier/.prettiercache",
+    "format:check": "prettier --check . --cache --cache-location node_modules/.cache/prettier/.prettiercache",
+    "audit:check": "pnpm audit --audit-level=high",
+    "dedupe:check": "pnpm dedupe --check",
+    "verify": "node scripts/verify.mjs",
     "prepare": "husky",
-    "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "libs:build": "turbo run build --filter=@use-everywhere/core --filter=use-everywhere",
+    "e2e": "pnpm run libs:build && playwright test",
+    "e2e:ui": "pnpm run libs:build && playwright test --ui",
+    "e2e:install": "playwright install --with-deps chromium"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,jsonc,css,md,mdx,yaml,yml}": "prettier --write"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
@@ -28,8 +42,10 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
+    "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.1",
+    "turbo": "^2.10.6",
     "typescript-eslint": "^8.65.0"
   }
 }

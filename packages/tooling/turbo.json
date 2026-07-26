@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    // This package's tests are plain `vitest run` — no coverage thresholds, so
+    // no coverage/ directory. Inheriting the root's `outputs: ["coverage/**"]`
+    // makes Turbo warn about a missing output on every run, and a task whose
+    // declared outputs never appear is one whose cache restores nothing.
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
+  }
+}
