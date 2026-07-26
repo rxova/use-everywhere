@@ -1,0 +1,78 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalDependencies": ["tsconfig.base.json", ".nvmrc"],
+  "globalPassThroughEnv": ["PLAYWRIGHT_BROWSERS_PATH", "CI"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      // A library build only reads src + build config. Excluding tests, e2e and
+      // docs-adjacent files keeps editing them from busting the build cache —
+      // they cannot affect dist. $TURBO_DEFAULT$ keeps the normal file set.
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!e2e/**",
+        "!**/__tests__/**",
+        "!**/*.test.*",
+        "!README.md",
+        "!CHANGELOG.md"
+      ],
+      "outputLogs": "new-only"
+    },
+    // `^build` on all three: dependents typecheck, test and measure against the
+    // libraries' emitted .d.ts and dist, which is why every CI job used to open
+    // with an explicit `pnpm --filter core --filter use-everywhere build`.
+    // Declaring it here means a package added later inherits the guarantee
+    // instead of silently running against stale or absent output.
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "outputLogs": "new-only"
+    },
+    // Reads the package's own dist, not its dependencies' — `build`, not `^build`.
+    "size": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    // A root task (`//#`): `pnpm dedupe --check` reads the whole workspace in one
+    // pass from the root, so there is nothing to fan out. It is a pure function
+    // of the dependency graph, so keying the cache on exactly the files that feed
+    // it means source edits replay it while any manifest change re-runs it.
+    //
+    // Deliberately NOT applied to audit:check: its result depends on the upstream
+    // advisory database, which changes without any file here changing, so a
+    // cached pass could replay over a newly-disclosed CVE.
+    "//#dedupe:check": {
+      "outputs": [],
+      "inputs": [
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "package.json",
+        "packages/*/package.json",
+        "apps/*/package.json"
+      ],
+      "outputLogs": "new-only"
+    },
+    // No `e2e` task: Playwright is configured once at the repo root
+    // (playwright.config.ts, testDir ./e2e) rather than per package, so there is
+    // nothing to fan out. The root `e2e` script builds the two libraries through
+    // Turbo first — the demo app the webServer serves imports them — and then
+    // shells out to playwright directly. It is never cacheable anyway: it drives
+    // a real browser against a dev server it starts itself.
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

@@ -13,4 +13,9 @@ overrides:
   brace-expansion: ^5.0.8
   esbuild: ^0.28.1
   serialize-javascript: ^7.0.7
+  # GHSA-f88m-g3jw-g9cj: sharp <0.35.0 inherits four libvips CVEs. Astro pins the
+  # 0.34 line and all 16 paths reach it through the docs site's Astro, so the fix
+  # has to be forced from the root. Dev-only — sharp runs during the docs build
+  # and is in neither published package. Drop once Astro depends on >=0.35.0.
+  sharp: '>=0.35.0'
   uuid: ^14.0.1

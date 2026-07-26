@@ -13,3 +13,6 @@ apps/docs/src/content/docs/api/**
 # Playwright
 test-results/
 playwright-report/
+
+# turbo's local task cache
+.turbo/

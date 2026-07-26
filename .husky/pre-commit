@@ -1,1 +1,7 @@
-pnpm lint && pnpm typecheck && pnpm format:check && pnpm test
+#!/usr/bin/env sh
+set -e
+
+# Staged files only. The full gate (audit, dedupe, build, typecheck, test, size)
+# runs on push instead — see .husky/pre-push and scripts/verify.mjs. Running the
+# whole test suite here made every commit slow enough to invite --no-verify.
+pnpm exec lint-staged

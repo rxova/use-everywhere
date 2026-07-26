@@ -7,6 +7,11 @@ on:
       - 'apps/docs/**'
       - '**/*.md'
   pull_request:
+    # `labeled`/`unlabeled` matter: the changeset gate's documented escape hatch
+    # is the `skip-changeset` label, and without these the label lands on a PR
+    # whose checks never re-run — so the hatch only worked via a manual re-run.
+    # Matches rxova/brand.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths-ignore:
       - 'apps/docs/**'
       - '**/*.md'
@@ -42,17 +47,33 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      # Libraries must be built first: dependents typecheck against dist types.
-      - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
       - name: Lint
         run: pnpm lint
       - name: Check formatting
         run: pnpm format:check
-      - name: Typecheck
-        run: pnpm typecheck
-      - name: Size budgets
-        run: pnpm size
+      # One invocation: Turbo knows dependents typecheck and measure against the
+      # libraries' dist, so it builds them first. This replaces the explicit
+      # `pnpm --filter core --filter use-everywhere build` that every job used to
+      # open with, and replays whatever this commit did not touch.
+      - name: Build, typecheck and size budgets
+        run: pnpm exec turbo run build typecheck size
+
+  supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
+      - run: pnpm install --frozen-lockfile
+      # Both are in the local pre-push gate too (scripts/verify.mjs). Running
+      # them here as well is what keeps a stale local checkout from being the
+      # only thing between a newly-disclosed advisory and a release.
+      - name: Audit dependencies
+        run: pnpm run audit:check
+      - name: Check dependency dedupe
+        run: pnpm run dedupe:check
 
   e2e:
     # The assertions unit tests cannot make: a real BroadcastChannel, real tabs,
@@ -62,10 +83,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
       - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm run e2e:install
+      # `pnpm e2e` builds the two libraries through Turbo first — the demo app
+      # Playwright's webServer serves imports them — then runs the suite.
       - name: End-to-end
         run: pnpm e2e
       - uses: actions/upload-artifact@v7
@@ -86,7 +109,12 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ matrix.node-version }}
+      # Deliberately no turbo-cache here. Turbo hashes files and env, not the
+      # Node binary, and the cache action keys on `github.job` — which is the
+      # same string for every leg of a matrix. Both legs would share one cache,
+      # so node 24 could replay a result computed under node 22, which is
+      # exactly what this matrix exists to prevent.
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
+      # `test` depends on `^build`, so Turbo builds the libraries first.
       - name: Test with coverage thresholds
         run: pnpm test
