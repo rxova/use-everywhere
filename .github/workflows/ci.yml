@@ -5,9 +5,9 @@ on:
   # commit being released, so a push to main that skipped CI would never publish.
   # `.changeset/*.md` matches `**/*.md`, which means the one push most likely to
   # need a release — a merge whose only new file is a changeset — is exactly the
-  # one that would have been skipped.
+  # one that would have been skipped. Pull requests keep the filter.
   push:
-    branches: [main, development]
+    branches: [main]
   pull_request:
     # `labeled`/`unlabeled` matter: the changeset gate's documented escape hatch
     # is the `skip-changeset` label, and without these the label lands on a PR

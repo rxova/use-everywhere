@@ -138,7 +138,7 @@ The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/paymen
 
 ## Contributing & releases
 
-`main` always represents the latest version published to npm; day-to-day work happens on `development`. Merging `development` into `main` triggers the release automation, which applies pending [changesets](https://github.com/changesets/changesets), publishes to npm with provenance, and tags the release. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`main` always represents the latest version published to npm — branch off it, PR back into it. Once CI passes on a merge, the release automation applies pending [changesets](https://github.com/changesets/changesets), publishes to npm with provenance, and tags the release. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

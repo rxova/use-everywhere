@@ -1,8 +1,8 @@
 name: Release
 
-# Merging development into main versions and publishes the packages, so main
-# always points at the latest published release. Bumps come from pending
-# changesets (pnpm changeset): patch / minor / major per package.
+# Merging a PR into main versions and publishes the packages, so main always
+# points at the latest published release. Bumps come from pending changesets
+# (pnpm changeset): patch / minor / major per package.
 #
 # Gated on CI having gone green for the commit being released, rather than firing
 # on the push itself: CI runs the full gate (lint, types, build, tests on two
