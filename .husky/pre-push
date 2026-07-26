@@ -2,7 +2,7 @@
 set -e
 
 # One ordered gate, the same list CI runs, so a green push means a green
-# pipeline. `verify` is defined once in scripts/verify.mjs; Turbo caches
+# pipeline. `verify` is defined once in packages/tooling/verify.ts; Turbo caches
 # unchanged tasks, so a re-push after a docs-only edit replays in seconds.
 # (E2E is not in verify — it runs as its own CI job.)
 pnpm run verify

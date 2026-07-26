@@ -118,7 +118,7 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      # Both are in the local pre-push gate too (scripts/verify.mjs). Running
+      # Both are in the local pre-push gate too (packages/tooling/verify.ts). Running
       # them here as well is what keeps a stale local checkout from being the
       # only thing between a newly-disclosed advisory and a release.
       #

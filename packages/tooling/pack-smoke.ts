@@ -42,7 +42,7 @@ const FORBIDDEN = [/^package\/src\//, /\.test\./, /^package\/e2e\//, /^package\/
 const workdir = mkdtempSync(join(tmpdir(), 'ue-pack-'));
 let failures = 0;
 
-const fail = (message) => {
+const fail = (message: string): void => {
   console.error(`  ✖ ${message}`);
   failures += 1;
 };
@@ -51,13 +51,15 @@ try {
   // Workspace dependencies have to be packed alongside: `use-everywhere`
   // depends on @use-everywhere/core by `workspace:^`, which npm cannot resolve
   // from a scratch directory.
-  const workspaceDirs = { '@use-everywhere/core': join(process.cwd(), '..', 'core') };
+  const workspaceDirs: Record<string, string> = {
+    '@use-everywhere/core': join(process.cwd(), '..', 'core'),
+  };
   const internalDependencies = Object.keys(pkg.dependencies ?? {}).filter(
     (dependency) => dependency in workspaceDirs,
   );
-  const dependencyTarballs = {};
+  const dependencyTarballs: Record<string, string> = {};
 
-  const packInto = (cwd) => {
+  const packInto = (cwd: string): string => {
     const output = execFileSync('pnpm', ['pack', '--pack-destination', workdir], {
       cwd,
       encoding: 'utf8',
@@ -75,7 +77,7 @@ try {
 
   for (const dependency of internalDependencies) {
     console.log(`Packing workspace dependency ${dependency}…`);
-    dependencyTarballs[dependency] = `file:${packInto(workspaceDirs[dependency])}`;
+    dependencyTarballs[dependency] = `file:${packInto(workspaceDirs[dependency] as string)}`;
   }
 
   console.log(`Packing ${name}…`);

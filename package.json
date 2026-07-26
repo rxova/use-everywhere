@@ -20,7 +20,7 @@
     "dedupe:check": "pnpm dedupe --check",
     "check:exports": "turbo run check:exports --filter=@use-everywhere/core --filter=use-everywhere",
     "pack:smoke": "turbo run pack:smoke --concurrency=1 --filter=@use-everywhere/core --filter=use-everywhere",
-    "verify": "node scripts/verify.mjs",
+    "verify": "node --import tsx ./packages/tooling/verify.ts",
     "release": "pnpm run libs:build && changeset publish",
     "prepare": "husky",
     "libs:build": "turbo run build --filter=@use-everywhere/core --filter=use-everywhere",

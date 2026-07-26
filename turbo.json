@@ -62,7 +62,7 @@
     "pack:smoke": {
       "dependsOn": ["build"],
       "outputs": [],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/pack-smoke.mjs"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/tooling/pack-smoke.ts"],
       "outputLogs": "new-only"
     },
     // A root task (`//#`): `pnpm dedupe --check` reads the whole workspace in one
