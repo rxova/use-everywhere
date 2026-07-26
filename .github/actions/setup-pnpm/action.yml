@@ -1,11 +1,28 @@
 name: Setup pnpm
 description: Install pnpm (version from the packageManager field) and Node.js with pnpm caching.
 
+# Replaces the corepack enable / corepack prepare pnpm@<version> / setup-node
+# block this action used to carry. That pinned the pnpm version a second time,
+# next to `packageManager` in package.json, so every pnpm bump was a two-file
+# change and a silent drift risk if you forgot the second one. pnpm/action-setup
+# reads `packageManager` itself.
+#
+# It also collapses the two mutually-exclusive setup-node steps: a composite
+# action cannot conditionally omit a single `with:` key, but an empty
+# registry-url is simply ignored, so one step covers both cases.
+
 inputs:
   node-version:
     description: Node.js version to install.
     required: false
     default: '24'
+  registry-url:
+    description: >-
+      npm registry to configure auth against. Only the publishing jobs need
+      this — it is what writes the .npmrc that Trusted Publishing authenticates
+      with.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -17,6 +34,7 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.registry-url }}
         cache: pnpm
 
     - name: Report versions

@@ -1,15 +1,19 @@
 name: Release
 
-# Merging a PR into main versions and publishes the packages, so main always
-# points at the latest published release. Bumps come from pending changesets
-# (pnpm changeset): patch / minor / major per package.
+# Runs only after CI has gone green on main. CI already runs the full gate
+# (lint, types, build, tests on two Node versions, e2e, audit) on the exact
+# commit being released, so re-running the whole suite here would just duplicate
+# it. Gating on CI's success gives the same guarantee — "a push to main cannot
+# publish something a PR would have been blocked on" — without paying twice.
 #
-# Gated on CI having gone green for the commit being released, rather than firing
-# on the push itself: CI runs the full gate (lint, types, build, tests on two
-# Node versions, e2e, audit) on that exact commit, so publishing on the raw push
-# meant a red build could still reach npm — and npm publishes are immutable.
-# Waiting on CI's result gives the guarantee without running the suite twice.
-# Mirrors rxova/brand and rxova/react-inputs.
+# Publishing goes through changesets/action, which opens a `chore: version
+# packages` pull request and only publishes once that PR is merged. This
+# replaced a hand-rolled `changeset version` -> self-commit -> `changeset
+# publish` -> `git push` sequence, which had two problems the action does not:
+# it checked out `ref: main` by name rather than the commit CI verified, so a
+# merge landing between the two could publish code that never passed CI; and it
+# pushed straight to main, so a bad bump was already on npm — immutably — by the
+# time anyone saw it. Matches rxova/brand, rxova/react-inputs and rxova/journey.
 on:
   workflow_run:
     workflows: [CI]
@@ -17,85 +21,60 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  # Required for npm provenance attestations.
-  id-token: write
+concurrency: release-${{ github.ref }}
 
-concurrency:
-  group: release
-  cancel-in-progress: false
+permissions:
+  contents: read
 
 jobs:
   release:
-    # workflow_run fires on both success and failure, so the conclusion has to be
-    # checked explicitly. A manual dispatch has no upstream run to gate on.
+    # workflow_run fires on both success and failure, so the conclusion has to
+    # be checked explicitly. A manual dispatch has no upstream run to gate on.
     if: >-
       github.repository == 'rxova/use-everywhere' &&
       (github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
+    env:
+      # Disable Husky for the whole job. The changesets action makes a version
+      # commit, which would otherwise fire the pre-commit hook and run
+      # `turbo run typecheck test` against a tree whose libraries have not been
+      # built yet — core would have no .d.ts and every react import would fail
+      # to resolve. CI already gated this code on the PR.
+      HUSKY: '0'
+    permissions:
+      contents: write # version commit and tags
+      pull-requests: write # the version PR
+      # npm trusted publishing (OIDC): publish with provenance and no
+      # long-lived NPM_TOKEN in the repository.
+      id-token: write
     steps:
       - uses: actions/checkout@v7
         with:
-          # By name, not the workflow_run's SHA: this job commits the version
-          # bump and pushes it, so it needs an attached branch rather than a
-          # detached HEAD. fetch-depth 0 for changesets' history walk.
+          # Check out main by name (not the workflow_run's detached SHA) so the
+          # changesets action knows its base branch when opening the version PR.
+          # Safe here in a way the old hand-rolled flow was not: the action
+          # publishes only what the merged version PR contains, and that PR is
+          # itself gated by this same workflow.
           ref: main
           fetch-depth: 0
-
       - uses: ./.github/actions/setup-pnpm
-
+        with:
+          registry-url: 'https://registry.npmjs.org'
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@^11.5.1
       - run: pnpm install --frozen-lockfile
 
-      - name: Apply pending changesets
-        id: version
-        run: |
-          pnpm changeset version
-          pnpm install --lockfile-only
-          if git diff --quiet; then
-            echo "released=false" >> "$GITHUB_OUTPUT"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            # add -A, not commit -a: changesets deletes the consumed changesets
-            # and writes brand-new CHANGELOG.md files, and -a skips untracked
-            # files — so -a would publish without ever committing a changelog.
-            git add -A
-            # --no-verify: the husky pre-commit hook typechecks the workspace,
-            # but the libraries are built in the next step, so core has no .d.ts
-            # yet and every react import fails to resolve. CI already gated this
-            # code on the PR; re-running the suite on a generated bump is moot.
-            git commit --no-verify -m "chore(release): version packages [skip ci]"
-            echo "released=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      # Through Turbo for one build definition repo-wide, but deliberately
-      # without the turbo-cache action: a release builds from scratch on a clean
-      # runner, so what is published is what this commit produces rather than a
-      # replay of an artifact cached against an earlier tree.
-      - name: Build libraries
-        if: steps.version.outputs.released == 'true'
-        run: pnpm run libs:build
-
-      - name: Publish to npm with provenance
-        if: steps.version.outputs.released == 'true'
-        run: |
-          # Auth via npm trusted publishing (OIDC): npm >= 11.5.1 exchanges the
-          # Actions id-token for credentials — no token secret involved.
-          # Provenance is generated automatically on trusted publishes.
-          npm install -g npm@latest
-          pnpm changeset publish
-
-      - name: Push release commit and tags
-        if: steps.version.outputs.released == 'true'
-        run: git push --follow-tags origin main
-
-      - name: Create GitHub releases
-        if: steps.version.outputs.released == 'true'
+      - name: Create version PR or publish
+        uses: changesets/action@v1
+        with:
+          # `pnpm run release` builds the two libraries through Turbo before
+          # publishing — the demo and docs are not published, so a full
+          # `turbo run build` would be wasted work here.
+          version: pnpm exec changeset version
+          publish: pnpm run release
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for tag in $(git tag --points-at HEAD); do
-            gh release create "$tag" --title "$tag" --generate-notes || true
-          done
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

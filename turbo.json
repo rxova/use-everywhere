@@ -35,10 +35,34 @@
       "outputs": ["coverage/**"],
       "outputLogs": "new-only"
     },
-    // Reads the package's own dist, not its dependencies' — `build`, not `^build`.
+    // These three read the package's own dist, not its dependencies' —
+    // `build`, not `^build`. Declaring the dependency centrally means a package
+    // added later inherits it instead of silently running against stale or
+    // absent output.
     "size": {
       "dependsOn": ["build"],
       "outputs": [],
+      "outputLogs": "new-only"
+    },
+    // publint and attw read the manifest and the emitted types. Cheap enough to
+    // batch with the rest.
+    "check:exports": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    // Packs the real tarball, installs it into a scratch project and imports it
+    // through both module systems — the only check that catches a `files` entry
+    // that dropped dist, or an exports map that resolves for a bundler but not
+    // for plain Node. The root script serialises it with --concurrency=1:
+    // concurrent `pnpm pack` invocations race on the store.
+    //
+    // Keyed on the shared script as well as the package, so editing the checker
+    // invalidates the cache instead of replaying an old pass.
+    "pack:smoke": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/pack-smoke.mjs"],
       "outputLogs": "new-only"
     },
     // A root task (`//#`): `pnpm dedupe --check` reads the whole workspace in one

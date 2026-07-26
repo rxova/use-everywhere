@@ -57,6 +57,13 @@ export const steps = [
     name: 'Typecheck and test',
     turbo: ['typecheck', 'test'],
   },
+  // publint and attw read the manifest and the emitted types.
+  { name: 'Check package publishing metadata', script: 'check:exports' },
+  // Last, and a plain script rather than joining a Turbo batch: it shells out
+  // to a real `pnpm pack` and `npm install` into a temp dir, which races on the
+  // store if run concurrently with anything else. Hence --concurrency=1 in the
+  // root script.
+  { name: 'Smoke-test the package tarballs', script: 'pack:smoke' },
 ];
 
 const runStep = (step) =>

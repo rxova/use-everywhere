@@ -47,7 +47,9 @@
     "build": "tsup",
     "test": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "size": "size-limit"
+    "size": "size-limit",
+    "check:exports": "publint --strict && attw --pack .",
+    "pack:smoke": "node ../../scripts/pack-smoke.mjs"
   },
   "size-limit": [
     {
@@ -112,9 +114,11 @@
     }
   ],
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/preset-small-lib": "^13.0.1",
     "@vitest/coverage-v8": "^4.1.10",
     "happy-dom": "^20.11.1",
+    "publint": "^0.3.21",
     "size-limit": "^13.0.1",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",

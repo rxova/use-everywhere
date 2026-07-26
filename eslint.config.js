@@ -35,6 +35,14 @@ export default tseslint.config(
     },
   },
   {
+    // A .cjs file is CommonJS by definition, so `require` is the only import
+    // form available to it — `no-require-imports` cannot be satisfied and is
+    // not meaningful here. The changeset changelog wrapper has to be CJS:
+    // changesets loads it with `require()`.
+    files: ['**/*.cjs'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     files: ['**/*.tsx', 'apps/demo/src/**'],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
