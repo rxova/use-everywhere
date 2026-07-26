@@ -8,7 +8,7 @@ description: Restore and save Turborepo's local .turbo cache across CI runs.
 runs:
   using: composite
   steps:
-    - uses: actions/cache@v4
+    - uses: actions/cache@v6
       with:
         path: .turbo
         key: turbo-${{ github.job }}-${{ runner.os }}-${{ github.sha }}

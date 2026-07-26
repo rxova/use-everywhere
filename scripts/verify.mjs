@@ -33,13 +33,29 @@ export const steps = [
   { name: 'Check dependency dedupe', turbo: ['//#dedupe:check'] },
   { name: 'Check formatting', script: 'format:check' },
   { name: 'Lint', script: 'lint' },
-  // One Turbo invocation instead of four sequential `pnpm run`s. Turbo already
-  // knows ^build must precede typecheck and test, and build must precede size,
-  // so handing it the whole set lets it parallelise across the five packages and
-  // pay the pnpm+turbo startup once rather than four times.
+  // Turbo already knows ^build must precede typecheck and test, and that build
+  // must precede size, so handing it whole sets lets it parallelise across the
+  // five packages and pay the pnpm+turbo startup twice rather than four times.
+  //
+  // The docs site is excluded from the build, matching the CI `checks` job:
+  // rehype-mermaid renders its diagrams through headless chromium, so building
+  // it requires `pnpm exec playwright install chromium` first. Gating every push
+  // on that would make a fresh clone fail this hook for a reason unrelated to
+  // the change. The Docs workflow owns that build and installs the browser; run
+  // `pnpm --filter @use-everywhere/docs build` yourself when touching the site.
+  //
+  // Its `typecheck` (astro check) still runs below — that one needs no browser.
+  // `size` depends on its own package's build, so the docs filter has to cover
+  // both tasks — filtering only `build` lets `size` schedule `docs#build` again.
   {
-    name: 'Build, typecheck, test and size budgets',
-    turbo: ['build', 'typecheck', 'test', 'size'],
+    name: 'Build and size budgets (docs site excluded — needs a browser)',
+    turbo: ['build', 'size', '--filter=!@use-everywhere/docs'],
+  },
+  // Safe unfiltered: `typecheck` depends on `^build` (its dependencies), never
+  // on its own package's build, so the docs site is checked without being built.
+  {
+    name: 'Typecheck and test',
+    turbo: ['typecheck', 'test'],
   },
 ];
 

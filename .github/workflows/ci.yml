@@ -53,12 +53,28 @@ jobs:
         run: pnpm lint
       - name: Check formatting
         run: pnpm format:check
-      # One invocation: Turbo knows dependents typecheck and measure against the
-      # libraries' dist, so it builds them first. This replaces the explicit
+      # Turbo knows dependents typecheck and measure against the libraries'
+      # dist, so it builds them first. This replaces the explicit
       # `pnpm --filter core --filter use-everywhere build` that every job used to
       # open with, and replays whatever this commit did not touch.
-      - name: Build, typecheck and size budgets
-        run: pnpm exec turbo run build typecheck size
+      #
+      # The docs site is excluded from the *build*: rehype-mermaid renders its
+      # two diagrams through headless chromium, which only the Docs workflow
+      # installs, and building it here would fail on a missing browser. That
+      # workflow owns the docs build — it triggers on apps/docs/** and
+      # packages/*/src/**, so library changes still get their docs checked. This
+      # job ignores apps/docs/** entirely (see paths-ignore).
+      #
+      # The filter has to cover `size` as well as `build`: `size` depends on its
+      # own package's build, so filtering `build` alone lets it schedule
+      # `docs#build` right back in.
+      - name: Build and size budgets
+        run: pnpm exec turbo run build size --filter='!@use-everywhere/docs'
+      # Unfiltered on purpose: `typecheck` (astro check) depends on `^build` —
+      # its dependencies, never its own package's build — so the docs site is
+      # still typechecked here, it just is not built.
+      - name: Typecheck
+        run: pnpm exec turbo run typecheck
 
   supply-chain:
     runs-on: ubuntu-latest
