@@ -1,11 +1,13 @@
 name: CI
 
 on:
+  # No paths-ignore on push: Release is gated on this workflow succeeding for the
+  # commit being released, so a push to main that skipped CI would never publish.
+  # `.changeset/*.md` matches `**/*.md`, which means the one push most likely to
+  # need a release — a merge whose only new file is a changeset — is exactly the
+  # one that would have been skipped.
   push:
     branches: [main, development]
-    paths-ignore:
-      - 'apps/docs/**'
-      - '**/*.md'
   pull_request:
     # `labeled`/`unlabeled` matter: the changeset gate's documented escape hatch
     # is the `skip-changeset` label, and without these the label lands on a PR

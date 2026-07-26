@@ -3,9 +3,19 @@ name: Release
 # Merging development into main versions and publishes the packages, so main
 # always points at the latest published release. Bumps come from pending
 # changesets (pnpm changeset): patch / minor / major per package.
+#
+# Gated on CI having gone green for the commit being released, rather than firing
+# on the push itself: CI runs the full gate (lint, types, build, tests on two
+# Node versions, e2e, audit) on that exact commit, so publishing on the raw push
+# meant a red build could still reach npm — and npm publishes are immutable.
+# Waiting on CI's result gives the guarantee without running the suite twice.
+# Mirrors rxova/brand and rxova/react-inputs.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,11 +28,20 @@ concurrency:
 
 jobs:
   release:
-    if: github.repository == 'rxova/use-everywhere'
+    # workflow_run fires on both success and failure, so the conclusion has to be
+    # checked explicitly. A manual dispatch has no upstream run to gate on.
+    if: >-
+      github.repository == 'rxova/use-everywhere' &&
+      (github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
+          # By name, not the workflow_run's SHA: this job commits the version
+          # bump and pushes it, so it needs an attached branch rather than a
+          # detached HEAD. fetch-depth 0 for changesets' history walk.
+          ref: main
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-pnpm
