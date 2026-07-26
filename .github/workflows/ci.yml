@@ -7,6 +7,11 @@ on:
       - 'apps/docs/**'
       - '**/*.md'
   pull_request:
+    # `labeled`/`unlabeled` matter: the changeset gate's documented escape hatch
+    # is the `skip-changeset` label, and without these the label lands on a PR
+    # whose checks never re-run — so the hatch only worked via a manual re-run.
+    # Matches rxova/brand.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths-ignore:
       - 'apps/docs/**'
       - '**/*.md'
