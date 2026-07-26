@@ -25,13 +25,19 @@ hook APIs. One class per file; types live in sibling `*.types.ts` files.
 
 ### Install & common commands
 
+Tasks run through [Turborepo](https://turborepo.dev), so `build` happens before
+anything that reads `dist` without you asking, and unchanged tasks replay from
+cache instead of re-running.
+
 ```bash
 pnpm install
-pnpm build          # build all workspaces (libraries first)
+pnpm verify         # the full gate — the same list CI runs (see below)
+pnpm build          # libraries first; dependents wait on them automatically
 pnpm test           # vitest with coverage — 95% per-file thresholds
 pnpm typecheck
 pnpm lint
 pnpm format:check
+pnpm e2e            # real-tab Playwright suite (builds the libraries first)
 pnpm dev            # demo app at http://localhost:5173
 pnpm docs           # docs site dev server
 ```
@@ -39,16 +45,27 @@ pnpm docs           # docs site dev server
 ### Package-scoped commands
 
 ```bash
-pnpm --filter @use-everywhere/core test
-pnpm --filter use-everywhere test
+pnpm exec turbo run test --filter=@use-everywhere/core
+pnpm exec turbo run test --filter=use-everywhere
 ```
 
 ## Quality Gates
 
-The husky pre-commit hook runs `lint`, `typecheck`, `format:check`, and `test`.
-Coverage thresholds (95% statements/branches/functions/lines, enforced per
-file) are part of the test run — new code needs tests, and CI runs the same
-gates on Node 22 and 24.
+Two hooks, deliberately split so the slow one runs least often:
+
+- **pre-commit** — `lint-staged`: eslint and prettier over the staged files only.
+- **pre-push** — `pnpm verify`: audit, dependency dedupe, formatting, lint, then
+  build + typecheck + test + size budgets in one Turbo invocation. The ordered
+  list lives in [`scripts/verify.mjs`](./scripts/verify.mjs) and is the same list
+  CI runs, so a green push means a green pipeline. Turbo caches what did not
+  change, so a repeat run is seconds.
+
+Coverage thresholds (95% statements/branches/functions/lines, enforced per file)
+are part of the test run — new code needs tests, and CI runs the same gates on
+Node 22 and 24.
+
+The e2e suite is not in `verify`: it drives a real browser and runs as its own CI
+job. Run it yourself with `pnpm e2e` when you touch anything cross-tab.
 
 ## Branching & Releases
 

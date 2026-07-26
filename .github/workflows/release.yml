@@ -51,9 +51,13 @@ jobs:
             echo "released=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # Through Turbo for one build definition repo-wide, but deliberately
+      # without the turbo-cache action: a release builds from scratch on a clean
+      # runner, so what is published is what this commit produces rather than a
+      # replay of an artifact cached against an earlier tree.
       - name: Build libraries
         if: steps.version.outputs.released == 'true'
-        run: pnpm --filter @use-everywhere/core --filter use-everywhere build
+        run: pnpm run libs:build
 
       - name: Publish to npm with provenance
         if: steps.version.outputs.released == 'true'

@@ -27,9 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
       # Build the libraries first: TypeDoc resolves use-everywhere -> core through dist types.
-      - run: pnpm --filter @use-everywhere/core --filter use-everywhere build
+      - run: pnpm run libs:build
 
       # The two mermaid diagrams are rendered to static SVG at build time by
       # rehype-mermaid, which drives headless chromium. Without this the build
