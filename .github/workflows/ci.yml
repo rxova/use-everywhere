@@ -1,22 +1,26 @@
 name: CI
 
 on:
-  # No paths-ignore on push: Release is gated on this workflow succeeding for the
-  # commit being released, so a push to main that skipped CI would never publish.
-  # `.changeset/*.md` matches `**/*.md`, which means the one push most likely to
-  # need a release — a merge whose only new file is a changeset — is exactly the
-  # one that would have been skipped. Pull requests keep the filter.
   push:
     branches: [main]
   pull_request:
     # `labeled`/`unlabeled` matter: the changeset gate's documented escape hatch
     # is the `skip-changeset` label, and without these the label lands on a PR
     # whose checks never re-run — so the hatch only worked via a manual re-run.
-    # Matches rxova/brand.
-    types: [opened, synchronize, reopened, labeled, unlabeled]
-    paths-ignore:
-      - 'apps/docs/**'
-      - '**/*.md'
+    #
+    # `edited`: retitling a PR must re-check it, because the title becomes the
+    # squash-merge commit message and nothing else validates it.
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+    # No paths-ignore, on either trigger. It used to skip apps/docs/** and
+    # **/*.md on pull requests, which had two consequences once commitlint
+    # became the root of this graph: a docs-only PR ran no workflow at all, so
+    # its title — the squash-merge subject — went unchecked; and `.changeset/*.md`
+    # matches `**/*.md`, so the one PR most likely to need a release was the one
+    # whose checks never ran. Turbo's cache is what makes dropping the filter
+    # cheap: on a prose-only change every task replays.
+    #
+    # Release is also gated on this workflow succeeding for the commit being
+    # released, so a push to main that skipped CI would never publish.
 
 permissions:
   contents: read
@@ -26,8 +30,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changeset:
-    if: github.event_name == 'pull_request'
+  # The root of the graph: everything else declares `needs: [commitlint]`.
+  # Commit messages were previously validated only by the local commit-msg hook,
+  # which `--no-verify` skips and which never sees the PR title at all.
+  #
+  # It runs on push as well as pull_request on purpose. A job that is skipped
+  # also skips its dependents, so gating this on `pull_request` alone would
+  # silently skip the entire workflow on main — and the alternative, an
+  # `if: always() && !failure()` on every other job, is the kind of expression
+  # that is wrong in a way nobody notices until something ships unchecked.
+  commitlint:
+    name: commit messages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -35,16 +48,34 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Require a changeset for published-package changes
+
+      - name: Lint the branch commits
+        if: github.event_name == 'pull_request'
+        run: >-
+          pnpm exec commitlint --verbose
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+
+      # The squash-merge subject is the PR *title*, which no commit in the
+      # branch contains and which `edited` lets someone change after CI already
+      # went green. Passed through the environment, never interpolated into the
+      # shell — a title is attacker-controlled text.
+      - name: Lint the PR title
+        if: github.event_name == 'pull_request'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run: node --import tsx ./packages/tooling/check-changeset.ts
+        run: echo "$PR_TITLE" | pnpm exec commitlint --verbose
+
+      # On main this is the squashed subject already linted above, plus the
+      # changesets `chore: version packages` commit. Cheap, and it is what keeps
+      # this job unskippable.
+      - name: Lint the pushed commit
+        if: github.event_name == 'push'
+        run: pnpm exec commitlint --last --verbose
 
   checks:
+    name: lint · format · types · build
+    needs: [commitlint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -64,8 +95,7 @@ jobs:
       # two diagrams through headless chromium, which only the Docs workflow
       # installs, and building it here would fail on a missing browser. That
       # workflow owns the docs build — it triggers on apps/docs/** and
-      # packages/*/src/**, so library changes still get their docs checked. This
-      # job ignores apps/docs/** entirely (see paths-ignore).
+      # packages/*/src/**, so library changes still get their docs checked.
       #
       # The filter has to cover `size` as well as `build`: `size` depends on its
       # own package's build, so filtering `build` alone lets it schedule
@@ -79,21 +109,54 @@ jobs:
         run: pnpm exec turbo run typecheck
 
   supply-chain:
+    name: audit · dedupe
+    needs: [commitlint]
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      # Both are in the local pre-push gate too (scripts/verify.mjs). Running
+      # Both are in the local pre-push gate too (packages/tooling/verify.ts). Running
       # them here as well is what keeps a stale local checkout from being the
       # only thing between a newly-disclosed advisory and a release.
+      #
+      # `audit:check` is deliberately not a Turbo task: its verdict depends on
+      # the upstream advisory database, which changes without any file here
+      # changing, so a cached pass could replay over a fresh CVE.
       - name: Audit dependencies
         run: pnpm run audit:check
       - name: Check dependency dedupe
         run: pnpm run dedupe:check
 
+  pack-smoke:
+    name: package contract
+    needs: [commitlint]
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
+      - run: pnpm install --frozen-lockfile
+      # Neither of these existed before: the repo published two packages with no
+      # packaging contract at all, so a `files` entry that dropped dist or an
+      # exports map that resolved only for bundlers would have reached npm.
+      #
+      # Both root scripts filter to the two published packages. Turbo schedules
+      # a no-op task for every package that does not define the script, and each
+      # of those still pulls in its own `build` — which would drag `docs#build`
+      # and its chromium requirement into this job.
+      - name: Publint and Are The Types Wrong
+        run: pnpm run check:exports
+      - name: Pack smoke test
+        run: pnpm run pack:smoke
+
   e2e:
+    name: e2e
+    needs: [commitlint]
+    if: github.head_ref != 'changeset-release/main'
     # The assertions unit tests cannot make: a real BroadcastChannel, real tabs,
     # real localStorage. One browser context — separate contexts are separate
     # storage partitions and would not see each other's broadcasts.
@@ -117,6 +180,9 @@ jobs:
           retention-days: 7
 
   test:
+    name: unit (node ${{ matrix.node-version }})
+    needs: [commitlint]
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -136,3 +202,30 @@ jobs:
       # `test` depends on `^build`, so Turbo builds the libraries first.
       - name: Test with coverage thresholds
         run: pnpm test
+
+  changeset:
+    name: changeset present
+    needs: [commitlint]
+    if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+    permissions:
+      contents: read
+      # check-changeset.ts reads the skip-changeset label through the API
+      # (`gh api repos/.../labels`). Without this the call 403s, the script
+      # warns and proceeds label-blind, and the documented escape hatch
+      # silently does nothing.
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Require a changeset for published-package changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node --import tsx ./packages/tooling/check-changeset.ts
