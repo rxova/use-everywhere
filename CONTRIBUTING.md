@@ -25,13 +25,19 @@ hook APIs. One class per file; types live in sibling `*.types.ts` files.
 
 ### Install & common commands
 
+Tasks run through [Turborepo](https://turborepo.dev), so `build` happens before
+anything that reads `dist` without you asking, and unchanged tasks replay from
+cache instead of re-running.
+
 ```bash
 pnpm install
-pnpm build          # build all workspaces (libraries first)
+pnpm verify         # the full gate — the same list CI runs (see below)
+pnpm build          # libraries first; dependents wait on them automatically
 pnpm test           # vitest with coverage — 95% per-file thresholds
 pnpm typecheck
 pnpm lint
 pnpm format:check
+pnpm e2e            # real-tab Playwright suite (builds the libraries first)
 pnpm dev            # demo app at http://localhost:5173
 pnpm docs           # docs site dev server
 ```
@@ -39,46 +45,60 @@ pnpm docs           # docs site dev server
 ### Package-scoped commands
 
 ```bash
-pnpm --filter @use-everywhere/core test
-pnpm --filter use-everywhere test
+pnpm exec turbo run test --filter=@use-everywhere/core
+pnpm exec turbo run test --filter=use-everywhere
 ```
 
 ## Quality Gates
 
-The husky pre-commit hook runs `lint`, `typecheck`, `format:check`, and `test`.
-Coverage thresholds (95% statements/branches/functions/lines, enforced per
-file) are part of the test run — new code needs tests, and CI runs the same
-gates on Node 22 and 24.
+Two hooks, deliberately split so the slow one runs least often:
+
+- **pre-commit** — `lint-staged`: eslint and prettier over the staged files only.
+- **pre-push** — `pnpm verify`: audit, dependency dedupe, formatting, lint, then
+  build + typecheck + test + size budgets in one Turbo invocation. The ordered
+  list lives in [`scripts/verify.mjs`](./scripts/verify.mjs) and is the same list
+  CI runs, so a green push means a green pipeline. Turbo caches what did not
+  change, so a repeat run is seconds.
+
+Coverage thresholds (95% statements/branches/functions/lines, enforced per file)
+are part of the test run — new code needs tests, and CI runs the same gates on
+Node 22 and 24.
+
+The e2e suite is not in `verify`: it drives a real browser and runs as its own CI
+job. Run it yourself with `pnpm e2e` when you touch anything cross-tab.
 
 ## Branching & Releases
 
-- **`main` always represents the latest published npm version.** Nothing lands
-  on `main` except merges from `development` and the release commits/tags the
-  automation creates.
-- **`development`** is the integration branch: branch off it, PR back into it.
+- **`main` is the only long-lived branch**, and it always represents the latest
+  published npm version. Branch off it, PR back into it.
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org)
-  (enforced by commitlint on commit).
+  (enforced by commitlint on commit). Keep GitHub's skip-CI markers out of them —
+  the string is matched anywhere in the message, so quoting it in a commit body
+  silently skips every workflow for that push.
 
 ### How a release happens
 
-1. Every user-facing change merged into `development` includes a
+1. Every user-facing change includes a
    [changeset](https://github.com/changesets/changesets): run `pnpm changeset`
    and pick the bump (`patch` / `minor` / `major`) per affected package, with a
-   short summary. Internal-only changes (CI, docs, tests) need no changeset.
-2. When `development` is merged into `main`, the Release workflow
-   (`.github/workflows/release.yml`) applies all pending changesets: bumps
-   versions, writes changelogs, builds, publishes `use-everywhere` and
-   `@use-everywhere/core` to npm **with provenance**, tags, creates GitHub
-   releases, and pushes the version commit back to `main`.
-3. Merge `main` back into `development` afterwards so the bumped versions flow
-   downstream.
+   short summary. Internal-only changes (CI, docs, tests) need no changeset —
+   label the PR `skip-changeset` and the gate stands down.
+2. Merging the PR into `main` runs CI on the merge commit. **Once CI passes**,
+   the Release workflow (`.github/workflows/release.yml`) applies all pending
+   changesets: bumps versions, writes changelogs, builds, publishes
+   `use-everywhere` and `@use-everywhere/core` to npm **with provenance**, tags,
+   creates GitHub releases, and pushes the version commit back to `main`.
+
+The release is gated on that CI run rather than firing on the push itself, so a
+merge that turns out red cannot reach npm — where publishes are immutable. If CI
+fails, nothing publishes; fix forward and the next green run releases.
 
 If the merge contains no changesets, the workflow is a no-op — nothing is
 published and versions stay put.
 
 ## Pull Requests
 
-- Target `development` (never `main` directly).
+- Target `main`.
 - Keep PRs focused; explain the why, not just the what.
 - Include a changeset (`pnpm changeset`) for anything user-facing.
 - Update guides in `apps/docs/docs` when behavior changes; the API reference

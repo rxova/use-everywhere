@@ -23,7 +23,10 @@ body:
         - Shared state (useSharedState / createSharedStore)
         - Messages (useMessage / createChannel)
         - Presence (usePeers / createPresence)
+        - Leader election (useLeader / createLeader)
+        - Persistence (defineStore / persist adapters)
         - Cross-origin window channel (openWindow / connectToOpener)
+        - Devtools (Inspector)
         - Other
     validations:
       required: true

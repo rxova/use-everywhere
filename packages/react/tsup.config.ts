@@ -9,9 +9,16 @@ export default defineConfig({
     index: 'src/index.ts',
     'devtools/index': 'src/devtools/index.ts',
   },
-  format: ['esm'],
+  // Dual ESM + CJS so `require('use-everywhere')` works (Jest/CJS toolchains).
+  format: ['esm', 'cjs'],
   dts: true,
   clean: true,
   target: 'es2020',
   external: ['react'],
+  // Every entry is client-only (useSyncExternalStore, BroadcastChannel). The
+  // banner marks the built modules as a React Server Components client boundary,
+  // so hooks can be imported directly in a Next.js App Router file without the
+  // consumer hand-adding 'use client'. esbuild emits the banner before all
+  // imports, which is where the directive must sit to take effect.
+  banner: { js: "'use client';" },
 });

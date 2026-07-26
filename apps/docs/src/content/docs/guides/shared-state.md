@@ -122,6 +122,34 @@ import { getSharedStore, DEFAULT_NAME } from 'use-everywhere';
 getSharedStore(DEFAULT_NAME).set('count', 0); // resets every tab's counter
 ```
 
+## Replace values, don't mutate them
+
+Shared state syncs on **replacement**, not mutation. Assigning a value — a
+setter call, `store.set(...)`, or a whole-value write through the proxy —
+bumps the key's version clock and broadcasts it. Reaching _inside_ a value
+and changing it in place does not:
+
+```ts
+store.set('cart', { items: 2 }); // ✅ syncs — new value, new version
+store.state.cart.items = 3; // ❌ silently local — no version bump, no broadcast
+```
+
+The `state` proxy is shallow, so a nested write never reaches the trap that
+would version and broadcast it; the value just diverges between tabs. The fix
+is always the same — build the next value and assign it:
+
+```ts
+const [cart, setCart] = useSharedState('cart', { items: 0 });
+setCart({ ...cart, items: cart.items + 1 }); // ✅ replace, never mutate
+```
+
+To make the mistake impossible to miss, **shared values are deep-frozen in
+development**, so an accidental in-place mutation throws a `TypeError` right at
+the offending line instead of failing quietly. Production builds strip the
+freeze entirely — it costs you nothing shipped. (Same discipline as Redux
+state; the reasoning is [structured clone](../under-the-hood/limitations.md):
+values must be plain data anyway.)
+
 ## Where to next
 
 - [`useSharedState`](../hooks/use-shared-state.md) — the full option and

@@ -1,5 +1,6 @@
 import { getBus } from './bus.js';
 import { newer } from './clock.js';
+import { freezeShared } from './dev-freeze.js';
 import type { MessageMeta, Version } from './common.types.js';
 import type { Persisted } from './persist.types.js';
 import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
@@ -20,7 +21,10 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
   const state: Record<string, unknown> = { ...initial };
   const versions: Record<string, Version> = {};
-  for (const k in state) versions[k] = [0, clientId];
+  for (const k in state) {
+    versions[k] = [0, clientId];
+    freezeShared(state[k]); // dev-only: catch accidental in-place mutation early
+  }
   let snapshot: Readonly<S> = Object.freeze({ ...state }) as S;
   let versionsSnapshot: Readonly<Record<string, Version>> = Object.freeze({ ...versions });
 
@@ -38,7 +42,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   function applyRemote(key: string, value: unknown, version: Version, meta: MessageMeta) {
     if (!newer(version, versions[key])) return;
     versions[key] = version;
-    state[key] = value;
+    state[key] = freezeShared(value);
     notify(key, value, meta);
   }
 
@@ -72,7 +76,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   function setKey(key: string, value: unknown) {
     const version: Version = [(versions[key]?.[0] ?? 0) + 1, clientId];
     versions[key] = version;
-    state[key] = value;
+    state[key] = freezeShared(value);
     bus.post({
       v: 1,
       scope: 'state',
