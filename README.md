@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" width="360" alt="use-everywhere logo" />
+</p>
+
 # use-everywhere
 
 <p>

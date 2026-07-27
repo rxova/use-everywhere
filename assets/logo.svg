@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="#0f8f6a" role="img" aria-labelledby="title">
+  <title id="title">use-everywhere logo</title>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5">
+    <rect x="14" y="19" width="27" height="22" rx="5" />
+    <path d="M23 27h25a5 5 0 0 1 5 5v13a5 5 0 0 1-5 5H25a5 5 0 0 1-5-5v-4M14 27h27" />
+  </g>
+</svg>
