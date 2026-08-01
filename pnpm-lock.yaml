@@ -145,7 +145,7 @@ importers:
         version: 0.18.5
       '@size-limit/preset-small-lib':
         specifier: ^13.0.1
-        version: 13.0.1(size-limit@13.0.1)
+        version: 13.0.1(size-limit@13.0.2)
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -156,8 +156,8 @@ importers:
         specifier: ^0.3.21
         version: 0.3.22
       size-limit:
-        specifier: ^13.0.1
-        version: 13.0.1
+        specifier: ^13.0.2
+        version: 13.0.2
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.22)(tsx@4.23.1)(typescript@6.0.3)(yaml@2.9.0)
@@ -179,7 +179,7 @@ importers:
         version: 0.18.5
       '@size-limit/preset-small-lib':
         specifier: ^13.0.1
-        version: 13.0.1(size-limit@13.0.1)
+        version: 13.0.1(size-limit@13.0.2)
       '@testing-library/react':
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -205,8 +205,8 @@ importers:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
       size-limit:
-        specifier: ^13.0.1
-        version: 13.0.1
+        specifier: ^13.0.2
+        version: 13.0.2
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.22)(tsx@4.23.1)(typescript@6.0.3)(yaml@2.9.0)
@@ -1932,6 +1932,11 @@ packages:
 
   acorn@8.17.0:
     resolution: {integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  acorn@8.18.0:
+    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -4086,8 +4091,8 @@ packages:
     engines: {node: '>=20.19.5', npm: '>=10.8.2'}
     hasBin: true
 
-  size-limit@13.0.1:
-    resolution: {integrity: sha512-LKWgnVUfw79W5gcKGIHqjEqBMoZ+YgfYYzlDheYwbRJq1DaaRgOjotFm61YOI/4hbgh4V1Es0uGGp6HLktI3Vw==}
+  size-limit@13.0.2:
+    resolution: {integrity: sha512-bB8Hv6g7nBtmWW+mB9Y1lkyJoDOxk6pO6p7xPsK8Y6t9CyKvBWhzTRXLlhhv1H2Ru9HIyLKbCaVswXGHwVXiwg==}
     engines: {node: ^22.18.0 || ^24.0.0 || >=26.0.0}
     hasBin: true
 
@@ -4101,6 +4106,10 @@ packages:
 
   smol-toml@1.7.0:
     resolution: {integrity: sha512-aqVvWoyO21L23mb+drl4RmMXbf6N7FdHjAhTRA9ZBL7apWBgfWC16KjrASI+1p9GAroljyMHj6fK67i0UiTNvQ==}
+    engines: {node: '>= 18'}
+
+  smol-toml@1.7.1:
+    resolution: {integrity: sha512-PPlsspAZ4jbMBu5DMFhfUGDQLu/vrL4SyBROVS37x8ynnVmFIs1VPBz1Co8Xks3TvpIaZXmU85y4DrQ+UyVFoQ==}
     engines: {node: '>= 18'}
 
   source-map-js@1.2.1:
@@ -4930,7 +4939,7 @@ snapshots:
       picomatch: 4.0.5
       retext-smartypants: 6.2.0
       shiki: 4.3.1
-      smol-toml: 1.7.0
+      smol-toml: 1.7.1
       unified: 11.0.5
 
   '@astrojs/language-server@2.16.13(prettier@3.9.6)(typescript@6.0.3)':
@@ -6176,21 +6185,21 @@ snapshots:
 
   '@sindresorhus/is@4.6.0': {}
 
-  '@size-limit/esbuild@13.0.1(size-limit@13.0.1)':
+  '@size-limit/esbuild@13.0.1(size-limit@13.0.2)':
     dependencies:
       esbuild: 0.28.1
       nanoid: 6.0.0
-      size-limit: 13.0.1
+      size-limit: 13.0.2
 
-  '@size-limit/file@13.0.1(size-limit@13.0.1)':
+  '@size-limit/file@13.0.1(size-limit@13.0.2)':
     dependencies:
-      size-limit: 13.0.1
+      size-limit: 13.0.2
 
-  '@size-limit/preset-small-lib@13.0.1(size-limit@13.0.1)':
+  '@size-limit/preset-small-lib@13.0.1(size-limit@13.0.2)':
     dependencies:
-      '@size-limit/esbuild': 13.0.1(size-limit@13.0.1)
-      '@size-limit/file': 13.0.1(size-limit@13.0.1)
-      size-limit: 13.0.1
+      '@size-limit/esbuild': 13.0.1(size-limit@13.0.2)
+      '@size-limit/file': 13.0.1(size-limit@13.0.2)
+      size-limit: 13.0.2
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -6648,6 +6657,9 @@ snapshots:
       acorn: 8.17.0
 
   acorn@8.17.0: {}
+
+  acorn@8.18.0:
+    optional: true
 
   ajv-draft-04@1.0.0(ajv@8.20.0):
     optionalDependencies:
@@ -9375,7 +9387,7 @@ snapshots:
       arg: 5.0.2
       sax: 1.6.0
 
-  size-limit@13.0.1:
+  size-limit@13.0.2:
     dependencies:
       bytes-iec: 3.1.1
       lilconfig: 3.1.3
@@ -9389,6 +9401,8 @@ snapshots:
   slash@3.0.0: {}
 
   smol-toml@1.7.0: {}
+
+  smol-toml@1.7.1: {}
 
   source-map-js@1.2.1: {}
 
@@ -9529,7 +9543,7 @@ snapshots:
   terser@5.49.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.17.0
+      acorn: 8.18.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true

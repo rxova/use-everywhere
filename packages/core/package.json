@@ -119,7 +119,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "happy-dom": "^20.11.1",
     "publint": "^0.3.21",
-    "size-limit": "^13.0.1",
+    "size-limit": "^13.0.2",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
