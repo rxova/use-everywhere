@@ -21,7 +21,7 @@
     "playwright": "^1.61.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@use-everywhere/core": "workspace:*",
     "use-everywhere": "workspace:*",
     "typescript": "^6.0.3"
