@@ -16,9 +16,15 @@ export class MemoryHub {
 
   /** @internal */
   broadcast(from: MemoryTransport, data: unknown): void {
+    // Validate at post time even with nobody listening, exactly like the real
+    // BroadcastChannel: a non-cloneable payload throws DataCloneError here.
+    structuredClone(data);
     for (const transport of this.transports) {
       if (transport !== from) {
-        queueMicrotask(() => transport.deliver(data));
+        // Clone per delivery: identity must never cross the wire, or tests
+        // would pass on shared references that production message ports break.
+        const copy = structuredClone(data);
+        queueMicrotask(() => transport.deliver(copy));
       }
     }
   }

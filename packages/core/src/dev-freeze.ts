@@ -29,9 +29,27 @@ try {
 
 function deepFreeze(value: unknown): void {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return;
+  // Typed arrays and DataViews are documented as shareable, but freezing a
+  // non-empty ArrayBuffer view throws a TypeError — so they pass through the
+  // guard unfrozen instead of crashing dev builds on a production-legal value.
+  if (ArrayBuffer.isView(value)) return;
   // Freeze before recursing, so a reference cycle terminates at the isFrozen
   // check above instead of looping forever.
   Object.freeze(value);
+  if (value instanceof Map) {
+    // Freezing a Map/Set cannot lock its *entries* (`map.set()` still works —
+    // a documented gap), but the keys and values it holds are still shared
+    // objects: freeze them so in-place edits of those throw like any other.
+    for (const [k, v] of value) {
+      deepFreeze(k);
+      deepFreeze(v);
+    }
+    return;
+  }
+  if (value instanceof Set) {
+    for (const entry of value) deepFreeze(entry);
+    return;
+  }
   for (const key of Object.keys(value as Record<string, unknown>)) {
     deepFreeze((value as Record<string, unknown>)[key]);
   }

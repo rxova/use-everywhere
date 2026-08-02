@@ -136,11 +136,26 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
     armLease(leaseMs);
   }
 
+  const sayHello = () =>
+    bus.post({ v: 1, scope: 'leader', type: 'hello', clientId, kind: bus.kind });
+
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   const onPageHide = () => resign();
-  if (hasWindow) addEventListener('pagehide', onPageHide);
+  // Restored from bfcache: we resigned on the way out and heard nothing while
+  // cached, so whoever leads now is unknown. Rejoin exactly like at creation —
+  // hello makes an incumbent answer at once, one silent beat means the seat is
+  // free to claim.
+  const onPageShow = (event: Event) => {
+    if (!(event as { persisted?: boolean }).persisted) return;
+    sayHello();
+    armLease(heartbeatMs);
+  };
+  if (hasWindow) {
+    addEventListener('pagehide', onPageHide);
+    addEventListener('pageshow', onPageShow);
+  }
 
-  bus.post({ v: 1, scope: 'leader', type: 'hello', clientId, kind: bus.kind });
+  sayHello();
   // One heartbeat, not one lease: an incumbent answers our hello at once, so a
   // single beat of silence already means the seat is empty. A lone tab leads
   // after heartbeatMs instead of idling for leaseMs.
@@ -167,11 +182,15 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
       if (leaderId === null) armLease(0);
     },
     close() {
+      if (closed) return;
       closed = true;
       resign();
       clearInterval(beat);
       clearTimeout(lease);
-      if (hasWindow) removeEventListener('pagehide', onPageHide);
+      if (hasWindow) {
+        removeEventListener('pagehide', onPageHide);
+        removeEventListener('pageshow', onPageShow);
+      }
       unsubscribe();
       listeners.clear();
       bus.release();

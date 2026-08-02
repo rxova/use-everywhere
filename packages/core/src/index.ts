@@ -11,7 +11,7 @@ export {
   localStorageAdapter,
   sessionStorageAdapter,
 } from './persist-web-storage.js';
-export type { StorageLike } from './persist-web-storage.js';
+export type { StorageLike, WebStorageAdapterOptions } from './persist-web-storage.js';
 export type { Persisted, PersistAdapter, PersistOptions } from './persist.types.js';
 export { openWindow, connectToOpener, CID_PARAM } from './window-channel.js';
 export type {

@@ -2,6 +2,16 @@ import type { Persisted, PersistAdapter } from './persist.types.js';
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
+export interface WebStorageAdapterOptions {
+  /**
+   * Called when a storage operation fails: blocked storage, corrupt JSON, a
+   * full quota. Persistence stays best-effort either way — this is the
+   * observability seam (telemetry, a "your changes may not be saved" notice),
+   * not a recovery path. Errors thrown by the callback itself are swallowed.
+   */
+  onError?: (error: unknown, operation: 'read' | 'write' | 'remove') => void;
+}
+
 function isPersisted(value: unknown): value is Persisted {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<Persisted>;
@@ -22,16 +32,27 @@ function isPersisted(value: unknown): value is Persisted {
  * Behind a thunk, every access happens inside one.
  *
  * Blocked storage, corrupt JSON, a foreign schema, or a full quota all degrade
- * to a silent no-op. Persistence is best-effort; it must never break the store.
+ * to a silent no-op — persistence is best-effort; it must never break the
+ * store. Pass `onError` to observe the failures anyway.
  */
 export function webStorageAdapter(
   storage: StorageLike | (() => StorageLike | undefined),
   key: string,
+  options: WebStorageAdapterOptions = {},
 ): PersistAdapter {
-  const resolve = (): StorageLike | undefined => {
+  const report = (error: unknown, operation: 'read' | 'write' | 'remove') => {
+    try {
+      options.onError?.(error, operation);
+    } catch {
+      // The observability seam must not become a new failure path.
+    }
+  };
+
+  const resolve = (operation: 'read' | 'write' | 'remove'): StorageLike | undefined => {
     try {
       return typeof storage === 'function' ? storage() : storage;
-    } catch {
+    } catch (error) {
+      report(error, operation);
       return undefined;
     }
   };
@@ -39,37 +60,45 @@ export function webStorageAdapter(
   return {
     read() {
       try {
-        const raw = resolve()?.getItem(key);
+        const raw = resolve('read')?.getItem(key);
         if (!raw) return undefined;
         const parsed: unknown = JSON.parse(raw);
         return isPersisted(parsed) ? parsed : undefined;
-      } catch {
+      } catch (error) {
+        report(error, 'read');
         return undefined;
       }
     },
     write(snapshot) {
       try {
-        resolve()?.setItem(key, JSON.stringify(snapshot));
-      } catch {
-        // Quota exceeded, or storage blocked. Nothing useful to do.
+        resolve('write')?.setItem(key, JSON.stringify(snapshot));
+      } catch (error) {
+        // Quota exceeded, or storage blocked.
+        report(error, 'write');
       }
     },
     remove() {
       try {
-        resolve()?.removeItem(key);
-      } catch {
-        // As above.
+        resolve('remove')?.removeItem(key);
+      } catch (error) {
+        report(error, 'remove');
       }
     },
   };
 }
 
 /** Survives closing every tab. */
-export function localStorageAdapter(key: string): PersistAdapter {
-  return webStorageAdapter(() => globalThis.localStorage, key);
+export function localStorageAdapter(
+  key: string,
+  options?: WebStorageAdapterOptions,
+): PersistAdapter {
+  return webStorageAdapter(() => globalThis.localStorage, key, options);
 }
 
 /** Survives reloads, but dies with the tab. */
-export function sessionStorageAdapter(key: string): PersistAdapter {
-  return webStorageAdapter(() => globalThis.sessionStorage, key);
+export function sessionStorageAdapter(
+  key: string,
+  options?: WebStorageAdapterOptions,
+): PersistAdapter {
+  return webStorageAdapter(() => globalThis.sessionStorage, key, options);
 }

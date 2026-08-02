@@ -28,6 +28,6 @@ describe('hooks called without options use the default name and scope', () => {
     }
     render(<Bare />);
 
-    expect(screen.getByTestId('p').textContent).toMatch(/^0:[a-z0-9]{6}$/);
+    expect(screen.getByTestId('p').textContent).toMatch(/^0:[0-9a-f]{16}$/);
   });
 });

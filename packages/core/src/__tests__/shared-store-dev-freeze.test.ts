@@ -56,6 +56,47 @@ describe('dev-mode value freezing', () => {
     expect(Object.isFrozen(b.getSnapshot().v)).toBe(true); // applyRemote froze it
   });
 
+  it('passes typed arrays through unfrozen — freezing a non-empty view throws in every engine', () => {
+    // Typed arrays are documented as shareable; the dev guard must not crash
+    // dev builds on a production-legal value.
+    const store = createSharedStore<{ buf: Uint8Array }>('freeze-typed-array', {
+      buf: new Uint8Array([1, 2, 3]),
+    });
+    store.set('buf', new Uint8Array([4, 5]));
+    expect([...store.getSnapshot().buf]).toEqual([4, 5]);
+    expect(Object.isFrozen(store.getSnapshot().buf)).toBe(false);
+  });
+
+  it('freezes the objects held by Maps and Sets, though their entry lists stay mutable', () => {
+    const held = { n: 1 };
+    const keyObj = { k: 1 };
+    const store = createSharedStore('freeze-collections', {
+      map: new Map([[keyObj, held]]),
+      set: new Set([held]),
+    });
+
+    // The contents are shared objects like any other: in-place edits throw.
+    expect(() => {
+      held.n = 2;
+    }).toThrow(TypeError);
+    expect(() => {
+      keyObj.k = 2;
+    }).toThrow(TypeError);
+    // Documented gap: freezing a Map cannot lock map.set()/set.add().
+    const map = store.getSnapshot().map as Map<unknown, unknown>;
+    expect(() => map.set('later', 1)).not.toThrow();
+  });
+
+  it('freezes lazily registered initial values like every other entry path', () => {
+    const store = createSharedStore<{ row?: { n: number } }>('freeze-register', {});
+    const initial = { n: 1 };
+    store.registerKey('row', initial);
+    expect(Object.isFrozen(store.getSnapshot().row)).toBe(true);
+    expect(() => {
+      initial.n = 2;
+    }).toThrow(TypeError);
+  });
+
   it('terminates on a reference cycle rather than recursing forever', () => {
     const cyclic: Record<string, unknown> = { n: 1 };
     cyclic.self = cyclic;

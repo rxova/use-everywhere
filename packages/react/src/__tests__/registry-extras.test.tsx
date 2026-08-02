@@ -49,6 +49,6 @@ describe('useClientId', () => {
       return <span data-testid="id">{id}</span>;
     }
     render(<Ids />);
-    expect(screen.getByTestId('id').textContent).toMatch(/^[a-z0-9]{6}$/);
+    expect(screen.getByTestId('id').textContent).toMatch(/^[0-9a-f]{16}$/);
   });
 });

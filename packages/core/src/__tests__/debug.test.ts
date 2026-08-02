@@ -26,6 +26,31 @@ describe('observeBus', () => {
     channel.close();
   });
 
+  it('contains a throwing observer: the bus survives and other observers still run', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const hub = new MemoryHub();
+    const seen: BusEvent[] = [];
+    const stopBroken = observeBus('dbg-throw', () => {
+      throw new Error('spectator bug');
+    });
+    const stop = observeBus('dbg-throw', (event) => seen.push(event));
+
+    const channel = createChannel<{ ping: number }>('dbg-throw', {
+      transport: () => hub.connect(),
+    });
+    expect(() => channel.post('ping', 1)).not.toThrow();
+    await tick();
+
+    // The broken observer was reported, the healthy one still saw the wire.
+    expect(error).toHaveBeenCalled();
+    expect(seen.some((e) => e.wire.scope === 'event' && e.wire.type === 'ping')).toBe(true);
+
+    stopBroken();
+    stop();
+    channel.close();
+    error.mockRestore();
+  });
+
   it('captures wires received from a peer', async () => {
     const hub = new MemoryHub();
     const seen: BusEvent[] = [];

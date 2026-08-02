@@ -14,7 +14,16 @@ export function emitBusEvent(name: string, direction: 'in' | 'out', wire: BusWir
   const set = observers.get(name);
   if (!set) return;
   const event: BusEvent = { name, direction, wire };
-  for (const fn of set) fn(event);
+  for (const fn of set) {
+    // Observers run synchronously inside the bus's hot path. A spectator must
+    // never break the thing it watches, so a throwing observer is reported and
+    // contained rather than allowed to abort the post or the receive.
+    try {
+      fn(event);
+    } catch (error) {
+      console.error(`[use-everywhere] a bus observer for "${name}" threw`, error);
+    }
+  }
 }
 
 /**

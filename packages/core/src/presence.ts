@@ -44,6 +44,7 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
     Math.max(500, Math.floor(pruneAfterMs / 2)),
   );
 
+  let closed = false;
   return {
     clientId: bus.clientId,
     getPeers: () => snapshot,
@@ -52,6 +53,8 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
       return () => listeners.delete(fn);
     },
     close() {
+      if (closed) return;
+      closed = true;
       clearInterval(prune);
       unsubscribe();
       listeners.clear();
