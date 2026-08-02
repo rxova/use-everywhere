@@ -1,5 +1,11 @@
 # @use-everywhere/core
 
+## 0.4.1
+
+### Patch Changes
+
+- [#31](https://github.com/rxova/use-everywhere/pull/31) [`b96b6e9`](https://github.com/rxova/use-everywhere/commit/b96b6e90230fb5363a0c5e732b5db238e06c3391) - Add the project logo as `assets/logo.svg` and show it above the title in the README. Documentation-only: no API, bundle, or runtime change.
+
 ## 0.4.0
 
 ### Minor Changes
