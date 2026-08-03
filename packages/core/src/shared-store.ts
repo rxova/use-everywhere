@@ -1,5 +1,5 @@
 import { getBus } from './bus.js';
-import { newer } from './clock.js';
+import { isVersion, newer } from './clock.js';
 import { devWarn } from './dev.js';
 import { freezeShared } from './dev-freeze.js';
 import type { MessageMeta, Version } from './common.types.js';
@@ -80,11 +80,17 @@ export function createSharedStore<S extends Record<string, unknown>>(
     }
     if (accept && !accept(meta)) return;
     if (wire.type === 'patch') {
+      // The version is a claim until it is checked: a malformed one used to
+      // reach newer() and throw inside this handler, taking the tab's bus down
+      // with it. A wire we cannot arbitrate is one we drop.
+      if (typeof wire.key !== 'string' || !isVersion(wire.version)) return;
       applyRemote(wire.key, wire.value, wire.version, meta);
     } else {
+      const versions = wire.versions;
+      if (typeof versions !== 'object' || versions === null) return;
       for (const k in wire.state) {
-        const version = wire.versions[k];
-        if (version) applyRemote(k, wire.state[k], version, meta);
+        const version = versions[k];
+        if (isVersion(version)) applyRemote(k, wire.state[k], version, meta);
       }
     }
   });

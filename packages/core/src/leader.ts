@@ -1,6 +1,6 @@
 import { getBus } from './bus.js';
 import type { BusOptions } from './bus.types.js';
-import { newer } from './clock.js';
+import { isVersion, newer } from './clock.js';
 import type { Version } from './common.types.js';
 import type { Leader, LeaderOptions, LeaderSnapshot } from './leader.types.js';
 
@@ -108,7 +108,9 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
       return;
     }
 
-    // claim | heartbeat
+    // claim | heartbeat. Same reasoning as the store: a term is a claim about
+    // shape until it is checked, and newer() on a malformed one throws in here.
+    if (!isVersion(wire.term)) return;
     if (newer(wire.term, term)) {
       term = wire.term;
       stepDown(wire.clientId);

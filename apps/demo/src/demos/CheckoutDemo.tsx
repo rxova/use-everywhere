@@ -64,12 +64,18 @@ export function CheckoutDemo() {
         <span>Total</span>
         <span>{ORDER.amount}</span>
       </div>
-      <button className="pay" onClick={startPayment} disabled={payment !== 'idle'}>
+      <button
+        className="pay"
+        data-testid="pay-button"
+        onClick={startPayment}
+        disabled={payment !== 'idle'}
+      >
         {payment === 'idle' && `Pay ${ORDER.amount} in secure window`}
         {payment === 'processing' && 'Processing…'}
         {payment === 'paid' && 'Paid'}
       </button>
       <div
+        data-testid="payment-status"
         className={`status ${payment === 'processing' ? 'processing' : ''} ${payment === 'paid' ? 'paid' : ''}`}
       >
         {payment === 'processing' &&
@@ -83,7 +89,7 @@ export function CheckoutDemo() {
           payment === 'idle' &&
           'payment window closed before finishing'}
       </div>
-      <button className="reset" onClick={reset}>
+      <button className="reset" data-testid="reset-demo" onClick={reset}>
         reset demo
       </button>
       <p className="hint">
