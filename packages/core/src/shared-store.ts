@@ -242,7 +242,13 @@ export function createSharedStore<S extends Record<string, unknown>>(
         keyListeners.set(key, set);
       }
       set.add(fn);
-      return () => set.delete(fn);
+      return () => {
+        set.delete(fn);
+        // Drop the bucket with its last listener. Per-item keys
+        // (`useSharedState(`row-${id}`)`) otherwise leave one empty Set per key
+        // that ever mounted, for the life of the page.
+        if (set.size === 0) keyListeners.delete(key);
+      };
     },
     registerKey(key, initialValue) {
       // Guards on `versions`, not `state` — which is what makes hydration

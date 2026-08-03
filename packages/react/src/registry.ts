@@ -12,7 +12,14 @@ import {
   type Presence,
   type SharedStoreOptions,
 } from '@use-everywhere/core';
+import { devWarn } from './dev.js';
 import type { AnyStore } from './registry.types.js';
+import {
+  createServerChannel,
+  createServerLeader,
+  createServerPresence,
+  createServerStore,
+} from './server-stubs.js';
 import type { ShareScope } from './use-shared-state.types.js';
 
 /**
@@ -27,6 +34,14 @@ const presences = new Map<string, Presence>();
 const channels = new Map<string, Channel<MessageMap>>();
 const leaders = new Map<string, Leader>();
 const storeConfig = new Map<string, SharedStoreOptions>();
+
+/**
+ * Checked per call, not captured once: a module evaluated during SSR and a
+ * module evaluated in the browser are different module instances, so there is
+ * no cache to invalidate — but reading it lazily keeps the bundler from
+ * folding the branch away in a build that serves both.
+ */
+const isServer = () => typeof window === 'undefined';
 
 /** Per-scope store creation: what leaves this tab and what is let back in. */
 const scopeOptions: Record<ShareScope, SharedStoreOptions> = {
@@ -49,13 +64,33 @@ export function getSharedStore(
  * what lets persistence be declared in one place without constructing anything
  * on import.
  */
+/**
+ * A configuration's shape, ignoring the adapter's identity. Hot Module
+ * Replacement re-evaluates the defining module and builds a *new* adapter
+ * object each time, so identity comparison would call every hot edit a
+ * conflict; what actually matters is whether the store would be built
+ * differently.
+ */
+function configSignature(options: SharedStoreOptions | undefined): string {
+  const persist = options?.persist;
+  if (!persist) return 'none';
+  return `persist:${persist.keys?.join(',') ?? '*'}:${persist.debounceMs ?? 'default'}`;
+}
+
 export function configureStore(name: string, scope: ShareScope, options: SharedStoreOptions): void {
   const key = `${scope} ${name}`;
   if (stores.has(key)) {
-    throw new Error(
-      `defineStore('${name}') ran after that store was already created. Move it to module scope — ` +
-        `configuring a live store would silently hand you one without persistence.`,
+    // Re-registering the same configuration is what Fast Refresh does on every
+    // edit to the defining module. Throwing there — as this used to — broke dev
+    // on a change that alters nothing, so an identical redefinition is a no-op
+    // and only a genuine conflict is reported.
+    if (configSignature(storeConfig.get(key)) === configSignature(options)) return;
+    devWarn(
+      `[use-everywhere] defineStore('${name}') ran after that store was already created, with different options. ` +
+        'The live store keeps the configuration it was built with. Move defineStore to module scope, ' +
+        'before any component reads the store.',
     );
+    return;
   }
   storeConfig.set(key, options);
 }
@@ -64,7 +99,9 @@ export function getStore(name: string, scope: ShareScope = 'everywhere'): AnySto
   const key = `${scope} ${name}`;
   let store = stores.get(key);
   if (!store) {
-    store = createSharedStore(name, {}, { ...scopeOptions[scope], ...storeConfig.get(key) });
+    store = isServer()
+      ? createServerStore()
+      : createSharedStore(name, {}, { ...scopeOptions[scope], ...storeConfig.get(key) });
     stores.set(key, store);
   }
   return store;
@@ -73,7 +110,7 @@ export function getStore(name: string, scope: ShareScope = 'everywhere'): AnySto
 export function getPresence(name: string): Presence {
   let presence = presences.get(name);
   if (!presence) {
-    presence = createPresence(name);
+    presence = isServer() ? createServerPresence() : createPresence(name);
     presences.set(name, presence);
   }
   return presence;
@@ -88,16 +125,34 @@ export function getPresence(name: string): Presence {
 export function getLeader(name: string, options?: LeaderOptions): Leader {
   let leader = leaders.get(name);
   if (!leader) {
-    leader = createLeader(name, options);
+    leader = isServer() ? createServerLeader() : createLeader(name, options);
     leaders.set(name, leader);
+    if (options) leaderOptions.set(name, options);
+  } else if (options) {
+    warnOnLeaderOptionConflict(name, options);
   }
   return leader;
+}
+
+/** What the first caller elected with, so a later caller asking for different timings can be told it was ignored. */
+const leaderOptions = new Map<string, LeaderOptions>();
+
+function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void {
+  const first = leaderOptions.get(name);
+  for (const key of ['heartbeatMs', 'leaseMs'] as const) {
+    const requested = options[key];
+    if (requested !== undefined && requested !== first?.[key]) {
+      devWarn(
+        `[use-everywhere] leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
+      );
+    }
+  }
 }
 
 export function getChannel<M extends MessageMap>(name: string): Channel<M> {
   let channel = channels.get(name);
   if (!channel) {
-    channel = createChannel(name);
+    channel = isServer() ? createServerChannel(name) : createChannel(name);
     channels.set(name, channel);
   }
   return channel as Channel<M>;
