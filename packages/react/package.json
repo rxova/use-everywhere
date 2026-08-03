@@ -77,25 +77,25 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "7 kB"
+      "limit": "7.6 kB"
     },
     {
       "name": "useSharedState",
       "path": "dist/index.js",
       "import": "{ useSharedState }",
-      "limit": "2.85 kB"
+      "limit": "3.3 kB"
     },
     {
       "name": "useChannel + useMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useMessage, useSend }",
-      "limit": "1.6 kB"
+      "limit": "2.05 kB"
     },
     {
       "name": "usePeers + useClientId",
       "path": "dist/index.js",
       "import": "{ usePeers, useClientId }",
-      "limit": "1.7 kB"
+      "limit": "2.15 kB"
     },
     {
       "name": "useOpenedWindow + openWindow",
@@ -107,13 +107,13 @@
       "name": "useLeader + useLeaderEffect",
       "path": "dist/index.js",
       "import": "{ useLeader, useLeaderEffect }",
-      "limit": "2.8 kB"
+      "limit": "3.2 kB"
     },
     {
       "name": "defineStore (persisted)",
       "path": "dist/index.js",
       "import": "{ defineStore, localStorageAdapter }",
-      "limit": "3.3 kB"
+      "limit": "3.7 kB"
     },
     {
       "name": "Inspector (devtools subpath)",

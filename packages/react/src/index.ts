@@ -42,10 +42,13 @@ export {
   observeBus,
   enableDebug,
   getBusNames,
+  getTransportKind,
   BroadcastChannelTransport,
   NoopTransport,
+  StorageTransport,
   defaultTransport,
   isBroadcastChannelAvailable,
+  isStorageEventAvailable,
 } from '@use-everywhere/core';
 export type {
   Channel,
@@ -74,6 +77,7 @@ export type {
   DebugOptions,
   BusWire,
   Transport,
+  TransportKind,
   MessageMap,
   MessageMeta,
   Peer,

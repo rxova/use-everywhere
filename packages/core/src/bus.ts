@@ -1,5 +1,6 @@
 import type { BusOptions, Bus, BusWire, SharedBus } from './bus.types.js';
 import type { PeerKind } from './common.types.js';
+import type { TransportKind } from './transport/transport.types.js';
 import { emitBusEvent } from './debug.js';
 import { devWarn } from './dev.js';
 import { newClientId } from './ids.js';
@@ -74,6 +75,7 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
     name,
     clientId,
     kind,
+    transportKind: transport.kind ?? 'custom',
     heartbeatMs: options.heartbeatMs ?? 2000,
     post,
     subscribe(fn) {
@@ -116,6 +118,17 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
  */
 export function getBusNames(): string[] {
   return [...registry.keys()];
+}
+
+/**
+ * What is actually carrying this bus's traffic, or null if it has no bus yet.
+ *
+ * Answers the question a developer asks when nothing is syncing and the code
+ * looks right: *is anything even connected?* `'none'` means no — writes are
+ * local and no peer will ever see them.
+ */
+export function getTransportKind(name: string): TransportKind | null {
+  return registry.get(name)?.transportKind ?? null;
 }
 
 export function getBus(name: string, options: BusOptions = {}): Bus {

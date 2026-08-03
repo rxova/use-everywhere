@@ -197,9 +197,16 @@ client library talk you out of them.
 
 ### Does it work in Safari / Firefox / Edge?
 
-BroadcastChannel and `postMessage` have been universal for years (Safari ≥
-15.4 for BroadcastChannel). No polyfills are bundled or needed for evergreen
-browsers.
+Yes, on all three, and the e2e suite runs against Chromium, Firefox and WebKit
+on every change. BroadcastChannel and `postMessage` have been universal for
+years (Safari ≥ 15.4 for BroadcastChannel). No polyfills are bundled or needed.
+
+Where `BroadcastChannel` is genuinely missing, tabs still sync: the library
+falls back to a `storage`-event transport, warning in development that values
+now serialise as JSON rather than structured clone. Only when storage is
+blocked too — a sandboxed iframe, third-party cookies off — does sharing stop,
+and that warns as well. `getTransportKind(name)` tells you which case you are
+in. See [Transports](../core/transports.md).
 
 ### What about iframes?
 
