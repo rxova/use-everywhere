@@ -1,6 +1,7 @@
 import type { BusOptions, Bus, BusWire, SharedBus } from './bus.types.js';
 import type { PeerKind } from './common.types.js';
 import { emitBusEvent } from './debug.js';
+import { devWarn } from './dev.js';
 import { newClientId } from './ids.js';
 import { defaultTransport } from './transport/default-transport.js';
 
@@ -47,13 +48,23 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
   );
 
   const sayBye = () => post({ v: 1, scope: 'presence', type: 'bye', clientId, kind });
+  // A tab restored from bfcache said `bye` on the way out and heard nothing
+  // while cached; re-announce so peers re-add us and re-ping in reply.
+  const onPageShow = (event: Event) => {
+    if (!(event as { persisted?: boolean }).persisted) return;
+    post({ v: 1, scope: 'presence', type: 'hello', clientId, kind });
+  };
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
-  if (hasWindow) addEventListener('pagehide', sayBye);
+  if (hasWindow) {
+    addEventListener('pagehide', sayBye);
+    addEventListener('pageshow', onPageShow);
+  }
 
   return {
     name,
     clientId,
     kind,
+    heartbeatMs: options.heartbeatMs ?? 2000,
     post,
     subscribe(fn) {
       listeners.add(fn);
@@ -63,12 +74,19 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
       refs++;
     },
     release() {
+      // Guard direct-bus users double-releasing after shutdown; the engines
+      // additionally make their own close() idempotent so a shared refcount
+      // can never be decremented twice by one consumer.
+      if (closed) return;
       refs--;
       if (refs > 0) return;
       sayBye();
       closed = true;
       clearInterval(heartbeat);
-      if (hasWindow) removeEventListener('pagehide', sayBye);
+      if (hasWindow) {
+        removeEventListener('pagehide', sayBye);
+        removeEventListener('pageshow', onPageShow);
+      }
       unsubscribe();
       transport.close();
       listeners.clear();
@@ -100,6 +118,18 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
   if (!bus) {
     bus = createBus(name, options, () => registry.delete(name));
     registry.set(name, bus);
+  } else {
+    // The first creator fixes a bus's options; a differing later request would
+    // otherwise be silently ignored — an origin-wide setting set from the
+    // wrong call site with no test failing.
+    if (options.heartbeatMs !== undefined && options.heartbeatMs !== bus.heartbeatMs) {
+      devWarn(
+        `[use-everywhere] bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
+      );
+    }
+    if (options.kind !== undefined && options.kind !== bus.kind) {
+      devWarn(`[use-everywhere] bus "${name}": kind ignored — the first creator fixes bus options`);
+    }
   }
   bus.acquire();
   return bus;

@@ -235,6 +235,69 @@ describe('window-channel edge cases', () => {
     expect(got).toEqual([99]);
   });
 
+  it('a child that connects after the handshake timeout cannot revive the channel', async () => {
+    vi.useFakeTimers();
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    const opened = openWindow<{ down: number }, Record<string, never>, void>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+      readyTimeoutMs: 1000,
+    });
+    const cid = new URL(openedUrl).searchParams.get(CID_PARAM)!;
+    const childHeard: unknown[] = [];
+    child.addEventListener('message', (event) => childHeard.push(event.data));
+
+    opened.post('down', 1); // queued behind a handshake that will never finish
+
+    await vi.advanceTimersByTimeAsync(1100);
+    await expect(opened.ready).rejects.toBeInstanceOf(HandshakeTimeoutError);
+    await expect(opened.result).rejects.toBeInstanceOf(HandshakeTimeoutError);
+
+    // The slow child finally says ready — into a torn-down channel: no ack
+    // comes back and the queued message is never flushed.
+    opener.injectMessage({ __ue: 1, cid, t: 'ready' }, PAY, child);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(childHeard).toEqual([]);
+
+    // The close poller stayed armed, so `closed` still reports reality.
+    child.closed = true;
+    await vi.advanceTimersByTimeAsync(500);
+    await expect(opened.closed).resolves.toBeUndefined();
+  });
+
+  it('the child ignores wires whose source is not the opener window', async () => {
+    const { opener, child } = fakeWindowPair(SHOP, PAY);
+    let openedUrl = '';
+    openWindow<{ down: number }, { up: number }, void>(PAY_URL, {
+      peerOrigin: PAY,
+      localWindow: opener,
+      openFn: (url) => ((openedUrl = url), child),
+    });
+    const cid = new URL(openedUrl).searchParams.get(CID_PARAM)!;
+    const conn = connectToOpener<{ down: number }, { up: number }, void>({
+      peerOrigin: SHOP,
+      opener,
+      localWindow: child,
+      cid,
+    });
+    await tick();
+
+    const got: number[] = [];
+    conn.on('down', (n) => got.push(n));
+
+    // Right origin, right cid — wrong window: another frame on the trusted
+    // origin that learned the nonce must still be dropped.
+    const forged = { __ue: 1, cid, t: 'msg', type: 'down', payload: 99, msgId: 'x' };
+    child.injectMessage(forged, SHOP, {});
+    await tick();
+    expect(got).toEqual([]);
+
+    child.injectMessage(forged, SHOP, opener); // sanity: the real opener still speaks
+    expect(got).toEqual([99]);
+  });
+
   it('the opener ignores wire types it never expects (a stray ready-ack)', async () => {
     const { opener, child } = fakeWindowPair(SHOP, PAY);
     let openedUrl = '';

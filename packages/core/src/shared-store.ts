@@ -1,9 +1,15 @@
 import { getBus } from './bus.js';
 import { newer } from './clock.js';
+import { devWarn } from './dev.js';
 import { freezeShared } from './dev-freeze.js';
 import type { MessageMeta, Version } from './common.types.js';
 import type { Persisted } from './persist.types.js';
 import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
+
+// Live-store count per name on the shared (registry) bus, to catch the
+// two-stores-one-name mistake. Custom transports are exempt: in tests every
+// store is deliberately its own simulated client on the same name.
+const liveStores = new Map<string, number>();
 
 /**
  * State synced across every same-origin tab/window/worker: per-key
@@ -15,6 +21,16 @@ export function createSharedStore<S extends Record<string, unknown>>(
   initial: S,
   options: SharedStoreOptions = {},
 ): SharedStore<S> {
+  const onSharedBus = !options.transport;
+  if (onSharedBus) {
+    const live = liveStores.get(name) ?? 0;
+    if (live > 0) {
+      devWarn(
+        `[use-everywhere] second shared store for "${name}" in this tab — stores on one page never hear each other and will diverge. Reuse one per name.`,
+      );
+    }
+    liveStores.set(name, live + 1);
+  }
   const bus = getBus(name, options);
   const clientId = bus.clientId;
   const accept = options.accept;
@@ -75,18 +91,29 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
   function setKey(key: string, value: unknown) {
     const version: Version = [(versions[key]?.[0] ?? 0) + 1, clientId];
+    // Post before committing locally: postMessage rejects non-cloneable values
+    // (functions, DOM nodes, class instances) by throwing synchronously, and a
+    // throw *after* the local write would leave this tab silently diverged
+    // from every peer. Posting first makes the write all-or-nothing.
+    try {
+      bus.post({
+        v: 1,
+        scope: 'state',
+        type: 'patch',
+        key,
+        value,
+        version,
+        clientId,
+        kind: bus.kind,
+      });
+    } catch (error) {
+      throw new TypeError(
+        `use-everywhere: the value for key "${key}" cannot cross the wire (structured clone failed); the write was not applied. ${String(error)}`,
+        { cause: error },
+      );
+    }
     versions[key] = version;
     state[key] = freezeShared(value);
-    bus.post({
-      v: 1,
-      scope: 'state',
-      type: 'patch',
-      key,
-      value,
-      version,
-      clientId,
-      kind: bus.kind,
-    });
     notify(key, value, { clientId, kind: bus.kind, self: true });
   }
 
@@ -175,9 +202,25 @@ export function createSharedStore<S extends Record<string, unknown>>(
     }
   }
 
-  // Late-joiner handshake: ask everyone for their state.
-  bus.post({ v: 1, scope: 'state', type: 'hello', clientId, kind: bus.kind });
+  const sayHello = () =>
+    bus.post({ v: 1, scope: 'state', type: 'hello', clientId, kind: bus.kind });
 
+  // A tab restored from bfcache missed every patch broadcast while it was
+  // cached — with no re-handshake it would hold silently stale state until the
+  // next write to each affected key. Re-run the late-joiner handshake: the
+  // snapshot replies pass through the same LWW gate, so anything we hold that
+  // is genuinely newer still survives.
+  const onPageShow = (event: Event) => {
+    if (!(event as { persisted?: boolean }).persisted) return;
+    sayHello();
+  };
+  const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
+  if (hasWindow) addEventListener('pageshow', onPageShow);
+
+  // Late-joiner handshake: ask everyone for their state.
+  sayHello();
+
+  let storeClosed = false;
   return {
     clientId,
     state: proxy,
@@ -208,11 +251,21 @@ export function createSharedStore<S extends Record<string, unknown>>(
       // value survives to first paint.
       if (key in versions) return;
       versions[key] = [0, clientId];
-      state[key] = initialValue;
+      state[key] = freezeShared(initialValue);
       snapshot = Object.freeze({ ...state }) as S;
       versionsSnapshot = Object.freeze({ ...versions });
     },
     close() {
+      if (storeClosed) return;
+      storeClosed = true;
+      if (onSharedBus) {
+        // Creation always registers the name, so the entry is present here.
+        /* v8 ignore next */
+        const live = (liveStores.get(name) ?? 1) - 1;
+        if (live > 0) liveStores.set(name, live);
+        else liveStores.delete(name);
+      }
+      if (hasWindow) removeEventListener('pageshow', onPageShow);
       if (flushPersist) {
         flushPersist();
         if (typeof document !== 'undefined' && typeof removeEventListener === 'function') {

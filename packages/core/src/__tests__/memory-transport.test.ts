@@ -19,6 +19,31 @@ describe('MemoryTransport', () => {
     expect(got.c).toEqual(['hi']);
   });
 
+  it('delivers structured clones, never references', async () => {
+    const hub = new MemoryHub();
+    const a = hub.connect();
+    const b = hub.connect();
+    const got: unknown[] = [];
+    b.subscribe((d) => got.push(d));
+
+    const payload = { nested: { n: 1 } };
+    a.post(payload);
+    payload.nested.n = 99; // mutate after post, before delivery
+    await tick();
+
+    // The receiver sees the value as it was posted — identity (and later
+    // mutations) never cross the wire, exactly like the real BroadcastChannel.
+    expect(got[0]).toEqual({ nested: { n: 1 } });
+    expect(got[0]).not.toBe(payload);
+  });
+
+  it('throws on non-cloneable payloads at post time, even with nobody listening', () => {
+    const hub = new MemoryHub();
+    const a = hub.connect();
+
+    expect(() => a.post({ cb: () => {} })).toThrow();
+  });
+
   it('posting after close is a silent no-op', async () => {
     const hub = new MemoryHub();
     const a = hub.connect();

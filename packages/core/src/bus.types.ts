@@ -67,4 +67,6 @@ export interface Bus {
 /** @internal A bus plus the refcount increment used by the registry. */
 export interface SharedBus extends Bus {
   acquire(): void;
+  /** The heartbeat the bus was created with — kept so later callers asking for a different one can be warned. */
+  readonly heartbeatMs: number;
 }

@@ -302,3 +302,80 @@ describe('createSharedStore with persist', () => {
     s.close();
   });
 });
+
+describe('webStorageAdapter onError', () => {
+  it('reports a full quota on write, still without throwing', () => {
+    const onError = vi.fn();
+    const quota = new Error('QuotaExceededError');
+    const adapter = webStorageAdapter(
+      {
+        getItem: () => null,
+        setItem: () => {
+          throw quota;
+        },
+        removeItem: () => {},
+      },
+      'k',
+      { onError },
+    );
+
+    expect(() => adapter.write({ v: 1, state: {}, versions: {} })).not.toThrow();
+    expect(onError).toHaveBeenCalledWith(quota, 'write');
+  });
+
+  it('reports corrupt JSON on read and a failing removeItem on remove', () => {
+    const onError = vi.fn();
+    const gone = new Error('gone');
+    const adapter = webStorageAdapter(
+      {
+        getItem: () => '{not json',
+        setItem: () => {},
+        removeItem: () => {
+          throw gone;
+        },
+      },
+      'k',
+      { onError },
+    );
+
+    expect(adapter.read()).toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(expect.any(SyntaxError), 'read');
+
+    adapter.remove?.();
+    expect(onError).toHaveBeenCalledWith(gone, 'remove');
+  });
+
+  it('reports blocked storage with the operation that hit it', () => {
+    const onError = vi.fn();
+    const security = new Error('SecurityError');
+    const adapter = webStorageAdapter(
+      () => {
+        throw security;
+      },
+      'k',
+      { onError },
+    );
+
+    expect(adapter.read()).toBeUndefined();
+    expect(() => adapter.write({ v: 1, state: {}, versions: {} })).not.toThrow();
+    expect(onError).toHaveBeenNthCalledWith(1, security, 'read');
+    expect(onError).toHaveBeenNthCalledWith(2, security, 'write');
+  });
+
+  it('a throwing onError callback is contained — persistence stays best-effort', () => {
+    const adapter = webStorageAdapter(
+      () => {
+        throw new Error('SecurityError');
+      },
+      'k',
+      {
+        onError: () => {
+          throw new Error('observer bug');
+        },
+      },
+    );
+
+    expect(adapter.read()).toBeUndefined();
+    expect(() => adapter.write({ v: 1, state: {}, versions: {} })).not.toThrow();
+  });
+});

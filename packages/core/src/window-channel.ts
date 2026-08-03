@@ -156,6 +156,11 @@ export function openWindow<Out extends MessageMap, In extends MessageMap, R = un
     // only settle through paths that also clear it.
     /* v8 ignore next */
     if (isReady || closedSettled) return;
+    // The handshake is over. Stop listening, so a child that connects late
+    // cannot ack into a channel whose promises already rejected and quietly
+    // start receiving the queued messages. The close poller stays armed:
+    // `closed` still reports when the window actually goes away.
+    localWindow.removeEventListener('message', onMessage);
     const err = new HandshakeTimeoutError();
     rejectReady(err);
     /* v8 ignore next */
@@ -227,6 +232,9 @@ export function connectToOpener<In extends MessageMap, Out extends MessageMap, R
 
   const onMessage = (event: MessageEventLike) => {
     if (!allowAnyOrigin && event.origin !== peerOrigin) return;
+    // Same defense the opener runs: only the opener window itself may speak on
+    // this channel, not another window at the peer origin that learned the cid.
+    if (event.source !== opener) return;
     if (!isWindowWire(event.data, cid)) return;
     const wire = event.data;
     if (wire.t === 'ready-ack') {

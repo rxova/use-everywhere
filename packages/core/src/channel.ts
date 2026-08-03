@@ -20,6 +20,7 @@ export function createChannel<M extends MessageMap>(
     for (const fn of set) fn(wire.payload, meta);
   });
 
+  let closed = false;
   return {
     name,
     clientId: bus.clientId,
@@ -44,6 +45,8 @@ export function createChannel<M extends MessageMap>(
       return () => set.delete(handler as Handler);
     },
     close() {
+      if (closed) return;
+      closed = true;
       unsubscribe();
       handlers.clear();
       bus.release();
