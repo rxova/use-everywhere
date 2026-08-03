@@ -10,8 +10,15 @@ minimumReleaseAgeExclude:
 # Transitive deps pulled in by Docusaurus/webpack that lag behind their
 # security patches. Drop an entry once the upstream range covers it.
 overrides:
-  brace-expansion: ^5.0.8
+  # GHSA-rgw5-rvv9-x895: <5.0.9 is a DoS via unbounded intermediate arrays that
+  # bypasses the earlier CVE-2026-14257 mitigation. Reached through eslint's
+  # minimatch, so dev-only, but `audit:check` gates on high and turns main red.
+  brace-expansion: ^5.0.9
   esbuild: ^0.28.1
+  # <=8.5.22. Moderate, so it does not trip the high-only gate on its own —
+  # taken here because it is one line and the alternative is carrying a known
+  # advisory until something else forces the issue.
+  postcss: '>=8.5.23'
   serialize-javascript: ^7.0.7
   # GHSA-f88m-g3jw-g9cj: sharp <0.35.0 inherits four libvips CVEs. Astro pins the
   # 0.34 line and all 16 paths reach it through the docs site's Astro, so the fix
