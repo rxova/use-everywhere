@@ -86,7 +86,10 @@ describe('bfcache restore', () => {
   });
 
   it('a solo leader that resigned on pagehide reclaims the seat after restore', async () => {
-    const leader = createLeader('bf-lead-solo', { transport: () => hub.connect() });
+    const leader = createLeader('bf-lead-solo', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     await vi.advanceTimersByTimeAsync(1000);
     expect(leader.getSnapshot().isLeader).toBe(true);
 
@@ -106,7 +109,10 @@ describe('bfcache restore', () => {
   });
 
   it('a restored tab adopts the incumbent that answers its hello instead of stealing the seat', async () => {
-    const leader = createLeader('bf-lead-adopt', { transport: () => hub.connect() });
+    const leader = createLeader('bf-lead-adopt', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     await vi.advanceTimersByTimeAsync(1000);
     expect(leader.getSnapshot().isLeader).toBe(true);
 

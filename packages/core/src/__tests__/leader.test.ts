@@ -18,8 +18,15 @@ describe('createLeader', () => {
 
   // One createLeader call with a custom transport = one simulated tab: getBus
   // bypasses the registry whenever a transport factory is given.
+  //
+  // `strategy` is pinned, not left to 'auto'. This file asserts lease-and-claim
+  // semantics — terms, silence, failover after leaseMs — and auto-detection
+  // would quietly hand it the Web Locks election on any host that happens to
+  // expose navigator.locks, where none of those assertions mean the same thing.
+  // (Node 24 does expose it; Node 22 does not, so the suite would pass on one
+  // and fail on the other.)
   const tab = (name: string, options: LeaderOptions = {}) =>
-    createLeader(name, { transport: () => hub.connect(), ...options });
+    createLeader(name, { strategy: 'heartbeat', transport: () => hub.connect(), ...options });
 
   it('leads on its own after one heartbeat, not a whole lease', async () => {
     const a = tab('lone');
@@ -390,7 +397,7 @@ describe('createLeader', () => {
   it('uses the shared registry bus when no transport is given', async () => {
     // Every other test injects a transport, which bypasses the registry — this
     // is the branch real callers actually take.
-    const a = createLeader('registry-bus');
+    const a = createLeader('registry-bus', { strategy: 'heartbeat' });
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
     expect(a.getSnapshot()).toEqual({ leaderId: a.clientId, isLeader: true });
@@ -470,7 +477,7 @@ describe('waitForLeadership, on the heartbeat strategy', () => {
   it('resolves once the seat is won, and immediately when it is already held', async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
-    const leader = createLeader('wfl', { transport: () => hub.connect() });
+    const leader = createLeader('wfl', { strategy: 'heartbeat', transport: () => hub.connect() });
     try {
       let seated = false;
       const waiting = leader.waitForLeadership().then(() => (seated = true));
@@ -491,9 +498,15 @@ describe('waitForLeadership, on the heartbeat strategy', () => {
   it('rejects rather than hanging when the tab is torn down first', async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
-    const incumbent = createLeader('wfl-closed', { transport: () => hub.connect() });
+    const incumbent = createLeader('wfl-closed', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     await vi.advanceTimersByTimeAsync(1000);
-    const follower = createLeader('wfl-closed', { transport: () => hub.connect() });
+    const follower = createLeader('wfl-closed', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     await vi.advanceTimersByTimeAsync(100);
 
     const pending = follower.waitForLeadership();

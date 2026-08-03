@@ -114,7 +114,12 @@ describe('leader election safety', () => {
           try {
             for (const step of script) {
               if (step === 'join') {
-                live.push(createLeader('prop-lead', { transport: () => hub.connect() }));
+                live.push(
+                  createLeader('prop-lead', {
+                    strategy: 'heartbeat',
+                    transport: () => hub.connect(),
+                  }),
+                );
               } else if (step === 'leave' && live.length > 0) {
                 live.pop()!.close();
               }
