@@ -57,7 +57,7 @@ describe('non-cloneable writes are all-or-nothing', () => {
 describe('two stores, one name, one tab', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('warns in dev — BroadcastChannel never echoes within a page, so they cannot sync', () => {
+  it('warns in dev — they now sync, but you are paying for two of everything', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const first = createSharedStore('ws-duplicate', { n: 0 });
     expect(warn).not.toHaveBeenCalled();

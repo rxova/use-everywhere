@@ -26,7 +26,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
     const live = liveStores.get(name) ?? 0;
     if (live > 0) {
       devWarn(
-        `[use-everywhere] second shared store for "${name}" in this tab — stores on one page never hear each other and will diverge. Reuse one per name.`,
+        `[use-everywhere] second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
       );
     }
     liveStores.set(name, live + 1);
