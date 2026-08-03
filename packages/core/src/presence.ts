@@ -33,6 +33,10 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   }
 
   const unsubscribe = bus.subscribe((wire) => {
+    // Traffic from a sibling engine on this page carries our own clientId,
+    // because a page is one client. Counting it would put us in our own peer
+    // list — "1 other tab" while alone in the browser.
+    if (wire.clientId === bus.clientId) return;
     if (wire.scope === 'presence' && wire.type === 'bye') {
       if (peers.delete(wire.clientId)) notify();
       return;

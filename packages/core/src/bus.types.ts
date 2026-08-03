@@ -67,9 +67,20 @@ export interface Bus {
   release(): void;
 }
 
-/** @internal A bus plus the refcount increment used by the registry. */
-export interface SharedBus extends Bus {
-  acquire(): void;
+/**
+ * @internal The page-wide half of a bus: one transport, one identity, shared by
+ * every handle `connect()` hands out. Lives in the rendezvous table, so a copy
+ * of the library that did not build it may still be the one calling it — treat
+ * this shape as the compatibility surface between bundled copies, and bump the
+ * rendezvous protocol when it changes.
+ */
+export interface SharedBusCore {
+  readonly name: string;
+  readonly clientId: string;
+  readonly kind: PeerKind;
+  readonly transportKind: TransportKind;
   /** The heartbeat the bus was created with — kept so later callers asking for a different one can be warned. */
   readonly heartbeatMs: number;
+  /** Take a handle on this bus, incrementing the refcount. */
+  connect(): Bus;
 }
