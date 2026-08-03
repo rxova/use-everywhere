@@ -1,4 +1,5 @@
 import type { CommonOptions, PeerKind, Version } from './common.types.js';
+import type { TransportKind } from './transport/transport.types.js';
 
 /** Everything on the same-origin bus, multiplexed by scope over one BroadcastChannel per name. */
 export type BusWire =
@@ -58,6 +59,8 @@ export interface Bus {
   readonly name: string;
   readonly clientId: string;
   readonly kind: PeerKind;
+  /** What is carrying this bus's traffic — 'none' means nothing leaves this context. */
+  readonly transportKind: TransportKind;
   post(wire: BusWire): void;
   subscribe(fn: (wire: BusWire) => void): () => void;
   /** Decrement the refcount; the bus shuts down when it reaches zero. */

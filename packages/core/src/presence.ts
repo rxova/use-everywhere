@@ -29,6 +29,13 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
     if (!existing) notify();
   });
 
+  // The bus only says hello when *it* is created. A presence engine attached to
+  // a bus that already existed — a store made it first, and this is the
+  // component that wants the roster — would otherwise start empty and stay that
+  // way until the next heartbeat, which is a visible blank for up to
+  // heartbeatMs. Announcing again costs one wire and peers answer immediately.
+  bus.post({ v: 1, scope: 'presence', type: 'hello', clientId: bus.clientId, kind: bus.kind });
+
   const prune = setInterval(
     () => {
       const cutoff = Date.now() - pruneAfterMs;

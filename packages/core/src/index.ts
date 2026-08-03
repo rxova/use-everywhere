@@ -28,13 +28,18 @@ export { HandshakeTimeoutError } from './errors/handshake-timeout-error.js';
 export { newer } from './clock.js';
 export { DEFAULT_NAME } from './defaults.js';
 export { observeBus, enableDebug } from './debug.js';
-export { getBusNames } from './bus.js';
+export { getBusNames, getTransportKind } from './bus.js';
 export type { BusEvent, BusObserver, DebugOptions } from './debug.types.js';
 export type { BusWire } from './bus.types.js';
-export type { Transport } from './transport/transport.types.js';
+export type { Transport, TransportKind } from './transport/transport.types.js';
 export { BroadcastChannelTransport } from './transport/broadcast-channel-transport.js';
 export { NoopTransport } from './transport/noop-transport.js';
-export { defaultTransport, isBroadcastChannelAvailable } from './transport/default-transport.js';
+export { StorageTransport } from './transport/storage-transport.js';
+export {
+  defaultTransport,
+  isBroadcastChannelAvailable,
+  isStorageEventAvailable,
+} from './transport/default-transport.js';
 // MemoryHub and MemoryTransport are test seams: import them from
 // '@use-everywhere/core/testing'. Keeping them here made a simulation harness
 // part of the runtime API surface, and 1.0 has to promise not to break it.

@@ -66,31 +66,31 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "5.7 kB"
+      "limit": "6.1 kB"
     },
     {
       "name": "createLeader",
       "path": "dist/index.js",
       "import": "{ createLeader }",
-      "limit": "2.4 kB"
+      "limit": "2.85 kB"
     },
     {
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "2.35 kB"
+      "limit": "2.8 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "1.4 kB"
+      "limit": "1.8 kB"
     },
     {
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "1.4 kB"
+      "limit": "1.9 kB"
     },
     {
       "name": "openWindow (opener side)",

@@ -1,7 +1,8 @@
-import type { Transport } from './transport.types.js';
+import type { Transport, TransportKind } from './transport.types.js';
 
 /** Same-origin transport over a real BroadcastChannel. */
 export class BroadcastChannelTransport implements Transport {
+  readonly kind: TransportKind = 'broadcast-channel';
   private bc: BroadcastChannel;
   private listeners = new Set<(data: unknown) => void>();
 
