@@ -136,6 +136,21 @@ assert the full status machine: `idle → opening → connected → done`.
 Leadership is timing, so drive the clock. `createLeader` with an injected
 transport is one simulated tab, exactly like the store:
 
+:::caution[Pin the strategy in tests]
+`createLeader` picks Web Locks or the heartbeat election from what the runtime
+offers, and test runtimes disagree: Node 22 exposes no `navigator.locks`, Node
+24 does, and jsdom and happy-dom differ again. A test that drives fake timers
+past a lease is describing the **heartbeat** election, so say so — otherwise the
+same file asserts two different things depending on where it runs.
+
+```ts
+createLeader('feed', { strategy: 'heartbeat', transport: () => hub.connect() });
+```
+
+To exercise the Web Locks path deterministically, inject a lock manager with
+`locks` rather than relying on the platform providing one.
+:::
+
 ```ts
 import { createLeader } from '@use-everywhere/core';
 import { MemoryHub } from '@use-everywhere/core/testing';
@@ -143,7 +158,7 @@ import { MemoryHub } from '@use-everywhere/core/testing';
 it('a joiner adopts the incumbent instead of stealing the seat', async () => {
   vi.useFakeTimers();
   const hub = new MemoryHub();
-  const tab = () => createLeader('feed', { transport: () => hub.connect() });
+  const tab = () => createLeader('feed', { strategy: 'heartbeat', transport: () => hub.connect() });
 
   const first = tab();
   await vi.advanceTimersByTimeAsync(1000); // one heartbeat: it leads

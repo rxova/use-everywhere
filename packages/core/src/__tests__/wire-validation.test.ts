@@ -78,9 +78,16 @@ describe('malformed wires cannot take a tab down', () => {
     rogue.close();
   });
 
+  // Heartbeat only: a term is what that strategy arbitrates with, so a
+  // malformed one has to be rejected before it reaches newer(). The Web Locks
+  // strategy never reads terms — the lock decides who leads — so there is
+  // nothing to validate there.
   it('drops a leader claim whose term is not a version', async () => {
     const hub = new MemoryHub();
-    const leader = createLeader('wv-leader', { transport: () => hub.connect() });
+    const leader = createLeader('wv-leader', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     const rogue = hub.connect();
 
     rogue.post({

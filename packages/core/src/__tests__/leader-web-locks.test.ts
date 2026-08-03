@@ -18,7 +18,10 @@ describe('leader election on Web Locks', () => {
     return { hub, locks, tab };
   };
 
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   it('is chosen automatically when navigator.locks exists, and reports itself', () => {
     const { tab } = setup();
@@ -27,9 +30,14 @@ describe('leader election on Web Locks', () => {
     leader.close();
   });
 
+  // These two describe a host with no Web Locks, so they *say* so rather than
+  // relying on the runtime not having it. Node 22 exposes no navigator.locks
+  // and Node 24 does — a test whose meaning depends on which one is running is
+  // not a test.
   it('falls back to the heartbeat election where Web Locks is absent', () => {
     // A plain-http origin: navigator.locks is a secure-context API, so this is
     // the common case on an intranet, not an exotic one.
+    vi.stubGlobal('navigator', undefined);
     const hub = new MemoryHub();
     const leader = createLeader('wl-fallback', { transport: () => hub.connect() });
     expect(leader.strategy).toBe('heartbeat');
@@ -37,6 +45,7 @@ describe('leader election on Web Locks', () => {
   });
 
   it('refuses to pretend when web-locks is demanded and unavailable', () => {
+    vi.stubGlobal('navigator', undefined);
     const hub = new MemoryHub();
     expect(() =>
       createLeader('wl-demand', { transport: () => hub.connect(), strategy: 'web-locks' }),

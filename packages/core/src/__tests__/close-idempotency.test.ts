@@ -25,7 +25,10 @@ describe('close() is idempotent', () => {
 
   it('for leaders', () => {
     const hub = new MemoryHub();
-    const leader = createLeader('ci-leader', { transport: () => hub.connect() });
+    const leader = createLeader('ci-leader', {
+      strategy: 'heartbeat',
+      transport: () => hub.connect(),
+    });
     leader.close();
     expect(() => leader.close()).not.toThrow();
   });
