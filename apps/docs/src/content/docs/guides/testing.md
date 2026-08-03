@@ -1,7 +1,7 @@
 ---
 title: 'Testing'
 sidebar:
-  order: 5
+  order: 6
 ---
 
 "Cross-tab behavior" sounds like something you'd need Playwright and three

@@ -1,7 +1,7 @@
 ---
 title: 'Recipes'
 sidebar:
-  order: 4
+  order: 5
 ---
 
 Small, complete patterns you can lift straight into an app. Each one names

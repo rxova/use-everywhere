@@ -148,6 +148,18 @@ describe('StorageTransport', () => {
     transport.close();
   });
 
+  it('explains itself in a context with no localStorage, rather than dying on a bare global', () => {
+    // A worker has no `localStorage` *global at all*, so the old default
+    // parameter threw `ReferenceError: localStorage is not defined` — true, and
+    // useless. This class is exported, so the direct caller gets told what is
+    // actually wrong and what to use instead.
+    vi.stubGlobal('localStorage', undefined);
+
+    expect(() => new StorageTransport('st-worker')).toThrow(/workers have none/);
+
+    vi.unstubAllGlobals();
+  });
+
   it('carries a real store between two tabs', async () => {
     // End to end on the fallback: a store writes, and the event the browser
     // would deliver reaches a second store, which converges.

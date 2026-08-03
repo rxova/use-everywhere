@@ -4,13 +4,14 @@ import { colorOf } from '../origins.js';
 export function PresenceStrip() {
   const peers = usePeers();
   const clientId = useClientId();
+  const workerCount = peers.filter((peer) => peer.kind === 'worker').length;
 
   return (
     <div className="presence">
       <div className="dot me" style={{ background: colorOf(clientId) }} />
       <span>this tab · {clientId}</span>
       <span>·</span>
-      <div className="peers">
+      <div className="peers" data-testid="peers" data-worker-count={workerCount}>
         {peers.length === 0 ? (
           <span className="peers-empty">no other tabs yet — open this page again</span>
         ) : (
