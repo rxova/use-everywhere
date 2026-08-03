@@ -2,8 +2,15 @@ import type { BusOptions } from './bus.types.js';
 import type { Peer } from './common.types.js';
 
 export interface PresenceOptions extends BusOptions {
-  /** Peers silent for longer than this are dropped. Default 5000ms. */
+  /** How much silence makes a peer suspect. Default 5000ms. It is then probed, not dropped. */
   pruneAfterMs?: number;
+  /**
+   * How long a probed peer has to answer before it is dropped. Default 1000ms.
+   *
+   * This is a round trip on a same-origin channel, not a heartbeat interval, so
+   * it can be short: a peer that is merely throttled still answers at once.
+   */
+  probeGraceMs?: number;
 }
 
 export interface Presence {

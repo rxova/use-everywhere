@@ -5,10 +5,23 @@ import type { Presence, PresenceOptions } from './presence.types.js';
 /**
  * Tracks the other tabs/windows/workers on this bus. Any message from a peer
  * counts as a liveness signal (state patches, events, and presence pings all
- * piggyback); explicit 'bye' or silence past pruneAfterMs removes them.
+ * piggyback); an explicit 'bye' removes them at once.
+ *
+ * Silence, though, is not proof of death — and treating it that way is what
+ * made the roster flap. Browsers clamp a hidden tab's timers to roughly one
+ * tick a minute, so a perfectly healthy backgrounded peer stops heartbeating,
+ * gets pruned, pings once, is re-added, and disappears again: a peer count
+ * oscillating once a minute for no reason. Waking a laptop does it to every
+ * peer at once.
+ *
+ * What saves it is that *message handlers are not throttled* — only timers are.
+ * A hidden tab still answers a hello the instant it arrives. So a peer that
+ * goes quiet is probed rather than dropped, and only silence that survives the
+ * probe counts as gone.
  */
 export function createPresence(name: string, options: PresenceOptions = {}): Presence {
   const pruneAfterMs = options.pruneAfterMs ?? 5000;
+  const probeGraceMs = options.probeGraceMs ?? 1000;
   const bus = getBus(name, options);
   const peers = new Map<string, Peer>();
   const listeners = new Set<() => void>();
@@ -36,19 +49,48 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   // heartbeatMs. Announcing again costs one wire and peers answer immediately.
   bus.post({ v: 1, scope: 'presence', type: 'hello', clientId: bus.clientId, kind: bus.kind });
 
+  /** Peers we have asked to speak up, and when we asked. */
+  const probed = new Map<string, number>();
+
   const prune = setInterval(
     () => {
-      const cutoff = Date.now() - pruneAfterMs;
+      const now = Date.now();
+      const silentSince = now - pruneAfterMs;
       let changed = false;
+      let needProbe = false;
+
       for (const [id, peer] of peers) {
-        if (peer.lastSeen < cutoff) {
+        if (peer.lastSeen >= silentSince) {
+          probed.delete(id); // spoke recently; nothing to answer for
+          continue;
+        }
+        const askedAt = probed.get(id);
+        if (askedAt === undefined) {
+          // First time it looks gone. Ask before concluding.
+          probed.set(id, now);
+          needProbe = true;
+        } else if (now - askedAt >= probeGraceMs) {
+          // Asked, and heard nothing back. Now it is gone.
           peers.delete(id);
+          probed.delete(id);
           changed = true;
         }
       }
+
+      // One hello covers every suspect at once: the bus answers a hello with a
+      // ping, so anybody still alive re-registers on the next tick.
+      if (needProbe) {
+        bus.post({
+          v: 1,
+          scope: 'presence',
+          type: 'hello',
+          clientId: bus.clientId,
+          kind: bus.kind,
+        });
+      }
       if (changed) notify();
     },
-    Math.max(500, Math.floor(pruneAfterMs / 2)),
+    Math.max(250, Math.floor(Math.min(pruneAfterMs, probeGraceMs) / 2)),
   );
 
   let closed = false;

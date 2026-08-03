@@ -51,14 +51,43 @@ interface Peer {
 The component re-renders **only when a peer joins or leaves**, not on every
 heartbeat — so rendering `peers.length` in your header costs nothing.
 
-## How liveness works (the two numbers to know)
+## How liveness works (the numbers to know)
 
 - Every client announces itself on join, pings every **2 seconds**, and says
   goodbye on `pagehide` — so clean closes disappear from the list instantly.
-- A peer silent for **5 seconds** is pruned — that's the crashed tab, which
-  never gets to say goodbye.
 - Any traffic counts as proof of life (a state patch, an event), so busy tabs
   never flicker offline.
+- A peer silent for **5 seconds** is not dropped — it is **probed**. If it does
+  not answer within a further **1 second**, it is removed. That's the crashed
+  tab, which never gets to say goodbye.
+
+The probe step exists because silence is not proof of death. Browsers clamp a
+hidden tab's timers to roughly one tick a minute, so a perfectly healthy
+backgrounded peer stops pinging on schedule. Dropping on silence alone made the
+roster oscillate — dropped, re-added on its next slow ping, dropped again — once
+a minute for a tab that was fine the whole time.
+
+Message handlers are _not_ throttled, only timers are, so a hidden tab answers
+the probe immediately and keeps its place. A peer that answers in time is never
+removed at all: you see no membership change, not a drop followed by a re-add.
+A tab returning to the foreground also re-announces itself, so anyone who did
+give up on it re-adds it within a round trip.
+
+Both numbers are tunable on the core API, which is where a presence engine can
+be constructed with options:
+
+```ts
+import { createPresence } from '@use-everywhere/core';
+
+const presence = createPresence('my-app', {
+  pruneAfterMs: 5000, // silence before a peer is treated as suspect
+  probeGraceMs: 1000, // how long it then has to answer
+});
+```
+
+`usePeers` uses the defaults. A peer that is genuinely gone still disappears
+within `pruneAfterMs + probeGraceMs`, and probing costs nothing while everyone
+is talking — nothing looks suspect, so no probes are sent.
 
 ## Worked example: "payment in progress in another tab"
 

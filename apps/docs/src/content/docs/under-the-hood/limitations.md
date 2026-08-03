@@ -95,6 +95,39 @@ useLeader({ eligible: !document.hidden });
 
 `leader.strategy` tells you which one you got.
 
+## A hidden tab stays in the peer roster — it is asked, not assumed dead
+
+The same throttling has a second victim. Presence treats any message from a peer
+as proof of life, so the obvious rule is to drop peers that have gone quiet. But
+a backgrounded tab's heartbeat is clamped to roughly one tick a minute, and it
+is perfectly healthy — dropping it produces a peer count that oscillates once a
+minute, forever, for a tab that never went anywhere.
+
+What rescues it is that **browsers throttle timers, not message handlers**. A
+hidden tab answers a `hello` the instant it arrives, however clamped its own
+heartbeat is. So silence is treated as a question rather than a verdict: a peer
+that has not spoken for `pruneAfterMs` is sent a probe, and only silence that
+survives a further `probeGraceMs` removes it. One broadcast covers every suspect
+at once, and a peer that answers in time is never removed at all — subscribers
+see no membership change, not a drop followed by a re-add.
+
+A returning tab also re-announces on `visibilitychange`, so peers that did give
+up on it re-add it within a round trip instead of waiting out the next slow
+heartbeat. That matters most after a laptop wakes, when every tab on the origin
+is in that position simultaneously.
+
+The defaults suit tabs, and [`usePeers`](../hooks/use-peers.md) uses them. Both
+are tunable on the core API — tighten them for a UI that must notice a peer
+leaving quickly:
+
+```ts
+createPresence('my-app', { pruneAfterMs: 5000, probeGraceMs: 1000 });
+```
+
+A peer that is genuinely gone still disappears, within `pruneAfterMs +
+probeGraceMs`. Probes cost nothing while everyone is talking: nothing looks
+suspect, so nothing is sent.
+
 ## Restoring from the back/forward cache is handled
 
 Navigating away and pressing Back does not reload the page — the browser
