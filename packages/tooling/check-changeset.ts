@@ -26,8 +26,12 @@ const publishedPackageDirs = ['packages/core/', 'packages/react/'];
  * beneath it — so those prefixes were dead and files were only skipped when
  * they happened to carry one of the listed extensions.
  */
+// `e2e/` is here for the same reason `apps/` is: browser specs exercise the
+// published packages but ship none of them, so a suite-only PR has no version
+// to bump. Without it the gate demands a changeset that would release an
+// identical library under a new number.
 const allowedPattern =
-  /^((apps|\.github|\.changeset|\.husky|scripts|packages\/tooling)\/.*|.*\.(md|txt|yml|yaml|json))$/;
+  /^((apps|e2e|\.github|\.changeset|\.husky|scripts|packages\/tooling)\/.*|\.gitignore|.*\.(md|txt|yml|yaml|json))$/;
 
 const getEnv = (name: string, required = true): string | undefined => {
   const value = process.env[name];

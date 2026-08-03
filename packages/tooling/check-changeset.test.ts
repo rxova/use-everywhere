@@ -175,6 +175,20 @@ describe('check-changeset', () => {
     expect(result.output).toContain('No changeset found');
   });
 
+  // A browser-spec PR exercises the published packages but ships none of them,
+  // so demanding a changeset would release an identical library under a new
+  // version number. The suite lived only alongside package changes until an
+  // e2e-only PR hit this and found the gap.
+  it('lets an end-to-end-only change through without a changeset', async () => {
+    const { tempRoot, baseSha } = await initRepo();
+    await mkdir(join(tempRoot, 'e2e'), { recursive: true });
+    await writeFile(join(tempRoot, 'e2e', 'thing.spec.ts'), 'export {};\n', 'utf8');
+    await writeFile(join(tempRoot, '.gitignore'), 'dist\n', 'utf8');
+    const headSha = commitAll(tempRoot, 'test(e2e): add a spec');
+
+    expect(runScript(tempRoot, env(baseSha, headSha)).code).toBe(0);
+  });
+
   it('fails loudly when required environment is missing', async () => {
     const { tempRoot, baseSha } = await initRepo();
     await writeFile(join(tempRoot, 'NOTES.md'), 'note\n', 'utf8');
