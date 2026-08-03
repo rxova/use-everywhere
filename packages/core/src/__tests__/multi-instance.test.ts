@@ -97,6 +97,23 @@ describe('two copies of the library on one page', () => {
     theirs.close();
   });
 
+  it('do not become their own peer when a sibling writes', async () => {
+    // The regression that shipping local fan-out introduced, and that a devtool
+    // rendering "Peers (1)" next to its own id is what caught: presence counts
+    // any wire as proof of life, and a sibling's state patch now arrives
+    // carrying *our* clientId, because a page is one client.
+    const presence = createPresence('mi-selfpeer');
+    const store = createSharedStore<{ n: number }>('mi-selfpeer', { n: 0 });
+
+    store.set('n', 1);
+    await vi.advanceTimersByTimeAsync(50);
+
+    expect(presence.getPeers()).toEqual([]);
+
+    presence.close();
+    store.close();
+  });
+
   it('elect one leader between them, not one each', async () => {
     const b = await secondCopy();
 
