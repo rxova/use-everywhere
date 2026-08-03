@@ -16,10 +16,23 @@ lifecycle without opening a window.
 
 A `MemoryHub` is an in-process stand-in for the browser's channel: every
 transport connected to it receives every _other_ transport's posts,
-asynchronously, with no self-echo — the exact semantics of BroadcastChannel.
+asynchronously, structured-cloned per delivery, with no self-echo — the exact
+semantics of BroadcastChannel. Cloning matters: a payload that would throw
+`DataCloneError` in a real browser throws here too, instead of passing in tests
+and failing in production.
+
+It lives on the `testing` subpath, so a simulation harness never lands in your
+production bundle:
 
 ```ts
-import { createSharedStore, MemoryHub } from '@use-everywhere/core';
+import { MemoryHub } from '@use-everywhere/core/testing';
+// or, from the React package:
+import { MemoryHub } from 'use-everywhere/testing';
+```
+
+```ts
+import { createSharedStore } from '@use-everywhere/core';
+import { MemoryHub } from '@use-everywhere/core/testing';
 
 it('two tabs converge', async () => {
   const hub = new MemoryHub();
@@ -124,7 +137,8 @@ Leadership is timing, so drive the clock. `createLeader` with an injected
 transport is one simulated tab, exactly like the store:
 
 ```ts
-import { createLeader, MemoryHub } from '@use-everywhere/core';
+import { createLeader } from '@use-everywhere/core';
+import { MemoryHub } from '@use-everywhere/core/testing';
 
 it('a joiner adopts the incumbent instead of stealing the seat', async () => {
   vi.useFakeTimers();

@@ -49,9 +49,15 @@ const settings = defineStore('settings', { persist: localStorageAdapter('app:set
 const [theme] = useSharedState('theme', 'light', { store: 'settings' });
 ```
 
-If `defineStore` runs _after_ that store already exists, it **throws**. Handing
-you back a store that silently isn't persisted is exactly the bug this design
-exists to prevent — so move the call to module scope, where it belongs.
+If `defineStore` runs _after_ that store already exists, it **warns in
+development** and the live store keeps the configuration it was built with.
+Handing you back a store that silently isn't persisted is exactly the bug this
+design exists to prevent — so move the call to module scope, where it belongs.
+
+Re-registering the _same_ configuration is a no-op, not a conflict. That is what
+Fast Refresh does every time you edit the defining module, and comparing the
+adapter by identity would flag each hot reload as a redefinition — so
+configurations are compared by shape instead.
 
 ## Adapters
 

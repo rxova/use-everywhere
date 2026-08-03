@@ -18,6 +18,8 @@ interface Transport {
 Pass a **factory**, not an instance — the engine gives it the bus name:
 
 ```ts
+import { MemoryHub } from '@use-everywhere/core/testing';
+
 createSharedStore('settings', {}, { transport: (name) => new MemoryHub().connect() });
 ```
 
@@ -26,12 +28,16 @@ createSharedStore('settings', {}, { transport: (name) => new MemoryHub().connect
 **`BroadcastChannelTransport`** — the real one. Same-origin, cross-tab,
 cross-worker.
 
-**`MemoryHub` + `MemoryTransport`** — the test seam. A hub is an in-process
-stand-in for the browser's channel: every transport connected to it receives
-every _other_ transport's posts, on a microtask, with no self-echo — the exact
+**`MemoryHub` + `MemoryTransport`** — the test seam, imported from
+`@use-everywhere/core/testing` (or `use-everywhere/testing`), not the package
+root. A hub is an in-process stand-in for the browser's channel: every
+transport connected to it receives every _other_ transport's posts, on a
+microtask, structured-cloned per delivery, with no self-echo — the exact
 semantics of `BroadcastChannel`.
 
 ```ts
+import { MemoryHub } from '@use-everywhere/core/testing';
+
 const hub = new MemoryHub();
 const options = { transport: () => hub.connect() };
 

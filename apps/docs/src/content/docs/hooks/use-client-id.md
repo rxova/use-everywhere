@@ -37,13 +37,27 @@ function useClientId(options?: { name?: string }): string;
 
 ## Return value
 
-A short random string, stable for the life of the page. It is:
+A 16-character hex string from `crypto.getRandomValues`, stable for the life of
+the page. It is:
 
 - the `id` other tabs see for you in [`usePeers`](./use-peers.md),
 - the `meta.clientId` other tabs receive with your
   [events](./use-message.md) and state patches,
 - new on every full page load (it identifies a _page instance_, not a user or
   a browser).
+
+**On the server it is the empty string.** An id invented during server
+rendering could never match the one the browser mints, so rendering it into
+markup would mismatch on hydration. The hook returns `''` for the server render
+_and_ for the client's hydrating render, then the real id arrives in the commit
+immediately after. Treat `''` as "not known yet":
+
+```tsx
+const me = useClientId();
+if (!me) return <Placeholder />; // first paint under SSR
+```
+
+Without SSR — a plain Vite or CRA app — you will never observe `''`.
 
 ## Worked example: claiming a lock you can recognize
 

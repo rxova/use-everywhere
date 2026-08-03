@@ -118,12 +118,23 @@ class of bug, gone. (For the full pattern with an owner id, see the
   it. First mount registers the initial, later mounts reuse it — so two tabs
   with different initials converge deterministically too.
 - **Concurrent writes to the same key: one wins, one is discarded.**
-  Last-writer-wins with a deterministic tie-break. Perfect for flags,
-  counters, form fields; wrong for collaborative text editing — that's
+  Last-writer-wins with a deterministic tie-break. Perfect for flags, form
+  fields, and drafts; wrong for collaborative text editing — that's
   [CRDT territory](../under-the-hood/limitations.md#last-writer-wins-loses-concurrent-writes).
+- **The rule is per key, not per operation — so counters can lose an
+  increment.** `setCount((c) => c + 1)` applies the updater to _this_ tab's
+  value and broadcasts the result. Two tabs incrementing 5 at the same instant
+  both compute 6, and 6 is what every tab converges on: the tabs agree, and one
+  `+1` is gone. It converges, it just does not accumulate. When the total has
+  to be right, do the counting in one tab
+  ([`useLeaderEffect`](./use-leader.md)) or on your server.
 - **Values must survive structured clone.** Plain objects, arrays, `Map`,
   `Set`, `Date`, typed arrays: fine. Functions, class instances, DOM nodes,
-  React elements: not fine.
+  React elements: not fine — writing one throws, and the write does not
+  happen, so your tab never diverges from its peers.
+- **One key, one default.** The first `useSharedState('k', …)` to run
+  registers the default; a second call elsewhere passing a different one is
+  ignored. Development warns when it spots the disagreement.
 - **Replace values, don't mutate them.** Syncing happens on assignment, not
   in-place mutation: `setCart({ ...cart, items: 3 })` syncs;
   `cart.items = 3` on a value you read does not. Development deep-freezes

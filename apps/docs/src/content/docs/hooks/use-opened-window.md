@@ -26,7 +26,7 @@ function PayButton() {
     }),
   );
 
-  if (pay.status === 'done') return <p>✓ receipt {pay.result!.receiptId}</p>;
+  if (pay.status === 'done') return <p>✓ receipt {pay.result.receiptId}</p>;
   if (pay.status === 'closed-early') return <p>Window closed — try again.</p>;
   if (pay.status === 'error') return <p>Something broke: {String(pay.error)}</p>;
 
@@ -68,14 +68,30 @@ blockers require a user gesture.
 
 ## Return value
 
-| Field    | Type                                                                        | Notes                                                                                            |
-| -------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `open`   | `() => void`                                                                | Call from a user gesture. Calling it again closes and replaces the previous window.              |
-| `status` | `'idle' \| 'opening' \| 'connected' \| 'done' \| 'closed-early' \| 'error'` | The whole lifecycle as render state — see below.                                                 |
-| `result` | `R \| undefined`                                                            | The child's `finish()` value, once `status === 'done'`.                                          |
-| `error`  | `unknown`                                                                   | Set for `'closed-early'` and `'error'`.                                                          |
-| `post`   | `(type, payload) => void`                                                   | Typed post to the child. Safe no-op while nothing is open; queued until the handshake completes. |
-| `close`  | `() => void`                                                                | Close the child window yourself.                                                                 |
+| Field    | Type                                                                              | Notes                                                                                            |
+| -------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `open`   | `() => void`                                                                      | Call from a user gesture. Calling it again closes and replaces the previous window.              |
+| `status` | `'idle' \| 'opening' \| 'connected' \| 'done' \| 'closed-early' \| 'error'`       | The whole lifecycle as render state — see below.                                                 |
+| `result` | `R` when `status === 'done'`, else `undefined`                                    | The child's `finish()` value.                                                                    |
+| `error`  | `WindowClosedError` on `'closed-early'`, `unknown` on `'error'`, else `undefined` | Why it ended.                                                                                    |
+| `post`   | `(type, payload) => void`                                                         | Typed post to the child. Safe no-op while nothing is open; queued until the handshake completes. |
+| `close`  | `() => void`                                                                      | Close the child window yourself.                                                                 |
+
+The three state fields are a **discriminated union** on `status`, so checking it
+narrows the rest — no non-null assertion needed:
+
+```tsx
+if (pay.status === 'done') {
+  pay.result.receiptId; // R, not R | undefined
+}
+if (pay.status === 'closed-early') {
+  pay.error; // WindowClosedError
+}
+```
+
+The state moves as one unit, so no render can ever observe `status: 'done'`
+before `result` has landed. `OpenedWindowState` and `OpenedWindowControls` are
+exported if you need to pass the pieces around separately.
 
 ### The status lifecycle
 

@@ -19,5 +19,64 @@ export type {
   OpenedWindowControls,
 } from './use-opened-window.types.js';
 
-// Full core surface, so React apps need a single dependency.
-export * from '@use-everywhere/core';
+// The core surface, enumerated rather than re-exported with `export *`, so a
+// React app still needs one dependency without this package's public API
+// silently becoming whatever core happens to export. Anything added to core
+// from now on is a deliberate addition here too.
+//
+// Test seams live on 'use-everywhere/testing'.
+export {
+  createChannel,
+  createSharedStore,
+  createPresence,
+  createLeader,
+  webStorageAdapter,
+  localStorageAdapter,
+  sessionStorageAdapter,
+  openWindow,
+  connectToOpener,
+  CID_PARAM,
+  WindowClosedError,
+  HandshakeTimeoutError,
+  newer,
+  observeBus,
+  enableDebug,
+  getBusNames,
+  BroadcastChannelTransport,
+  NoopTransport,
+  defaultTransport,
+  isBroadcastChannelAvailable,
+} from '@use-everywhere/core';
+export type {
+  Channel,
+  SharedStore,
+  SharedStoreOptions,
+  Presence,
+  PresenceOptions,
+  Leader,
+  LeaderOptions,
+  LeaderSnapshot,
+  StorageLike,
+  WebStorageAdapterOptions,
+  Persisted,
+  PersistAdapter,
+  PersistOptions,
+  OpenedWindow,
+  OpenerConnection,
+  OpenWindowOptions,
+  ConnectToOpenerOptions,
+  WindowLike,
+  WindowEventTarget,
+  MessageEventLike,
+  BusEvent,
+  BusObserver,
+  DebugOptions,
+  BusWire,
+  Transport,
+  MessageMap,
+  MessageMeta,
+  Peer,
+  PeerKind,
+  Version,
+  CommonOptions,
+} from '@use-everywhere/core';

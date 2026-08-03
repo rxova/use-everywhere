@@ -35,8 +35,9 @@ export type { Transport } from './transport/transport.types.js';
 export { BroadcastChannelTransport } from './transport/broadcast-channel-transport.js';
 export { NoopTransport } from './transport/noop-transport.js';
 export { defaultTransport, isBroadcastChannelAvailable } from './transport/default-transport.js';
-export { MemoryHub } from './transport/memory-hub.js';
-export { MemoryTransport } from './transport/memory-transport.js';
+// MemoryHub and MemoryTransport are test seams: import them from
+// '@use-everywhere/core/testing'. Keeping them here made a simulation harness
+// part of the runtime API surface, and 1.0 has to promise not to break it.
 export type {
   MessageMap,
   MessageMeta,

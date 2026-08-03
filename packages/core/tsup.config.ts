@@ -1,7 +1,9 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // Object form, not an array: an array makes tsup infer a common base dir, and
+  // a different inference silently renames outputs the exports map points at.
+  entry: { index: 'src/index.ts', testing: 'src/testing.ts' },
   // Dual ESM + CJS: the exports map serves .js to `import` and .cjs to
   // `require`, so Jest/ts-node/CJS toolchains resolve instead of failing.
   format: ['esm', 'cjs'],

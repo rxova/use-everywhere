@@ -100,7 +100,7 @@ leadership is advisory rather than a lock.
 
 ```ts
 createChannel('name', {
-  transport: (name) => new MemoryHub().connect(), // swap the wire (tests)
+  transport: (name) => new MemoryHub().connect(), // swap the wire (from '/testing')
   kind: 'worker', // what this client calls itself
 });
 ```

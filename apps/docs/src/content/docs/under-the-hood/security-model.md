@@ -42,16 +42,32 @@ lost, so the paranoia is built in rather than left as an exercise.
 Every message a channel receives must pass **four gates** before your
 handler ever runs:
 
-| Gate        | Check                                                                                             | Stops                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1. Origin   | `event.origin === peerOrigin` (exact match, no wildcards)                                         | Any site you did not name                                      |
-| 2. Envelope | payload carries the library brand (`__ue: 1`)                                                     | Unrelated `postMessage` traffic on the same page               |
-| 3. Nonce    | `cid` equals the id minted for _this_ `openWindow()` call, delivered via the `?ue-cid=` URL param | Stale windows, replays from earlier sessions, guessed messages |
-| 4. Source   | `event.source` is the exact `Window` we opened (opener side)                                      | A third frame on the _correct_ origin impersonating the child  |
+| Gate        | Check                                                                                             | Stops                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| 1. Origin   | `event.origin === peerOrigin` (exact match, no wildcards)                                         | Any site you did not name                                       |
+| 2. Envelope | payload carries the library brand (`__ue: 1`)                                                     | Unrelated `postMessage` traffic on the same page                |
+| 3. Nonce    | `cid` equals the id minted for _this_ `openWindow()` call, delivered via the `?ue-cid=` URL param | Stale windows, replays from earlier sessions, guessed messages  |
+| 4. Source   | `event.source` is the expected peer — the exact `Window` we opened, or the opener                 | A third frame on the _correct_ origin impersonating either side |
 
 Fail any gate, and the message is dropped silently — your handlers never
 run. Note what gate 4 buys you: even a hostile iframe on the _correct_
-origin fails, because it isn't the exact window object you opened.
+origin fails, because it isn't the exact window object you opened. Both sides
+run this check — the child validates that a message really came from its
+opener, not merely from something at the opener's origin.
+
+The nonce is 128 bits from `crypto.getRandomValues`. That matters because the
+`cid` is what gate 3 rests on: a predictable nonce is a guessable one.
+`getRandomValues`, deliberately, and not `crypto.randomUUID` — `randomUUID` is
+restricted to secure contexts and simply does not exist on a plain-`http://`
+origin, which is exactly where an internal app would silently fall back to
+something weaker.
+
+One thing to know before shipping a popup flow: **`Cross-Origin-Opener-Policy`
+severs the connection.** If either page sends `COOP: same-origin`, the browser
+detaches `window.opener`, and the child cannot reach back — `connectToOpener`
+throws, and the opener's `closed` detection stops working. Payment providers
+commonly set it. If the child page is yours, `same-origin-allow-popups` on the
+opener keeps the channel intact.
 
 Outbound is symmetric: every `postMessage` is sent with an explicit
 `targetOrigin`, so the browser itself refuses delivery if the window has
