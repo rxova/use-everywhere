@@ -103,7 +103,7 @@ function PayButton() {
     }),
   );
 
-  if (pay.status === 'done') return <p>Paid — receipt {pay.result!.receiptId}</p>;
+  if (pay.status === 'done') return <p>Paid — receipt {pay.result.receiptId}</p>;
   if (pay.status === 'closed-early') return <p>Payment window was closed.</p>;
 
   return (

@@ -44,10 +44,22 @@ reason it converges.
 
 Storage can be unavailable: a sandboxed iframe, third-party cookies off, a
 full quota, a corrupt entry left by an older version of your app. In every
-one of those cases persistence degrades to a **silent no-op** and the store
-keeps working in memory. It will never be the thing that breaks your page —
-which also means it is not a guarantee. Don't put anything you can't afford
-to lose there; that's what your server is for.
+one of those cases persistence degrades to a **no-op** and the store keeps
+working in memory. It will never be the thing that breaks your page — which
+also means it is not a guarantee. Don't put anything you can't afford to lose
+there; that's what your server is for.
+
+Best-effort does not have to mean invisible. Every built-in adapter takes an
+`onError` callback, so you can measure how often it is failing for real users:
+
+```ts
+localStorageAdapter('settings', {
+  onError: (error, operation) => telemetry.warn('persist', { operation, error }),
+});
+```
+
+The callback is for observability only — the store's behaviour is identical
+whether or not you pass it, and an `onError` that throws is swallowed.
 
 ## Leadership is advisory, not a distributed lock
 
@@ -73,6 +85,37 @@ to restart, keep hidden tabs out of the running entirely:
 ```tsx
 useLeader({ eligible: !document.hidden });
 ```
+
+## Restoring from the back/forward cache is handled
+
+Navigating away and pressing Back does not reload the page — the browser
+freezes it and thaws it later. A frozen tab hears nothing, so on the way out it
+announces `bye`, and everything it misses while cached would otherwise leave it
+holding stale state and a leader seat it had already given up.
+
+On a restore (`pageshow` with `persisted: true`) each engine rejoins: presence
+re-announces itself, the store re-runs its late-joiner handshake and converges
+on whatever the live tabs hold, and the leader re-enters the election — adopting
+an incumbent that answers, or claiming the seat after one silent beat. Values
+this tab holds that are genuinely newer still win, because the snapshot replies
+pass through the same last-writer-wins gate as any other message.
+
+Nothing to configure. Worth knowing because the symptom, if it were missing,
+would be a tab that looks fine and is quietly wrong.
+
+## Server rendering renders defaults, and nothing else
+
+The hooks are safe to render on a server: there is no `window`, so no
+transport is opened, no heartbeat is armed, and no election runs.
+[`useSharedState`](../hooks/use-shared-state.md) renders its initial value,
+[`usePeers`](../hooks/use-peers.md) an empty list,
+[`useLeader`](../hooks/use-leader.md) no leader, and
+[`useClientId`](../hooks/use-client-id.md) an empty string.
+
+That is the only sensible answer — a server has no other tabs to ask — but it
+means server-rendered markup shows defaults, and the real values arrive after
+hydration. If a value must be correct in the first paint, it belongs in your
+server's data, not here.
 
 ## The Inspector is a devtool, not a feature
 
@@ -100,6 +143,24 @@ objects, arrays, strings, numbers, `Map`, `Set`, `Date`, typed arrays: fine.
 Functions, DOM nodes, class instances (their prototypes), React elements:
 not fine. Keep shared state to serializable data — the same discipline as
 Redux.
+
+A value that cannot cross the wire **throws, and the write does not happen**:
+
+```ts
+store.set('handlers', { onDone: () => {} });
+// TypeError: the value for key "handlers" cannot cross the wire
+// (structured clone failed); the write was not applied.
+```
+
+The rejection is all-or-nothing on purpose. The write is posted to the bus
+before it is committed locally, so a value the browser refuses to clone leaves
+your tab exactly as it was rather than updating locally and diverging silently
+from every peer.
+
+One asymmetry to know about: the wire uses structured clone, but the built-in
+persistence adapters use `JSON.stringify`. A `Date` therefore syncs between
+tabs as a `Date` and comes back from disk as a string, and `Map`/`Set` persist
+as `{}`. Keep persisted values JSON-shaped until pluggable serializers land.
 
 ## Same device, same browser only
 

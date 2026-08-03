@@ -8,6 +8,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     'devtools/index': 'src/devtools/index.ts',
+    testing: 'src/testing.ts',
   },
   // Dual ESM + CJS so `require('use-everywhere')` works (Jest/CJS toolchains).
   format: ['esm', 'cjs'],

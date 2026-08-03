@@ -12,26 +12,35 @@ You already have it. `use-everywhere` re-exports the whole of
 `@use-everywhere/core`, so there is one dependency either way:
 
 ```ts
-import { createSharedStore, newer, MemoryHub } from 'use-everywhere';
+import { createSharedStore, newer } from 'use-everywhere';
 // identical to:
-import { createSharedStore, newer, MemoryHub } from '@use-everywhere/core';
+import { createSharedStore, newer } from '@use-everywhere/core';
 ```
 
 Install `@use-everywhere/core` directly only if you have no React at all.
 
+Test seams live on a `testing` subpath rather than the package root, so a
+multi-tab simulation harness never reaches your production bundle:
+
+```ts
+import { MemoryHub } from 'use-everywhere/testing';
+// identical to:
+import { MemoryHub } from '@use-everywhere/core/testing';
+```
+
 ## What lives where
 
-|                                                                                       |                                                                                           |
-| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Hooks** — `useSharedState`, `useLeader`, …                                          | [Hooks](../hooks/overview.md)                                                             |
-| **Factories** — `defineChannel`, `defineStore`                                        | [Hooks](../hooks/overview.md) — they _return_ hooks, so they're documented alongside them |
-| **Engines** — `createSharedStore`, `createChannel`, `createPresence`, `createLeader`  | [Engines](./engines.md)                                                                   |
-| **Version clock** — `newer`, `Version`                                                | [The version clock](./clock.md)                                                           |
-| **Transports** — `MemoryHub`, `NoopTransport`, `BroadcastChannelTransport`            | [Transports](./transports.md)                                                             |
-| **Debug seam** — `observeBus`, `enableDebug`, `getBusNames`                           | [Debugging](./debugging.md)                                                               |
-| **Escape hatches** — `getSharedStore`, `getLeader`, `DEFAULT_NAME`, the error classes | [Escape hatches](./escape-hatches.md)                                                     |
-| **Cross-origin windows** — `openWindow`, `connectToOpener`                            | [useOpenedWindow](../hooks/use-opened-window.md)                                          |
-| **Persistence adapters** — `localStorageAdapter`, `webStorageAdapter`                 | [defineStore](../hooks/define-store.md)                                                   |
+|                                                                                                |                                                                                           |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Hooks** — `useSharedState`, `useLeader`, …                                                   | [Hooks](../hooks/overview.md)                                                             |
+| **Factories** — `defineChannel`, `defineStore`                                                 | [Hooks](../hooks/overview.md) — they _return_ hooks, so they're documented alongside them |
+| **Engines** — `createSharedStore`, `createChannel`, `createPresence`, `createLeader`           | [Engines](./engines.md)                                                                   |
+| **Version clock** — `newer`, `Version`                                                         | [The version clock](./clock.md)                                                           |
+| **Transports** — `NoopTransport`, `BroadcastChannelTransport` (plus `MemoryHub` on `/testing`) | [Transports](./transports.md)                                                             |
+| **Debug seam** — `observeBus`, `enableDebug`, `getBusNames`                                    | [Debugging](./debugging.md)                                                               |
+| **Escape hatches** — `getSharedStore`, `getLeader`, `DEFAULT_NAME`, the error classes          | [Escape hatches](./escape-hatches.md)                                                     |
+| **Cross-origin windows** — `openWindow`, `connectToOpener`                                     | [useOpenedWindow](../hooks/use-opened-window.md)                                          |
+| **Persistence adapters** — `localStorageAdapter`, `webStorageAdapter`                          | [defineStore](../hooks/define-store.md)                                                   |
 
 Every signature is also generated from the source in the
 [API reference](../api/core/index.md). This section is the prose; that one is

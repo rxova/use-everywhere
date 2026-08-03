@@ -136,9 +136,11 @@ The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/paymen
 
 ## Caveats worth knowing up front
 
-- Values must survive [structured clone](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) — no functions, DOM nodes, or class instances.
+- Values must survive [structured clone](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) — no functions, DOM nodes, or class instances. Writing one throws and the write is not applied, so a tab never diverges from its peers.
+- Shared state converges **per key, not per operation**: two tabs running `setCount(c => c + 1)` at the same instant agree on one value, and one increment is lost. Count in one tab (`useLeaderEffect`) or on the server.
 - Client-side locks are **UX, not security**. The payment lock prevents _accidental_ double payment; server-side idempotency keys are still required for real safety.
 - A backgrounded tab has its timers throttled, so a healthy leader can still lose its lease.
+- Server rendering is inert: hooks render their defaults, open no transports, and start no election. Real values arrive after hydration.
 
 ## Contributing & releases
 

@@ -50,7 +50,7 @@ function Checkout({ order }: { order: ToPayment['order'] }) {
     if (pay.status === 'connected') pay.post('order', order);
   }, [pay.status]);
 
-  if (pay.status === 'done') return <ReceiptView receipt={pay.result!} />;
+  if (pay.status === 'done') return <ReceiptView receipt={pay.result} />;
   if (pay.status === 'closed-early') return <p>Window closed — try again.</p>;
 
   return (
