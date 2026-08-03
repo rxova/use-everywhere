@@ -5,7 +5,7 @@ export type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 export { createPresence } from './presence.js';
 export type { Presence, PresenceOptions } from './presence.types.js';
 export { createLeader } from './leader.js';
-export type { Leader, LeaderOptions, LeaderSnapshot } from './leader.types.js';
+export type { Leader, LeaderOptions, LeaderSnapshot, LeaderStrategy } from './leader.types.js';
 export {
   webStorageAdapter,
   localStorageAdapter,

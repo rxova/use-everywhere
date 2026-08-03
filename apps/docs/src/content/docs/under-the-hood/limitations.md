@@ -72,19 +72,28 @@ card twice." Same energy as the note below about client-side locks: it is an
 efficiency mechanism, not a safety one. Anything that must happen exactly once
 needs a server-side idempotency key.
 
-## A hidden tab can lose a lease it deserved to keep
+## A hidden tab can lose a lease it deserved to keep — on the heartbeat strategy
 
 Browsers throttle timers in backgrounded pages — to roughly 1 Hz, and harder
-after a few minutes. A perfectly healthy leader that is merely _hidden_ can
-therefore miss its heartbeats, get demoted by tabs that are still awake, and
-run the cleanup in `useLeaderEffect`.
+after a few minutes. A leader that is merely _hidden_ can therefore miss its
+heartbeats, get demoted by tabs that are still awake, and run the cleanup in
+`useLeaderEffect`.
 
-The 3-second default lease tolerates 1 Hz clamping. If the work is expensive
-to restart, keep hidden tabs out of the running entirely:
+**This does not apply where Web Locks is available**, which is the default in
+any secure context. Holding a lock does not depend on a timer, so a throttled —
+or even fully frozen — tab keeps the seat. The lock is also released by the
+browser itself when a tab dies, so there is no lease to wait out either.
+
+Web Locks needs a secure context, so a plain-`http://` origin falls back to the
+heartbeat election and inherits this caveat. There, the 3-second default lease
+tolerates 1 Hz clamping; if the work is expensive to restart, keep hidden tabs
+out of the running entirely:
 
 ```tsx
 useLeader({ eligible: !document.hidden });
 ```
+
+`leader.strategy` tells you which one you got.
 
 ## Restoring from the back/forward cache is handled
 

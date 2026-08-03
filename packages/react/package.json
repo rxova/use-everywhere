@@ -77,7 +77,7 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "6.6 kB"
+      "limit": "7 kB"
     },
     {
       "name": "useSharedState",
@@ -107,7 +107,7 @@
       "name": "useLeader + useLeaderEffect",
       "path": "dist/index.js",
       "import": "{ useLeader, useLeaderEffect }",
-      "limit": "2.15 kB"
+      "limit": "2.8 kB"
     },
     {
       "name": "defineStore (persisted)",

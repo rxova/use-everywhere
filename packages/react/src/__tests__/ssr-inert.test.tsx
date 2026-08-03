@@ -57,7 +57,7 @@ describe('server rendering is inert', () => {
     expect(renderToString(<Crown />)).toContain('none');
   });
 
-  it('gives every engine a safe, do-nothing surface', () => {
+  it('gives every engine a safe, do-nothing surface', async () => {
     const store = getStore('stub', 'everywhere');
     const presence = getPresence('stub');
     const leader = getLeader('stub');
@@ -81,6 +81,15 @@ describe('server rendering is inert', () => {
     expect(presence.clientId).toBe('');
     expect(leader.getSnapshot()).toEqual({ leaderId: null, isLeader: false });
     expect(leader.clientId).toBe('');
+    expect(leader.strategy).toBe('heartbeat');
+
+    // waitForLeadership never settles on a server: there is no election to win,
+    // and resolving would run leader-only work during a render that is about to
+    // be discarded. Pending is the honest answer, so assert it stays pending.
+    const settled = vi.fn();
+    void leader.waitForLeadership().then(settled, settled);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).not.toHaveBeenCalled();
     expect(channel.name).toBe('stub');
     expect(channel.clientId).toBe('');
 

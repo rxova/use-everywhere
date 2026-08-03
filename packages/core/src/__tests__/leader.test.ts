@@ -465,3 +465,44 @@ describe('createLeader', () => {
     a.close();
   });
 });
+
+describe('waitForLeadership, on the heartbeat strategy', () => {
+  it('resolves once the seat is won, and immediately when it is already held', async () => {
+    vi.useFakeTimers();
+    const hub = new MemoryHub();
+    const leader = createLeader('wfl', { transport: () => hub.connect() });
+    try {
+      let seated = false;
+      const waiting = leader.waitForLeadership().then(() => (seated = true));
+      expect(seated).toBe(false); // one silent beat still to go
+
+      await vi.advanceTimersByTimeAsync(1000);
+      await waiting;
+      expect(seated).toBe(true);
+
+      // Already leading: no second wait.
+      await expect(leader.waitForLeadership()).resolves.toBeUndefined();
+    } finally {
+      leader.close();
+      vi.useRealTimers();
+    }
+  });
+
+  it('rejects rather than hanging when the tab is torn down first', async () => {
+    vi.useFakeTimers();
+    const hub = new MemoryHub();
+    const incumbent = createLeader('wfl-closed', { transport: () => hub.connect() });
+    await vi.advanceTimersByTimeAsync(1000);
+    const follower = createLeader('wfl-closed', { transport: () => hub.connect() });
+    await vi.advanceTimersByTimeAsync(100);
+
+    const pending = follower.waitForLeadership();
+    follower.close();
+
+    await expect(pending).rejects.toThrow(/closed/);
+    await expect(follower.waitForLeadership()).rejects.toThrow(/closed/);
+
+    incumbent.close();
+    vi.useRealTimers();
+  });
+});

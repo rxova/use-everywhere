@@ -56,6 +56,7 @@ export type {
   Leader,
   LeaderOptions,
   LeaderSnapshot,
+  LeaderStrategy,
   StorageLike,
   WebStorageAdapterOptions,
   Persisted,

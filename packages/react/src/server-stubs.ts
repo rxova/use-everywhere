@@ -57,10 +57,21 @@ const INERT = Object.freeze({
 export const createServerStore = (): AnyStore => INERT as unknown as AnyStore;
 export const createServerPresence = (): Presence => INERT as unknown as Presence;
 
-/** Leadership needs its own snapshot shape, so it wraps the shared constant. */
+/**
+ * Leadership needs its own snapshot shape, so it wraps the shared constant.
+ * `waitForLeadership` never settles on a server: there is no election to win,
+ * and resolving would run leader-only work during a render that is about to be
+ * thrown away. A pending promise is the honest answer.
+ */
 const NO_LEADER = Object.freeze({ leaderId: null, isLeader: false });
+const NEVER = () => new Promise<void>(() => {});
 export const createServerLeader = (): Leader =>
-  ({ ...INERT, getSnapshot: () => NO_LEADER }) as unknown as Leader;
+  ({
+    ...INERT,
+    strategy: 'heartbeat',
+    getSnapshot: () => NO_LEADER,
+    waitForLeadership: NEVER,
+  }) as unknown as Leader;
 
 /** Channels carry their name, so this is the one double that allocates. */
 export const createServerChannel = <M extends MessageMap>(name: string): Channel<M> =>
