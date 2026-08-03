@@ -51,6 +51,15 @@ export function SharedStateDemo() {
       setWorkerOn(true);
     }
   };
+
+  // The impolite exit. `terminate()` stops the worker mid-instruction: no
+  // `bye`, no chance to run anything. The dot cannot disappear on a message
+  // that is never sent, so it goes when presence stops getting an answer.
+  const killWorker = () => {
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setWorkerOn(false);
+  };
   useEffect(() => () => workerRef.current?.postMessage('stop'), []);
 
   return (
@@ -81,14 +90,26 @@ export function SharedStateDemo() {
       <div className="card">
         <h2>useSharedState('workerTicks') — written by a Web Worker</h2>
         <div className="row">
-          <button onClick={toggleWorker}>{workerOn ? 'Stop worker' : 'Start worker'}</button>
-          <div className="count" style={{ fontSize: 24 }}>
+          <button data-testid="toggle-worker" onClick={toggleWorker}>
+            {workerOn ? 'Stop worker' : 'Start worker'}
+          </button>
+          {workerOn && (
+            <button data-testid="kill-worker" onClick={killWorker}>
+              Kill worker
+            </button>
+          )}
+          <div className="count" data-testid="worker-ticks" style={{ fontSize: 24 }}>
             {workerTicks}
           </div>
         </div>
         <p className="hint">
           The worker runs the same core library and does <code>state.workerTicks++</code> once a
           second. Square dots in the strip above are workers.
+        </p>
+        <p className="hint">
+          <strong>Stop</strong> asks it to shut down, so it says goodbye and its dot goes at once.{' '}
+          <strong>Kill</strong> is <code>terminate()</code> — no goodbye, so the dot lingers for a
+          few seconds until presence gives up on it. Both are correct; only one is instant.
         </p>
       </div>
 

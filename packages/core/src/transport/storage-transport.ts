@@ -29,7 +29,16 @@ export class StorageTransport implements Transport {
   private onStorage: (event: StorageEvent) => void;
   private seq = 0;
 
-  constructor(name: string, storage: Storage = localStorage) {
+  constructor(name: string, storage: Storage = globalThis.localStorage) {
+    // A bare `localStorage` default threw a bald `ReferenceError` in a worker,
+    // where the global does not exist at all rather than being undefined.
+    // `defaultTransport` never gets here — it probes first — but this class is
+    // exported, so the direct caller is the one who needs telling why.
+    if (!storage) {
+      throw new Error(
+        '[use-everywhere] StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.',
+      );
+    }
     this.key = `use-everywhere:bus:${name}`;
     this.storage = storage;
     this.onStorage = (event) => {
