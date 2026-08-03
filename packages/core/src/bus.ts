@@ -65,10 +65,20 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
     if (!(event as { persisted?: boolean }).persisted) return;
     post({ v: 1, scope: 'presence', type: 'hello', clientId, kind });
   };
+  // Coming back to the foreground: our timers were clamped while hidden, so
+  // peers may have given up on us — and after a laptop wakes, every tab is in
+  // that position at once. Re-announcing costs one wire and re-registers us
+  // immediately instead of waiting for the next (still slow) heartbeat.
+  const onVisible = () => {
+    if (document.visibilityState === 'visible') {
+      post({ v: 1, scope: 'presence', type: 'hello', clientId, kind });
+    }
+  };
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   if (hasWindow) {
     addEventListener('pagehide', sayBye);
     addEventListener('pageshow', onPageShow);
+    addEventListener('visibilitychange', onVisible);
   }
 
   return {
@@ -98,6 +108,7 @@ function createBus(name: string, options: BusOptions, onShutdown: () => void): S
       if (hasWindow) {
         removeEventListener('pagehide', sayBye);
         removeEventListener('pageshow', onPageShow);
+        removeEventListener('visibilitychange', onVisible);
       }
       unsubscribe();
       transport.close();
