@@ -2,9 +2,22 @@ import { getBus } from './bus.js';
 import type { BusOptions } from './bus.types.js';
 import { isVersion, newer } from './clock.js';
 import type { Version } from './common.types.js';
-import type { Leader, LeaderOptions, LeaderSnapshot } from './leader.types.js';
+import { createWebLocksLeader } from './leader-web-locks.js';
+import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from './leader.types.js';
 
 const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: false });
+
+/**
+ * Web Locks is a secure-context API, so it is simply absent on a plain-http
+ * origin — an intranet app, a LAN staging box — which is exactly where a
+ * same-origin multi-tab library gets used. The heartbeat strategy is not a
+ * legacy path; it is what runs there.
+ */
+function availableLocks(options: LeaderOptions): LockManagerLike | undefined {
+  if (options.locks) return options.locks;
+  const locks = (globalThis.navigator as { locks?: LockManagerLike } | undefined)?.locks;
+  return typeof locks?.request === 'function' ? locks : undefined;
+}
 
 /**
  * Elects exactly one client on the bus to hold a seat: the tab that owns the
@@ -20,6 +33,21 @@ const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: fals
  * timers are throttled can lose a lease it deserved to keep.
  */
 export function createLeader(name: string, options: LeaderOptions = {}): Leader {
+  const strategy = options.strategy ?? 'auto';
+  if (strategy !== 'heartbeat') {
+    const locks = availableLocks(options);
+    if (locks) return createWebLocksLeader(name, options, locks);
+    if (strategy === 'web-locks') {
+      throw new Error(
+        'strategy: "web-locks" was requested but navigator.locks is unavailable. ' +
+          'Web Locks needs a secure context (https, or localhost) — use "auto" to fall back to the heartbeat election.',
+      );
+    }
+  }
+  return createHeartbeatLeader(name, options);
+}
+
+function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
   const heartbeatMs = options.heartbeatMs ?? 1000;
   const leaseMs = options.leaseMs ?? 3000;
 
@@ -47,6 +75,7 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
   let closed = false;
 
   const listeners = new Set<() => void>();
+  const waiters = new Set<{ resolve: () => void; reject: (error: unknown) => void }>();
 
   function setLeader(id: string | null) {
     // A heartbeat that merely confirms the incumbent must mint no object and
@@ -56,6 +85,10 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
     leaderId = id;
     snapshot = Object.freeze({ leaderId: id, isLeader: id === clientId });
     for (const fn of listeners) fn();
+    if (id === clientId) {
+      for (const waiter of waiters) waiter.resolve();
+      waiters.clear();
+    }
   }
 
   function armLease(delay: number) {
@@ -165,10 +198,18 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
 
   return {
     clientId,
+    strategy: 'heartbeat',
     getSnapshot: () => snapshot,
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
+    },
+    waitForLeadership() {
+      if (leaderId === clientId) return Promise.resolve();
+      if (closed) return Promise.reject(new Error('leader is closed'));
+      return new Promise<void>((resolve, reject) => {
+        waiters.add({ resolve, reject });
+      });
     },
     resign,
     setEligible(next: boolean) {
@@ -187,6 +228,8 @@ export function createLeader(name: string, options: LeaderOptions = {}): Leader 
       if (closed) return;
       closed = true;
       resign();
+      for (const waiter of waiters) waiter.reject(new Error('leader is closed'));
+      waiters.clear();
       clearInterval(beat);
       clearTimeout(lease);
       if (hasWindow) {
