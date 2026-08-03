@@ -1,5 +1,18 @@
 # @use-everywhere/core
 
+## 0.6.0
+
+### Minor Changes
+
+- [#38](https://github.com/rxova/use-everywhere/pull/38) [`7e2e2e6`](https://github.com/rxova/use-everywhere/commit/7e2e2e61e19caa2fbc3691c4470f36a92e9684f2) - Move `MemoryHub` and `MemoryTransport` to a `testing` subpath.
+
+  ```diff
+  -import { MemoryHub } from '@use-everywhere/core';
+  +import { MemoryHub } from '@use-everywhere/core/testing';
+  ```
+
+  They are a multi-tab simulation harness, not runtime API. On the package root they were part of the public, semver-bound surface — something 1.0 would have to promise not to break — and sat in every production bundle's module graph. Nothing else moved: `BroadcastChannelTransport`, `NoopTransport`, and `defaultTransport` are real transports and stay on the root.
+
 ## 0.5.0
 
 ### Minor Changes
