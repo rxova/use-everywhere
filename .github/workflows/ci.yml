@@ -154,28 +154,41 @@ jobs:
         run: pnpm run pack:smoke
 
   e2e:
-    name: e2e
+    name: e2e (${{ matrix.browser }})
     needs: [commitlint]
     if: github.head_ref != 'changeset-release/main'
     # The assertions unit tests cannot make: a real BroadcastChannel, real tabs,
     # real localStorage. One browser context — separate contexts are separate
     # storage partitions and would not see each other's broadcasts.
+    #
+    # One job per engine rather than one job running three projects: everything
+    # this library rests on — BroadcastChannel, pagehide/pageshow, storage
+    # partitioning, popups — is exactly where the engines differ, so a WebKit
+    # failure should be readable without scrolling past two passing engines.
+    # `fail-fast: false` for the same reason: one red engine must not hide the
+    # verdict on the other two.
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      - name: Install Chromium
-        run: pnpm run e2e:install
-      # `pnpm e2e` builds the two libraries through Turbo first — the demo app
-      # Playwright's webServer serves imports them — then runs the suite.
+      # Only the engine this leg needs: installing all three per job would
+      # download two browsers it never launches.
+      - name: Install ${{ matrix.browser }}
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      # `libs:build` first through Turbo — the demo app Playwright's webServer
+      # serves imports the two libraries — then the suite for this engine.
       - name: End-to-end
-        run: pnpm e2e
+        run: pnpm run libs:build && pnpm exec playwright test --project=${{ matrix.browser }}
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
 

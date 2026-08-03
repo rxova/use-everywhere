@@ -126,6 +126,23 @@ describe('createSharedStore', () => {
     expect(second).toBe(1);
   });
 
+  it('keeps the shared listener set alive until the last subscriber leaves', () => {
+    const hub = new MemoryHub();
+    const a = makeClient(hub);
+    let first = 0;
+    let second = 0;
+    const offFirst = a.subscribeKey('count', () => first++);
+    a.subscribeKey('count', () => second++);
+
+    // The bucket is dropped only when it empties — removing one of two
+    // subscribers must not silently unsubscribe the other.
+    offFirst();
+    a.set('count', 1);
+
+    expect(first).toBe(0);
+    expect(second).toBe(1);
+  });
+
   it('set() on a key missing from the initial shape starts its clock at 1', async () => {
     const hub = new MemoryHub();
     const a = createSharedStore<{ count: number; late?: string }>(

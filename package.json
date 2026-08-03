@@ -26,7 +26,8 @@
     "libs:build": "turbo run build --filter=@use-everywhere/core --filter=use-everywhere",
     "e2e": "pnpm run libs:build && playwright test",
     "e2e:ui": "pnpm run libs:build && playwright test --ui",
-    "e2e:install": "playwright install --with-deps chromium"
+    "e2e:install": "playwright install --with-deps chromium firefox webkit",
+    "e2e:chromium": "pnpm run libs:build && playwright test --project=chromium"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs}": [

@@ -63,7 +63,9 @@ export function PaymentPage() {
         different origin than the shop that opened this window.
       </p>
       <div className="card" style={{ marginTop: 20 }}>
-        <h2>{order ? `Order #${order.orderId}` : 'Waiting for order details…'}</h2>
+        <h2 data-testid="order-heading">
+          {order ? `Order #${order.orderId}` : 'Waiting for order details…'}
+        </h2>
         {order && (
           <>
             <div className="order-line">
@@ -71,6 +73,7 @@ export function PaymentPage() {
               <span>{order.amount}</span>
             </div>
             <input
+              data-testid="card-input"
               type="text"
               inputMode="numeric"
               autoComplete="off"
@@ -80,7 +83,12 @@ export function PaymentPage() {
               disabled={state !== 'form'}
               style={{ marginTop: 14 }}
             />
-            <button className="pay" onClick={chargeCard} disabled={!chargeable}>
+            <button
+              className="pay"
+              data-testid="charge-button"
+              onClick={chargeCard}
+              disabled={!chargeable}
+            >
               {state === 'form' && `Pay ${order.amount}`}
               {state === 'charging' && 'Charging…'}
               {state === 'done' && '✓ Paid — returning you to the shop'}

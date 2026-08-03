@@ -6,7 +6,17 @@ import { newClientId } from './ids.js';
 import { defaultTransport } from './transport/default-transport.js';
 
 export function isBusWire(data: unknown): data is BusWire {
-  return typeof data === 'object' && data !== null && (data as { v?: unknown }).v === 1;
+  if (typeof data !== 'object' || data === null) return false;
+  const wire = data as { v?: unknown; scope?: unknown; type?: unknown; clientId?: unknown };
+  // Beyond the version marker, check the three fields every branch downstream
+  // reads unconditionally. The envelope is the only place a wire's shape is
+  // ever verified, and everything past this point treats it as typed.
+  return (
+    wire.v === 1 &&
+    typeof wire.scope === 'string' &&
+    typeof wire.type === 'string' &&
+    typeof wire.clientId === 'string'
+  );
 }
 
 export function defaultKind(): PeerKind {
