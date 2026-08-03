@@ -31,12 +31,23 @@ export default defineConfig({
     // sweep of false failures more than once. A dedicated port makes reuse
     // safe again, and --strictPort turns a genuine collision into a loud
     // startup error instead of ten mystifying assertion failures.
-    baseURL: 'http://localhost:5179',
+    //
+    // 127.0.0.2, not localhost, and that is load-bearing. The demo's payment
+    // window opens on a *second* origin — 127.0.0.3, the partner of this one
+    // (see apps/demo/src/origins.ts) — so the suite needs two reachable
+    // hostnames. `localhost` is not dependable for that: it resolves to ::1
+    // before 127.0.0.1 on some hosts (GitHub's runners among them), and a dev
+    // server bound to one address family leaves the other refusing connections
+    // — which showed up as the payment popup loading a dead page in CI while
+    // passing locally. Two plain IPv4 loopback addresses remove the variable.
+    baseURL: 'http://127.0.0.2:5179',
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm --filter @use-everywhere/demo dev --port 5179 --strictPort',
-    url: 'http://localhost:5179',
+    // --host so the server answers on every loopback address, not just the one
+    // `localhost` happens to resolve to.
+    command: 'pnpm --filter @use-everywhere/demo dev --port 5179 --strictPort --host 0.0.0.0',
+    url: 'http://127.0.0.2:5179',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },
