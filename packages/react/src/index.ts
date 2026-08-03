@@ -12,7 +12,12 @@ export { useLeader, useIsLeader, useLeaderEffect } from './use-leader.js';
 export type { UseLeaderOptions } from './use-leader.types.js';
 export { getLeader } from './registry.js';
 export { useOpenedWindow } from './use-opened-window.js';
-export type { UseOpenedWindow, OpenedWindowStatus } from './use-opened-window.types.js';
+export type {
+  UseOpenedWindow,
+  OpenedWindowStatus,
+  OpenedWindowState,
+  OpenedWindowControls,
+} from './use-opened-window.types.js';
 
 // Full core surface, so React apps need a single dependency.
 export * from '@use-everywhere/core';

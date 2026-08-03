@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { PersistAdapter, Persisted, StorageLike } from '@use-everywhere/core';
 import { webStorageAdapter } from '@use-everywhere/core';
 import { defineStore } from '../define-store.js';
@@ -145,14 +145,51 @@ describe('defineStore', () => {
     expect((JSON.parse(map.get(name) ?? '{}') as Persisted).state).toEqual({ keep: 'yes' });
   });
 
-  it('throws if it runs after the store already exists', () => {
+  it('warns, without throwing, when it runs after the store already exists', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const name = uniqueName();
     const adapter: PersistAdapter = { read: () => undefined, write: () => {} };
 
     getSharedStore(name); // the store is now live
 
-    // Silently handing back a store with no persistence is the exact ambiguity
-    // this design exists to avoid, so it is loud instead.
-    expect(() => defineStore(name, { persist: adapter })).toThrow(/module scope/);
+    // Silently handing back a store with no persistence is the ambiguity this
+    // design exists to avoid, so it is still loud — but a warning rather than a
+    // throw, because the same call is what Fast Refresh replays on every edit.
+    expect(() => defineStore(name, { persist: adapter })).not.toThrow();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/module scope/);
+    warn.mockRestore();
+  });
+
+  it('re-registering an identical configuration is a no-op, so Fast Refresh does not break dev', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = uniqueName();
+    const adapter: PersistAdapter = { read: () => undefined, write: () => {} };
+
+    defineStore(name, { persist: adapter, persistDebounceMs: 5 });
+    getSharedStore(name); // the store is now live
+
+    // What a hot edit of the defining module does: same shape, brand-new
+    // adapter object. Comparing identity would call this a conflict.
+    const reloaded: PersistAdapter = { read: () => undefined, write: () => {} };
+    defineStore(name, { persist: reloaded, persistDebounceMs: 5 });
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('warns when a late redefinition actually differs', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = uniqueName();
+    const adapter: PersistAdapter = { read: () => undefined, write: () => {} };
+
+    defineStore(name, { persist: adapter, persistDebounceMs: 5 });
+    getSharedStore(name);
+
+    defineStore(name, { persist: adapter, persistDebounceMs: 500 });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/different options/);
+    warn.mockRestore();
   });
 });
