@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Two micro-frontends, one page</title>
+  </head>
+  <body>
+    <!--
+      A fixture, not a demo. Two script tags, two independently built bundles,
+      each carrying its own copy of the library. Everything the e2e asserts is
+      readable as text so the page needs no framework of its own.
+    -->
+    <h1>Two micro-frontends, one page</h1>
+
+    <section id="panel-a">
+      <h2>Bundle A</h2>
+      <p>client <span id="a-client"></span></p>
+      <p>peers <span id="a-peers"></span></p>
+      <p>value <span id="a-value"></span></p>
+      <p>leader <span id="a-leader"></span></p>
+    </section>
+
+    <section id="panel-b">
+      <h2>Bundle B</h2>
+      <p>client <span id="b-client"></span></p>
+      <p>peers <span id="b-peers"></span></p>
+      <p>value <span id="b-value"></span></p>
+      <p>leader <span id="b-leader"></span></p>
+    </section>
+
+    <script src="/mfe/a.js"></script>
+    <script src="/mfe/b.js"></script>
+  </body>
+</html>
