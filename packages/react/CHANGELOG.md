@@ -1,5 +1,22 @@
 # use-everywhere
 
+## 0.7.0
+
+### Minor Changes
+
+- [#44](https://github.com/rxova/use-everywhere/pull/44) [`2b20291`](https://github.com/rxova/use-everywhere/commit/2b20291720c861f865abb50d5f853309d41399f7) - Re-export the transport chain from the core: `StorageTransport`, `getTransportKind`, `isStorageEventAvailable`, and the `TransportKind` type. A browser with no `BroadcastChannel` now falls back to the `storage` event rather than silently sharing nothing, and `getTransportKind()` reports what is actually carrying traffic.
+
+- [#42](https://github.com/rxova/use-everywhere/pull/42) [`d28b81f`](https://github.com/rxova/use-everywhere/commit/d28b81fa407d5918ecf6378b5937b39bd26824e9) - `useLeader` inherits the Web Locks election from the core: in any secure context a hidden or throttled tab keeps the seat, and failover after a crash is immediate rather than lease-length. Plain-`http://` origins keep the heartbeat election. Re-exports the new `LeaderStrategy` type; `getLeader(name).waitForLeadership()` is available for imperative code.
+
+### Patch Changes
+
+- [#46](https://github.com/rxova/use-everywhere/pull/46) [`be5d008`](https://github.com/rxova/use-everywhere/commit/be5d00883c69800f6f5c2f019eb1dec4a2d2bb5b) - Raise every size budget to roughly 20% above its current measurement, matching the core package. Entries that already had more than 20% of slack keep their existing limit rather than being tightened.
+
+  Headroom, not permission: the budgets still fail on a real regression.
+
+- Updated dependencies [[`a0cee27`](https://github.com/rxova/use-everywhere/commit/a0cee27dbc2f760af80410ed5c67c9d1c50ff42d), [`2b20291`](https://github.com/rxova/use-everywhere/commit/2b20291720c861f865abb50d5f853309d41399f7), [`d28b81f`](https://github.com/rxova/use-everywhere/commit/d28b81fa407d5918ecf6378b5937b39bd26824e9), [`faa3aad`](https://github.com/rxova/use-everywhere/commit/faa3aadd0f0e787a557ee002f21ef3b62283fc8c), [`358e9b5`](https://github.com/rxova/use-everywhere/commit/358e9b5eae2b0a0e120ab44b8e67ab4c52b00673), [`be5d008`](https://github.com/rxova/use-everywhere/commit/be5d00883c69800f6f5c2f019eb1dec4a2d2bb5b), [`be5d008`](https://github.com/rxova/use-everywhere/commit/be5d00883c69800f6f5c2f019eb1dec4a2d2bb5b)]:
+  - @use-everywhere/core@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
