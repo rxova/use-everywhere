@@ -90,6 +90,13 @@
     // Turbo first — the demo app the webServer serves imports them — and then
     // shells out to playwright directly. It is never cacheable anyway: it drives
     // a real browser against a dev server it starts itself.
+    // Minutes long, so it is never part of `verify` — CI runs it as its own
+    // job. Depends on ^build like `test` does, for the same reason.
+    "mutation": {
+      "dependsOn": ["^build"],
+      "outputs": ["reports/**"],
+      "outputLogs": "new-only"
+    },
     "dev": {
       "cache": false,
       "persistent": true

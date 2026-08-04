@@ -1,10 +1,14 @@
 # Mutation testing
 
 ```bash
-pnpm --filter @use-everywhere/core run mutation
+pnpm run mutation
 ```
 
-Roughly nine minutes. Report at `reports/mutation/mutation.html`.
+Roughly seven minutes. Reports at `reports/mutation/mutation.html` (browsable)
+and `mutation.json` (what the gate reads).
+
+CI runs it as its own job on every PR, in parallel with the rest, and uploads
+the HTML report as an artifact.
 
 ## Why
 
@@ -27,10 +31,20 @@ best afternoon.
 
 ## The threshold is a ratchet
 
-`break` is **90**, the roadmap's target for core state modules, and it applies
-to the **overall** score. Stryker cannot gate per file, so the per-module figures
-below are a review target rather than an enforced one — but every module is over
-the line, and the rule is that the number only ever goes up.
+Two gates, because they catch different things.
+
+Stryker's own `thresholds.break` is **90**, and it applies to the **overall**
+score — which a large well-tested file can hold up while a small one rots
+underneath it. So `packages/tooling/check-mutation.ts` runs straight afterwards
+and fails **any single module** below the same floor. That is the shape the
+roadmap actually asks for, and the reason a 100-mutant file at 100% cannot
+paper over a 10-mutant file at 50%.
+
+Mutants marked `Ignored` — silenced by a `// Stryker disable` comment — are left
+out of both. Counting them would punish the annotation that records a considered
+decision.
+
+Raise the floor as survivors die. Never lower it.
 
 ## Where it stands
 
