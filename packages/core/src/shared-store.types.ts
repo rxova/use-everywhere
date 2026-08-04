@@ -1,7 +1,9 @@
 import type { CommonOptions, MessageMeta, Version } from './common.types.js';
 import type { PersistOptions } from './persist.types.js';
+import type { SchemaOptions } from './schema.types.js';
 
-export interface SharedStoreOptions extends CommonOptions {
+export interface SharedStoreOptions<S = Record<string, unknown>>
+  extends CommonOptions, SchemaOptions<S> {
   /**
    * Gatekeeper for incoming remote writes (patches and snapshot merges):
    * return false to ignore them. Lets callers delimit how much is shared —
