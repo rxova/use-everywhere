@@ -1,5 +1,12 @@
 export { createChannel } from './channel.js';
-export type { Channel, ChannelOptions } from './channel.types.js';
+export type {
+  Channel,
+  ChannelOptions,
+  ReplyMap,
+  PostOptions,
+  OnOptions,
+  AskOptions,
+} from './channel.types.js';
 export { createSharedStore } from './shared-store.js';
 export type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 export type {

@@ -85,6 +85,14 @@ export type BusWire =
       clientId: string;
       kind: PeerKind;
       msgId: string;
+      /**
+       * The `msgId` this is an answer to, when it is one.
+       *
+       * Additive within wire v1: a build that predates `ask` never sets it and
+       * never reads it, so the field is simply absent both ways — which is the
+       * rule for new optional fields (see wire.ts).
+       */
+      replyTo?: string;
     };
 
 export interface BusOptions extends CommonOptions {

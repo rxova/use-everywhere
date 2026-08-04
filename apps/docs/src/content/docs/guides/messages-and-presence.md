@@ -52,12 +52,15 @@ function CartBadge() {
 
 Two lines deserve a closer look.
 
-**The two-step in `addToCart` is the no-echo idiom.** Messages are never
-delivered back to the sender — same as raw BroadcastChannel, but documented
-instead of surprising. So the sending tab updates itself explicitly, then
-announces. If that ceremony feels wrong for your case, that's the signal the
-value should be [shared state](../hooks/use-shared-state.md) instead, where
-one setter updates every tab including yours.
+**The two-step in `addToCart` is the no-echo idiom.** Messages are not delivered
+back to the sender — same as raw BroadcastChannel, but documented instead of
+surprising. So the sending tab updates itself explicitly, then announces.
+
+Written out like that, the local update and the handler are the same logic in
+two places, and two places drift. [`{ echo: true }`](#hearing-your-own-message)
+collapses them into one. And if the ceremony feels wrong at all, that is often
+the signal the value should be [shared state](../hooks/use-shared-state.md)
+instead, where one setter updates every tab including yours.
 
 **The handler closes over `items` safely.** `shop.useMessage` keeps your
 handler fresh across renders without resubscribing — no stale-closure bugs,
@@ -117,6 +120,47 @@ shop.useMessage('logged-out', (_payload, meta) => {
   window.location.assign('/login');
 });
 ```
+
+## Hearing your own message
+
+A post is not echoed to the sender, which matches `BroadcastChannel`. That means
+a component doing something locally _and_ telling everyone else ends up writing
+the same effect twice — and the two copies drift.
+
+`echo` collapses them into one path:
+
+```tsx
+send('item:added', item, { echo: true });
+
+shop.useMessage('item:added', (item, meta) => {
+  addToBadge(item); // runs here too, meta.self === true
+});
+```
+
+## Asking a question
+
+Sometimes you don't want to announce something, you want an answer — "which tab
+already has the socket open?", "what did the user pick before I mounted?".
+
+Declare what each type replies with, then `answer` in one place and `ask` from
+anywhere:
+
+```tsx
+type Requests = { 'draft:get': null };
+type Replies = { 'draft:get': string };
+
+const channel = useChannel<Requests, Replies>('editor');
+
+// In whichever component owns the answer:
+useAnswer(channel, 'draft:get', () => currentDraft);
+
+// Anywhere else, in any tab:
+const draft = await useAsk(channel)('draft:get', null);
+```
+
+`ask` **rejects if nobody answers** within the timeout (5s by default) rather
+than hanging. If several tabs answer, the first reply wins — gate the responder
+on [`useIsLeader`](../hooks/use-leader.md) when it has to be a particular one.
 
 ## Where to next
 

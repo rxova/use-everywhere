@@ -4,7 +4,8 @@ export type { UseSharedReducerOptions } from './use-shared-reducer.js';
 export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
 export { getSharedStore, DEFAULT_NAME } from './registry.js';
 export type { AnyStore } from './registry.types.js';
-export { useChannel, useMessage, useSend } from './use-message.js';
+export { useChannel, useMessage, useSend, useAsk, useAnswer } from './use-message.js';
+export type { UseMessageOptions } from './use-message.js';
 export { defineChannel } from './define-channel.js';
 export type { ChannelHooks } from './define-channel.types.js';
 export { defineStore } from './define-store.js';
@@ -65,6 +66,10 @@ export type {
   Namespace,
   Channel,
   ChannelOptions,
+  ReplyMap,
+  PostOptions,
+  OnOptions,
+  AskOptions,
   StandardSchemaV1,
   SchemaMap,
   SchemaOptions,
