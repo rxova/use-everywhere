@@ -55,6 +55,34 @@ describe('the default JSON serializer', () => {
     expect(jsonSerializer.parse(jsonSerializer.stringify(value))).toEqual(value);
   });
 
+  it('names the two ways a value can come out undefined differently', () => {
+    // Same outcome — the key vanishes — but a reader debugging it needs to know
+    // whether they wrote undefined or their toJSON returned it.
+    expect(() => jsonSerializer.stringify({ k: undefined })).toThrow(/is undefined,/);
+    expect(() => jsonSerializer.stringify({ k: { toJSON: () => undefined } })).toThrow(
+      /undefined after toJSON/,
+    );
+  });
+
+  it('refuses a value whose toJSON erases it', () => {
+    // `raw` is an object, `value` is undefined — the two halves of the check
+    // disagree, which is exactly the case a single-sided test never reaches.
+    // JSON would drop the key entirely and say nothing.
+    expect(() => jsonSerializer.stringify({ k: { toJSON: () => undefined } })).toThrow(
+      /round-trip/,
+    );
+  });
+
+  it('accepts a value whose toJSON returns something real', () => {
+    const text = jsonSerializer.stringify({ k: { toJSON: () => 'fine' } });
+
+    expect(jsonSerializer.parse(text)).toEqual({ k: 'fine' });
+  });
+
+  it('carries an explicit null, which is a value rather than an absence', () => {
+    expect(jsonSerializer.parse(jsonSerializer.stringify({ k: null }))).toEqual({ k: null });
+  });
+
   it('leaves the errors JSON already throws alone', () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;

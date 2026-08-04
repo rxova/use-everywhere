@@ -174,6 +174,7 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
   const sayHello = () =>
     bus.post({ v: 1, scope: 'leader', type: 'hello', clientId, kind: bus.kind });
 
+  // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   const onPageHide = () => resign();
   // Restored from bfcache: we resigned on the way out and heard nothing while

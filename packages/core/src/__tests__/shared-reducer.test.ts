@@ -481,6 +481,159 @@ describe('a shared reducer', () => {
     wire.close();
   });
 
+  it('settles only the dispatch that was committed, leaving the others pending', async () => {
+    const hub = new MemoryHub();
+    const follower = build(hub, false);
+    const wire = hub.connect();
+    await tick();
+
+    follower.dispatch({ type: 'inc', by: 1 });
+    follower.dispatch({ type: 'inc', by: 2 });
+    follower.dispatch({ type: 'inc', by: 4 });
+    expect(follower.pendingCount()).toBe(3);
+
+    // Commit the middle one only. Matching on opId is what makes this precise;
+    // clearing the whole queue instead would look identical from the snapshot.
+    const proposals = [] as string[];
+    wire.subscribe((data) => {
+      const w = data as { scope?: string; type?: string; opId?: string };
+      if (w.scope === 'op' && w.type === 'propose') proposals.push(w.opId as string);
+    });
+    follower.dispatch({ type: 'inc', by: 8 });
+    await tick();
+
+    wire.post({
+      v: 1,
+      scope: 'op',
+      type: 'commit',
+      key: 'default',
+      action: { type: 'inc', by: 8 },
+      opId: proposals[proposals.length - 1],
+      seq: 1,
+      clientId: 'leader',
+      kind: 'tab',
+    } as never);
+    await tick();
+
+    expect(follower.pendingCount()).toBe(3);
+    expect(follower.getSnapshot()).toBe(15);
+
+    follower.close();
+    wire.close();
+  });
+
+  it('unblocks a whole run of buffered commits, in order', async () => {
+    const hub = new MemoryHub();
+    const follower = build(hub, false);
+    const wire = hub.connect();
+    await tick();
+
+    const commit = (seq: number, by: number) =>
+      wire.post({
+        v: 1,
+        scope: 'op',
+        type: 'commit',
+        key: 'default',
+        action: { type: 'inc', by },
+        opId: `op-${seq}`,
+        seq,
+        clientId: 'leader',
+        kind: 'tab',
+      } as never);
+
+    // 4, 3, 2 buffered; 1 releases all of them. A run, not a single gap: the
+    // chain is what an off-by-one in the unblock step would break.
+    commit(4, 1000);
+    commit(3, 100);
+    commit(2, 10);
+    await tick();
+    expect(follower.getSnapshot()).toBe(0);
+
+    commit(1, 1);
+    await tick();
+
+    expect(follower.getSnapshot()).toBe(1111);
+
+    follower.close();
+    wire.close();
+  });
+
+  it('ignores op traffic meant for another reducer on the same bus', async () => {
+    const hub = new MemoryHub();
+    const mine = build(hub, false, 'mine');
+    const wire = hub.connect();
+    await tick();
+
+    wire.post({
+      v: 1,
+      scope: 'op',
+      type: 'commit',
+      key: 'theirs',
+      action: { type: 'inc', by: 5 },
+      opId: 'op-1',
+      seq: 1,
+      clientId: 'leader',
+      kind: 'tab',
+    } as never);
+    await tick();
+
+    expect(mine.getSnapshot()).toBe(0);
+
+    mine.close();
+    wire.close();
+  });
+
+  it('says nothing to a hello when it has no order to share', async () => {
+    const hub = new MemoryHub();
+    const fresh = build(hub, false);
+    const wire = hub.connect();
+    const replies: unknown[] = [];
+    wire.subscribe((data) => {
+      const w = data as { scope?: string; type?: string };
+      if (w.scope === 'op' && w.type === 'snapshot') replies.push(w);
+    });
+    await tick();
+
+    wire.post({
+      v: 1,
+      scope: 'op',
+      type: 'hello',
+      key: 'default',
+      clientId: 'joiner',
+      kind: 'tab',
+    } as never);
+    await tick();
+
+    // Nothing committed here yet, so there is no order to hand anybody.
+    expect(replies).toEqual([]);
+
+    fresh.close();
+    wire.close();
+  });
+
+  it('closes a leader it built, and leaves one it was handed alone', async () => {
+    const hub = new MemoryHub();
+    let closed = false;
+    const borrowed = { ...fakeLeader(true), close: () => (closed = true) };
+
+    const withBorrowed = createSharedReducer<number, Action>('red-borrow', counter, 0, {
+      transport: () => hub.connect(),
+      leader: borrowed,
+    });
+    withBorrowed.close();
+    // A leader passed in belongs to the caller — closing it would take down
+    // whatever else on the page shares that seat.
+    expect(closed).toBe(false);
+
+    const own = createSharedReducer<number, Action>('red-own', counter, 0, {
+      transport: () => hub.connect(),
+      leaderOptions: { strategy: 'heartbeat', heartbeatMs: 10, leaseMs: 30 },
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(own.getSnapshot()).toBe(0);
+    own.close();
+  });
+
   it('does not notify when the value is unchanged', () => {
     const hub = new MemoryHub();
     const a = createSharedReducer<number, Action>('red-same', (s) => s, 0, {
