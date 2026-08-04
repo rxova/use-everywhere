@@ -16,6 +16,11 @@ import { describe, expect, it } from 'vitest';
  * symptom is invisible — a string quietly shipping to every user. Hence a test
  * that bundles the real entry point the way a production app would and asserts
  * on what comes out.
+ *
+ * Diagnostic codes are what it counts. They survive minification exactly as
+ * written, they are unique per call site, and a leaked one names the warning
+ * that leaked — where the old scan for the `[use-everywhere]` prefix could only
+ * say that *something* got through.
  */
 const bundle = async (nodeEnv: string): Promise<string> => {
   const result = await build({
@@ -30,31 +35,28 @@ const bundle = async (nodeEnv: string): Promise<string> => {
 };
 
 /**
- * Messages that are *not* development warnings and must survive: a thrown
- * Error a caller can catch, and the report of a throwing debug observer, which
- * is a real fault being contained in production rather than a diagnostic.
+ * Codes that are *not* development warnings and must survive: a thrown Error a
+ * caller can catch, and the report of a throwing debug observer, which is a
+ * real fault being contained in production rather than a diagnostic.
  */
-const ALLOWED_IN_PRODUCTION = ['StorageTransport needs localStorage', 'a bus observer for'];
+const ALLOWED_IN_PRODUCTION = new Set(['UE1011', 'UE1012']);
 
-const warnings = (code: string): string[] =>
-  (code.match(/\[use-everywhere\][^`'"]{0,80}/g) ?? []).filter(
-    (message) => !ALLOWED_IN_PRODUCTION.some((allowed) => message.includes(allowed)),
-  );
+const codes = (code: string): string[] => [...new Set(code.match(/UE\d{4}/g) ?? [])].sort();
 
 describe('development warnings', () => {
   it('are all present in a development bundle', async () => {
-    const code = await bundle('development');
+    const emitted = codes(await bundle('development'));
 
     // The warnings are the point of the library's "every silent behaviour
     // becomes loud" rule, so the guard must not cost them in development.
-    expect(warnings(code).length).toBeGreaterThan(5);
+    expect(emitted.length).toBeGreaterThan(5);
   });
 
   it('are all gone from a production bundle', async () => {
-    const code = await bundle('production');
+    const emitted = codes(await bundle('production'));
 
-    // Named rather than counted: a failure here should say which warning leaked.
-    expect(warnings(code)).toEqual([]);
+    // Named rather than counted: a failure here says which warning leaked.
+    expect(emitted.filter((code) => !ALLOWED_IN_PRODUCTION.has(code))).toEqual([]);
   });
 
   it('leaves real runtime messages alone', async () => {
@@ -63,5 +65,6 @@ describe('development warnings', () => {
     // A thrown Error is not a diagnostic — stripping it would turn an
     // actionable failure into an anonymous one.
     expect(code).toContain('StorageTransport needs localStorage');
+    expect(code).toContain('UE1011');
   });
 });

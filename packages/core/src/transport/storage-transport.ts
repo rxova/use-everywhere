@@ -1,3 +1,4 @@
+import { diagnostic } from '../dev.js';
 import { jsonSerializer, type Serializer } from '../serializer.js';
 import type { Transport, TransportKind } from './transport.types.js';
 
@@ -42,7 +43,10 @@ export class StorageTransport implements Transport {
     // exported, so the direct caller is the one who needs telling why.
     if (!storage) {
       throw new Error(
-        '[use-everywhere] StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.',
+        diagnostic(
+          'UE1011',
+          'StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.',
+        ),
       );
     }
     this.serializer = serializer;

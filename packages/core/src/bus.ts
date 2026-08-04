@@ -205,15 +205,14 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
     if (options.heartbeatMs !== undefined && options.heartbeatMs !== core.heartbeatMs) {
       if (process.env.NODE_ENV !== 'production') {
         devWarn(
-          `[use-everywhere] bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
+          'UE1004',
+          `bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
         );
       }
     }
     if (options.kind !== undefined && options.kind !== core.kind) {
       if (process.env.NODE_ENV !== 'production') {
-        devWarn(
-          `[use-everywhere] bus "${name}": kind ignored — the first creator fixes bus options`,
-        );
+        devWarn('UE1005', `bus "${name}": kind ignored — the first creator fixes bus options`);
       }
     }
   }

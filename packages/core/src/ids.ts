@@ -24,7 +24,8 @@ function randomHex(bytes: number): string {
   // property that quietly downgrades is worse than one that fails loudly.
   if (process.env.NODE_ENV !== 'production') {
     devWarn(
-      '[use-everywhere] crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.',
+      'UE1006',
+      'crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.',
     );
   }
   let out = '';

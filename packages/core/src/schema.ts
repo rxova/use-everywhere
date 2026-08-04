@@ -61,7 +61,8 @@ export function createGate(
     // keeps this string out of production bundles; see env.d.ts.
     else if (process.env.NODE_ENV !== 'production') {
       devWarn(
-        `[use-everywhere] ${name}/${key}: ${direction}bound payload rejected by its schema — ` +
+        'UE1003',
+        `${name}/${key}: ${direction}bound payload rejected by its schema — ` +
           `${result.issues.join('; ')}. https://rxova.org/guides/validating-payloads/`,
       );
     }

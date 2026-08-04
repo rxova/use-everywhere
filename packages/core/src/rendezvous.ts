@@ -61,7 +61,8 @@ function announce(): void {
   if (census.protocols.length > 1) {
     if (process.env.NODE_ENV !== 'production') {
       devWarn(
-        `[use-everywhere] two incompatible versions of this library are loaded on one page ` +
+        'UE1008',
+        `two incompatible versions of this library are loaded on one page ` +
           `(rendezvous protocols ${census.protocols.join(', ')}). They will not share a client ` +
           `identity: expect one presence entry per version and no synchronous delivery between ` +
           `them. They still sync over the bus. Align the versions to fix it.`,
