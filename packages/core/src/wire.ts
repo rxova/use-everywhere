@@ -82,14 +82,15 @@ export function recordSkew(name: string, version: number): void {
   seen.set(name, versions);
   if (versions.has(version)) return;
   versions.add(version);
-  // Terse on purpose, with the explanation behind a link. This string survives
-  // into production bundles until dev-only stripping lands, and the long form
-  // of it cost more than the feature did.
-  devWarn(
-    `[use-everywhere] bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
-      `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? 'newer' : 'older'} deploy. They cannot ` +
-      `share state, presence, or a leader seat. https://rxova.org/under-the-hood/version-skew/`,
-  );
+  // Terse on purpose, with the explanation behind a link. The NODE_ENV guard
+  // around the call keeps it out of production bundles entirely; see env.d.ts.
+  if (process.env.NODE_ENV !== 'production') {
+    devWarn(
+      `[use-everywhere] bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
+        `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? 'newer' : 'older'} deploy. They cannot ` +
+        `share state, presence, or a leader seat. https://rxova.org/under-the-hood/version-skew/`,
+    );
+  }
 }
 
 /**

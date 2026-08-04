@@ -66,43 +66,43 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "7.4 kB"
+      "limit": "7.29 kB"
     },
     {
       "name": "createLeader",
       "path": "dist/index.js",
       "import": "{ createLeader }",
-      "limit": "3.35 kB"
+      "limit": "3.09 kB"
     },
     {
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "3.96 kB"
+      "limit": "3.55 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "2.69 kB"
+      "limit": "2.3 kB"
     },
     {
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "2.49 kB"
+      "limit": "2.15 kB"
     },
     {
       "name": "openWindow (opener side)",
       "path": "dist/index.js",
       "import": "{ openWindow }",
-      "limit": "1.49 kB"
+      "limit": "1.26 kB"
     },
     {
       "name": "connectToOpener (child side)",
       "path": "dist/index.js",
       "import": "{ connectToOpener }",
-      "limit": "1.32 kB"
+      "limit": "1.11 kB"
     },
     {
       "name": "observeBus + enableDebug",
@@ -127,6 +127,7 @@
     "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/preset-small-lib": "^13.0.1",
     "@vitest/coverage-v8": "^4.1.10",
+    "esbuild": "^0.28.1",
     "fast-check": "^4.9.0",
     "happy-dom": "^20.11.1",
     "publint": "^0.3.21",

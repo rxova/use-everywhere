@@ -2,7 +2,6 @@
 // its public exports, and a development-only diagnostic is not worth widening
 // a package's 1.0 API surface for. Same NODE_ENV strategy — bundlers inline the
 // string, the try/catch keeps unbundled runs inert.
-declare const process: { env: Record<string, string | undefined> };
 
 let inDev = false;
 try {

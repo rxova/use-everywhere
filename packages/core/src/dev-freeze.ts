@@ -18,7 +18,6 @@
 // run unbundled (where `process` is a genuine ReferenceError).
 // Typed locally so core needs no @types/node (it's a browser library). The
 // runtime try/catch below, not this declaration, handles process being absent.
-declare const process: { env: Record<string, string | undefined> };
 
 let inDev = false;
 try {

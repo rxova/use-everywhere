@@ -90,11 +90,13 @@ export function configureStore(name: string, scope: ShareScope, options: SharedS
     // on a change that alters nothing, so an identical redefinition is a no-op
     // and only a genuine conflict is reported.
     if (configSignature(storeConfig.get(key)) === configSignature(options)) return;
-    devWarn(
-      `[use-everywhere] defineStore('${name}') ran after that store was already created, with different options. ` +
-        'The live store keeps the configuration it was built with. Move defineStore to module scope, ' +
-        'before any component reads the store.',
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      devWarn(
+        `[use-everywhere] defineStore('${name}') ran after that store was already created, with different options. ` +
+          'The live store keeps the configuration it was built with. Move defineStore to module scope, ' +
+          'before any component reads the store.',
+      );
+    }
     return;
   }
   storeConfig.set(key, options);
@@ -147,9 +149,11 @@ function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void 
   for (const key of ['heartbeatMs', 'leaseMs'] as const) {
     const requested = options[key];
     if (requested !== undefined && requested !== first?.[key]) {
-      devWarn(
-        `[use-everywhere] leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        devWarn(
+          `[use-everywhere] leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
+        );
+      }
     }
   }
 }
@@ -174,11 +178,13 @@ export function configureChannel<M extends MessageMap>(
     const before = Object.keys(channelConfig.get(name)?.schema ?? {}).sort();
     const after = Object.keys(options.schema ?? {}).sort();
     if (before.join() === after.join()) return;
-    devWarn(
-      `[use-everywhere] defineChannel('${name}') ran after that channel was already created, with different options. ` +
-        'The live channel keeps the configuration it was built with. Move defineChannel to module scope, ' +
-        'before any component sends or receives on it.',
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      devWarn(
+        `[use-everywhere] defineChannel('${name}') ran after that channel was already created, with different options. ` +
+          'The live channel keeps the configuration it was built with. Move defineChannel to module scope, ' +
+          'before any component sends or receives on it.',
+      );
+    }
     return;
   }
   channelConfig.set(name, options as ChannelOptions<MessageMap>);

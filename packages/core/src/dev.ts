@@ -1,6 +1,5 @@
 // Same NODE_ENV strategy as dev-freeze.ts: bundlers inline the string, the
 // try/catch keeps unbundled runs (where `process` is a ReferenceError) inert.
-declare const process: { env: Record<string, string | undefined> };
 
 let inDev = false;
 try {

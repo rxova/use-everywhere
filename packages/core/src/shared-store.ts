@@ -26,9 +26,11 @@ export function createSharedStore<S extends Record<string, unknown>>(
   if (onSharedBus) {
     const live = liveStores.get(name) ?? 0;
     if (live > 0) {
-      devWarn(
-        `[use-everywhere] second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        devWarn(
+          `[use-everywhere] second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
+        );
+      }
     }
     liveStores.set(name, live + 1);
   }
@@ -180,11 +182,12 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
     const refuse = (error: RestoreError) => {
       if (onRestoreError) onRestoreError(error);
-      else
+      else if (process.env.NODE_ENV !== 'production') {
         devWarn(
           `[use-everywhere] ${name}: persisted schema v${error.found} not restored, ` +
             `expected v${error.expected} (${error.reason}). https://rxova.org/guides/persistence/`,
         );
+      }
     };
 
     /**

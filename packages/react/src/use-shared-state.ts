@@ -24,7 +24,13 @@ export function useSharedState<T>(
   const store = getStore(storeName, options?.scope ?? 'everywhere');
   // Idempotent: first registration wins, remote writes always beat the initial.
   store.registerKey(key, initial);
-  warnOnInitialMismatch(storeName, key, initial);
+  // Guarded at the call site, not inside: with the branch folded away the
+  // function is unreferenced, so the bundler drops it *and* the Map of seen
+  // initials *and* its message. An early return inside would have kept all
+  // three in the bundle.
+  if (process.env.NODE_ENV !== 'production') {
+    warnOnInitialMismatch(storeName, key, initial);
+  }
 
   const value = useSyncExternalStore(
     useCallback((onChange) => store.subscribeKey(key, onChange), [store, key]),

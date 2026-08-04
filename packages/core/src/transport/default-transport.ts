@@ -42,17 +42,19 @@ export function isStorageEventAvailable(): boolean {
 export function defaultTransport(name: string): Transport {
   if (isBroadcastChannelAvailable()) return new BroadcastChannelTransport(name);
 
-  // Both messages stay short on purpose: a string in a devWarn call is retained
-  // in production bundles, so every extra sentence is shipped to every user.
   if (isStorageEventAvailable()) {
-    devWarn(
-      '[use-everywhere] no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.',
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      devWarn(
+        '[use-everywhere] no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.',
+      );
+    }
     return new StorageTransport(name);
   }
 
-  devWarn(
-    '[use-everywhere] no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.',
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    devWarn(
+      '[use-everywhere] no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.',
+    );
+  }
   return new NoopTransport();
 }

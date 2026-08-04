@@ -202,12 +202,18 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
     // otherwise be silently ignored — an origin-wide setting set from the
     // wrong call site with no test failing.
     if (options.heartbeatMs !== undefined && options.heartbeatMs !== core.heartbeatMs) {
-      devWarn(
-        `[use-everywhere] bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        devWarn(
+          `[use-everywhere] bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
+        );
+      }
     }
     if (options.kind !== undefined && options.kind !== core.kind) {
-      devWarn(`[use-everywhere] bus "${name}": kind ignored — the first creator fixes bus options`);
+      if (process.env.NODE_ENV !== 'production') {
+        devWarn(
+          `[use-everywhere] bus "${name}": kind ignored — the first creator fixes bus options`,
+        );
+      }
     }
   }
   return core.connect();
