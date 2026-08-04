@@ -89,13 +89,13 @@
       "name": "useChannel + useMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useMessage, useSend }",
-      "limit": "2.39 kB"
+      "limit": "2.56 kB"
     },
     {
       "name": "usePeers + useClientId",
       "path": "dist/index.js",
       "import": "{ usePeers, useClientId }",
-      "limit": "2.57 kB"
+      "limit": "2.73 kB"
     },
     {
       "name": "useOpenedWindow + openWindow",

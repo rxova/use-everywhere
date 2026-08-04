@@ -1,7 +1,13 @@
 import type { CommonOptions, PeerKind, Version } from './common.types.js';
 import type { TransportKind } from './transport/transport.types.js';
 
-/** Everything on the same-origin bus, multiplexed by scope over one BroadcastChannel per name. */
+/**
+ * Everything on the same-origin bus, multiplexed by scope over one
+ * BroadcastChannel per name.
+ *
+ * `v` is the wire protocol version, and changing it is a decision with rules —
+ * see `wire.ts` for what may be added within a version and what must bump it.
+ */
 export type BusWire =
   | {
       v: 1;

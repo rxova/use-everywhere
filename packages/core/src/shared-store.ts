@@ -85,14 +85,23 @@ export function createSharedStore<S extends Record<string, unknown>>(
       // with it. A wire we cannot arbitrate is one we drop.
       if (typeof wire.key !== 'string' || !isVersion(wire.version)) return;
       applyRemote(wire.key, wire.value, wire.version, meta);
-    } else {
+      return;
+    }
+    if (wire.type === 'snapshot') {
       const versions = wire.versions;
       if (typeof versions !== 'object' || versions === null) return;
       for (const k in wire.state) {
         const version = versions[k];
         if (isVersion(version)) applyRemote(k, wire.state[k], version, meta);
       }
+      return;
     }
+    // Named explicitly, where a bare `else` used to stand. Within one protocol
+    // version new wire types are additive (see wire.ts), so a build that has
+    // never heard of one must treat it as nothing — the `else` instead treated
+    // every future `state` type as a snapshot, and it only failed to corrupt
+    // anything because the versions-map check happened to reject it. That is
+    // the difference between forward compatibility and luck.
   });
 
   function setKey(key: string, value: unknown) {

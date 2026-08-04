@@ -43,6 +43,8 @@ export {
   enableDebug,
   getBusNames,
   getTransportKind,
+  getWireSkew,
+  WIRE_VERSION,
   BroadcastChannelTransport,
   NoopTransport,
   StorageTransport,

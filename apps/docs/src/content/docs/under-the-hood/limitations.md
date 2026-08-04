@@ -1,7 +1,7 @@
 ---
 title: 'Limitations & FAQ'
 sidebar:
-  order: 3
+  order: 4
 ---
 
 The library is deliberately small, and most "missing" features are

@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         index: resolve(import.meta.dirname, 'index.html'),
         payment: resolve(import.meta.dirname, 'payment.html'),
+        skew: resolve(import.meta.dirname, 'skew.html'),
       },
     },
   },
