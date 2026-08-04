@@ -7,8 +7,19 @@ pnpm run mutation
 Roughly seven minutes. Reports at `reports/mutation/mutation.html` (browsable)
 and `mutation.json` (what the gate reads).
 
-CI runs it as its own job on every PR, in parallel with the rest, and uploads
-the HTML report as an artifact.
+**CI runs it nightly, not per PR** (`.github/workflows/mutation.yml`, 03:17 UTC,
+plus `workflow_dispatch` for an on-demand run). At roughly eight minutes it was
+longer than every other job combined and set the wall-clock for every pull
+request, while catching something perhaps once a month.
+
+The trade is worth stating plainly: a regression can now land on `main` and go
+unnoticed until the next night. That is acceptable because what this measures —
+test _quality_ — drifts slowly, and because the per-file coverage thresholds
+still gate every PR. Mutation testing catches tests that pass without asserting;
+coverage catches tests that are missing.
+
+Run it yourself before merging anything that reworks a core module. The HTML
+report is uploaded as an artifact on every nightly run.
 
 ## Why
 
