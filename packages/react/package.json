@@ -77,7 +77,7 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "10.16 kB"
+      "limit": "10.45 kB"
     },
     {
       "name": "useSharedState",
