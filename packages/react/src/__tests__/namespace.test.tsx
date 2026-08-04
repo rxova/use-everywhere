@@ -177,6 +177,22 @@ describe('createNamespace (React)', () => {
     expect(screen.getByTestId('doubled').textContent).toBe('8');
   });
 
+  it('carries presence metadata onto the namespaced bus', async () => {
+    function App() {
+      checkout.usePresenceMetadata({ display: 'ada' }, { includeSelf: true });
+      const peers = checkout.usePeers({ includeSelf: true });
+      return (
+        <span data-testid="who">
+          {String((peers[0]?.metadata as { display?: string })?.display)}
+        </span>
+      );
+    }
+    render(<App />);
+    await flush();
+
+    expect(screen.getByTestId('who').textContent).toBe('ada');
+  });
+
   it('carries useHydrated, prefixed like everything else', async () => {
     function App() {
       const ready = checkout.useHydrated();

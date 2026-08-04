@@ -26,11 +26,48 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   const peers = new Map<string, Peer>();
   const listeners = new Set<() => void>();
   let snapshot: readonly Peer[] = [];
+  let metadata = options.metadata;
+
+  /**
+   * Value equality, not reference.
+   *
+   * Metadata arrives freshly deserialised every time, so a peer re-announcing
+   * the same thing produces a new object — and a reference check would call
+   * that a change and re-render every subscriber. Serialising is affordable
+   * because metadata is a name or a cursor, not a document.
+   */
+  const same = (a: unknown, b: unknown) => {
+    if (Object.is(a, b)) return true;
+    try {
+      return JSON.stringify(a) === JSON.stringify(b);
+    } catch {
+      /* v8 ignore next -- unserialisable metadata cannot cross the wire anyway */
+      return false;
+    }
+  };
+
+  const self = (): Peer => ({
+    id: bus.clientId,
+    kind: bus.kind,
+    lastSeen: Date.now(),
+    ...(metadata === undefined ? {} : { metadata }),
+  });
 
   function notify() {
-    snapshot = Object.freeze([...peers.values()]);
+    const roster = [...peers.values()];
+    snapshot = Object.freeze(options.includeSelf ? [self(), ...roster] : roster);
     for (const fn of listeners) fn();
   }
+
+  const announce = () =>
+    bus.post({
+      v: 1,
+      scope: 'presence',
+      type: 'hello',
+      clientId: bus.clientId,
+      kind: bus.kind,
+      ...(metadata === undefined ? {} : { metadata }),
+    });
 
   const unsubscribe = bus.subscribe((wire) => {
     // Traffic from a sibling engine on this page carries our own clientId,
@@ -42,8 +79,17 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
       return;
     }
     const existing = peers.get(wire.clientId);
-    peers.set(wire.clientId, { id: wire.clientId, kind: wire.kind, lastSeen: Date.now() });
-    if (!existing) notify();
+    // Only a hello carries metadata, so a ping must leave what is already known
+    // in place rather than blanking it on every heartbeat.
+    const announced = wire.scope === 'presence' ? wire.metadata : undefined;
+    const next = announced === undefined ? existing?.metadata : announced;
+    peers.set(wire.clientId, {
+      id: wire.clientId,
+      kind: wire.kind,
+      lastSeen: Date.now(),
+      ...(next === undefined ? {} : { metadata: next }),
+    });
+    if (!existing || !same(existing.metadata, next)) notify();
   });
 
   // The bus only says hello when *it* is created. A presence engine attached to
@@ -51,7 +97,10 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   // component that wants the roster — would otherwise start empty and stay that
   // way until the next heartbeat, which is a visible blank for up to
   // heartbeatMs. Announcing again costs one wire and peers answer immediately.
-  bus.post({ v: 1, scope: 'presence', type: 'hello', clientId: bus.clientId, kind: bus.kind });
+  announce();
+  // Self is in the roster from the first read when asked for, rather than
+  // appearing once somebody else shows up.
+  if (options.includeSelf) notify();
 
   /** Peers we have asked to speak up, and when we asked. */
   const probed = new Map<string, number>();
@@ -83,15 +132,7 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
 
       // One hello covers every suspect at once: the bus answers a hello with a
       // ping, so anybody still alive re-registers on the next tick.
-      if (needProbe) {
-        bus.post({
-          v: 1,
-          scope: 'presence',
-          type: 'hello',
-          clientId: bus.clientId,
-          kind: bus.kind,
-        });
-      }
+      if (needProbe) announce();
       if (changed) notify();
     },
     Math.max(250, Math.floor(Math.min(pruneAfterMs, probeGraceMs) / 2)),
@@ -101,6 +142,12 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   return {
     clientId: bus.clientId,
     getPeers: () => snapshot,
+    setMetadata(next) {
+      if (same(metadata, next)) return;
+      metadata = next;
+      announce();
+      notify();
+    },
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);

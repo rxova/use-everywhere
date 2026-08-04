@@ -29,7 +29,23 @@ export type BusWire =
       state: Record<string, unknown>;
       versions: Record<string, Version>;
     }
-  | { v: 1; scope: 'presence'; type: 'hello' | 'ping' | 'bye'; clientId: string; kind: PeerKind }
+  | {
+      v: 1;
+      scope: 'presence';
+      type: 'hello' | 'ping' | 'bye';
+      clientId: string;
+      kind: PeerKind;
+      /**
+       * Whatever this client wants peers to know about it — a display name, a
+       * tab title, a cursor.
+       *
+       * Carried on `hello` only, never on a ping. A ping is a heartbeat and
+       * arrives constantly; attaching metadata to it would re-announce
+       * unchanged data forever and churn every subscriber's roster. Additive
+       * within wire v1: a build that predates it neither sets nor reads it.
+       */
+      metadata?: unknown;
+    }
   | { v: 1; scope: 'leader'; type: 'hello'; clientId: string; kind: PeerKind }
   | {
       v: 1;

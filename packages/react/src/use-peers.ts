@@ -1,13 +1,31 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import type { Peer } from '@use-everywhere/core';
 import { DEFAULT_NAME, getPresence } from './registry.js';
 import { SERVER_CLIENT_ID } from './server-stubs.js';
 
 const NO_PEERS: readonly Peer[] = Object.freeze([]);
 
-/** The other tabs/windows/workers currently alive on this origin. */
-export function usePeers(options?: { name?: string }): readonly Peer[] {
-  const presence = getPresence(options?.name ?? DEFAULT_NAME);
+export interface UsePeersOptions {
+  /** Bus name. Default 'use-everywhere'. */
+  name?: string;
+  /**
+   * Include this client in the list. Default false.
+   *
+   * The default answers "who *else* is here", which is what a presence strip
+   * asks. Turn it on for an avatar list, where leaving yourself out means every
+   * tab renders a different list of the same room.
+   */
+  includeSelf?: boolean;
+}
+
+/**
+ * The tabs/windows/workers currently alive on this origin.
+ *
+ * Each peer carries whatever it published about itself as `metadata` — see
+ * {@link usePresenceMetadata} for publishing this client's.
+ */
+export function usePeers(options?: UsePeersOptions): readonly Peer[] {
+  const presence = getPresence(options?.name ?? DEFAULT_NAME, options?.includeSelf ?? false);
   return useSyncExternalStore(
     useCallback((onChange) => presence.subscribe(onChange), [presence]),
     () => presence.getPeers(),
@@ -35,4 +53,26 @@ export function useClientId(options?: { name?: string }): string {
     () => presence.clientId,
     () => SERVER_CLIENT_ID,
   );
+}
+
+/**
+ * Publish what this client wants peers to know about it — a display name, a tab
+ * title, a cursor.
+ *
+ * Safe to call with a fresh object every render: the value is compared by
+ * contents, so an unchanged one announces nothing and re-renders nobody.
+ *
+ * ```tsx
+ * usePresenceMetadata({ name: user.name, editing: currentDocId });
+ * ```
+ *
+ * Published in an effect rather than during render, because announcing is a
+ * side effect on every other tab — and a render that React throws away must not
+ * be one other tabs already saw.
+ */
+export function usePresenceMetadata(metadata: unknown, options?: UsePeersOptions): void {
+  const presence = getPresence(options?.name ?? DEFAULT_NAME, options?.includeSelf ?? false);
+  useEffect(() => {
+    presence.setMetadata(metadata);
+  }, [presence, metadata]);
 }

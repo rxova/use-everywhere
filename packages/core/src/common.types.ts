@@ -11,6 +11,8 @@ export interface Peer {
   id: string;
   kind: PeerKind;
   lastSeen: number;
+  /** What that client published about itself, if anything. */
+  metadata?: unknown;
 }
 
 export interface MessageMeta {
