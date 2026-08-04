@@ -1,0 +1,62 @@
+{
+  "name": "@use-everywhere/test-utils",
+  "version": "0.0.0",
+  "description": "Simulate several tabs in one process: a scenario DSL, an in-memory bus, fake windows and fake Web Locks",
+  "license": "MIT",
+  "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rxova/use-everywhere.git",
+    "directory": "packages/test-utils"
+  },
+  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "bugs": "https://github.com/rxova/use-everywhere/issues",
+  "keywords": [
+    "testing",
+    "cross-tab",
+    "broadcastchannel",
+    "shared-state",
+    "use-everywhere"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check:exports": "publint --strict && attw --pack .",
+    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts"
+  },
+  "dependencies": {
+    "@use-everywhere/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@vitest/coverage-v8": "^4.1.10",
+    "publint": "^0.3.21",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}
