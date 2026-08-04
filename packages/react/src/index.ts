@@ -1,5 +1,7 @@
 export { useSharedState } from './use-shared-state.js';
 export { useSharedReducer } from './use-shared-reducer.js';
+export { useSharedStore, shallowEqual } from './use-shared-selector.js';
+export type { UseSharedSelectorOptions } from './use-shared-selector.js';
 export type { UseSharedReducerOptions } from './use-shared-reducer.js';
 export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
 export { getSharedStore, DEFAULT_NAME } from './registry.js';

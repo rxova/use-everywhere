@@ -158,6 +158,31 @@ freeze entirely — it costs you nothing shipped. (Same discipline as Redux
 state; the reasoning is [structured clone](../under-the-hood/limitations.md):
 values must be plain data anyway.)
 
+## Read across keys without re-rendering on all of them
+
+`useSharedState` subscribes to one key. Reading three keys means three hooks —
+fine — but reading something _derived_ from them used to mean subscribing to
+the whole store, which re-renders on every write to anything in it.
+
+```tsx
+const total = useSharedStore<Cart, number>((cart) => cart.items.length + cart.saved.length);
+```
+
+The selector runs on every change; the component re-renders only when the
+result differs. A selector that builds an object or array needs an equality
+function, because it returns a new reference every run:
+
+```tsx
+import { shallowEqual } from 'use-everywhere';
+
+const who = useSharedStore((s) => ({ first: s.first, last: s.last }), { equal: shallowEqual });
+```
+
+**A selector reads; it does not declare.** Unlike `useSharedState(key, initial)`,
+it registers nothing — a key nobody has written yet is `undefined`. Handle that
+in the selector, or declare the defaults with `useSharedState` somewhere that
+mounts first.
+
 ## Change several keys at once
 
 Each `set` notifies subscribers, so writing three keys in a row re-renders
