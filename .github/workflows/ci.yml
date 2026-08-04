@@ -144,7 +144,7 @@ jobs:
       # packaging contract at all, so a `files` entry that dropped dist or an
       # exports map that resolved only for bundlers would have reached npm.
       #
-      # Both root scripts filter to the three published packages. Turbo schedules
+      # Both root scripts filter to the published packages. Turbo schedules
       # a no-op task for every package that does not define the script, and each
       # of those still pulls in its own `build` — which would drag `docs#build`
       # and its chromium requirement into this job.

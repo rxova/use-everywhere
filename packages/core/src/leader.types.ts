@@ -27,7 +27,13 @@ export interface LeaderOptions extends CommonOptions {
   eligible?: boolean;
   /** How to arbitrate the seat. Default 'auto'. */
   strategy?: LeaderStrategy;
-  /** @internal Test seam for the Web Locks manager. Defaults to navigator.locks. */
+  /**
+   * The Web Locks manager to elect on. Defaults to `navigator.locks`.
+   *
+   * A test seam: `@use-everywhere/test-utils` passes a `FakeLockManager` here
+   * so several simulated tabs can queue on one seat — and so a crashed tab's
+   * lock is reclaimed — in a plain test process.
+   */
   locks?: LockManagerLike;
 }
 

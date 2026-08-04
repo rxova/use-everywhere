@@ -21,7 +21,13 @@ export type { SharedReducer, SharedReducerOptions } from './shared-reducer.types
 export { createPresence } from './presence.js';
 export type { Presence, PresenceOptions } from './presence.types.js';
 export { createLeader } from './leader.js';
-export type { Leader, LeaderOptions, LeaderSnapshot, LeaderStrategy } from './leader.types.js';
+export type {
+  Leader,
+  LeaderOptions,
+  LeaderSnapshot,
+  LeaderStrategy,
+  LockManagerLike,
+} from './leader.types.js';
 export {
   webStorageAdapter,
   localStorageAdapter,
