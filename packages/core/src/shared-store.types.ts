@@ -16,6 +16,26 @@ export interface SharedStoreOptions<S = Record<string, unknown>>
 
 export interface SharedStore<S extends Record<string, unknown>> {
   readonly clientId: string;
+  /**
+   * Resolves once persisted state has been restored — or refused, or found
+   * absent. Already resolved when there is no `persist` option at all.
+   *
+   * Exists because an async adapter cannot hydrate before the store is handed
+   * back, and until now that gap was *unobservable*: a keystroke landing in it
+   * writes at counter 1, the restore arrives holding counter 5, and
+   * last-writer-wins correctly discards the newer keystroke. The behaviour is
+   * right and the surprise is total. Gate first paint or first input on this
+   * and the gap closes:
+   *
+   * ```ts
+   * await store.hydrated;
+   * ```
+   *
+   * Never rejects. A refused restore is reported through
+   * `persist.onRestoreError` and still settles, because a store that kept its
+   * initial values is usable and a promise nobody can await is not.
+   */
+  readonly hydrated: Promise<void>;
   /** Live proxy for imperative use: `store.state.count++` syncs everywhere. */
   readonly state: S;
   /** Immutable snapshot, replaced whenever a change is applied. Safe for useSyncExternalStore. */

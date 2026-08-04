@@ -30,6 +30,9 @@ export function defineStore<S extends Record<string, unknown> = Record<string, u
         ...(options.persistDebounceMs === undefined
           ? {}
           : { debounceMs: options.persistDebounceMs }),
+        ...(options.persistVersion === undefined ? {} : { version: options.persistVersion }),
+        ...(options.migrate ? { migrate: options.migrate } : {}),
+        ...(options.onRestoreError ? { onRestoreError: options.onRestoreError } : {}),
       },
     });
   }

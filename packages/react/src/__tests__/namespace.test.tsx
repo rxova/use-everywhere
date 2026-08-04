@@ -154,6 +154,19 @@ describe('createNamespace (React)', () => {
     expect(seen).toEqual([]);
   });
 
+  it('carries useHydrated, prefixed like everything else', async () => {
+    function App() {
+      const ready = checkout.useHydrated();
+      return <span data-testid="ready">{ready ? 'yes' : 'no'}</span>;
+    }
+    render(<App />);
+    await flush();
+
+    // No persistence on this namespace's default store, so there is nothing to
+    // restore and it settles immediately.
+    expect(screen.getByTestId('ready').textContent).toBe('yes');
+  });
+
   it('exposes the underlying bus name, so devtools and tests can find it', () => {
     expect(checkout.busName('cart')).toBe('checkout:cart');
     expect(checkout.getSharedStore('cart')).toBe(checkout.getSharedStore('cart'));
