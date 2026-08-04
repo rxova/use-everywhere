@@ -118,11 +118,19 @@ export function getStore(name: string, scope: ShareScope = 'everywhere'): AnySto
   return store;
 }
 
-export function getPresence(name: string): Presence {
-  let presence = presences.get(name);
+/**
+ * One Presence per name per tab.
+ *
+ * `includeSelf` is part of the key rather than the options, because it changes
+ * what the roster *is*: two components on one name disagreeing about it would
+ * otherwise silently get whichever answer was built first.
+ */
+export function getPresence(name: string, includeSelf = false): Presence {
+  const key = includeSelf ? `self ${name}` : name;
+  let presence = presences.get(key);
   if (!presence) {
-    presence = isServer() ? createServerPresence() : createPresence(name);
-    presences.set(name, presence);
+    presence = isServer() ? createServerPresence() : createPresence(name, { includeSelf });
+    presences.set(key, presence);
   }
   return presence;
 }

@@ -52,6 +52,8 @@ const INERT = Object.freeze({
   // store + leader share getSnapshot; presence has getPeers
   getSnapshot: () => EMPTY,
   getPeers: () => NO_PEERS,
+  // presence
+  setMetadata: noop,
   // leader
   resign: noop,
   setEligible: noop,

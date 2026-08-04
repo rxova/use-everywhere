@@ -105,8 +105,27 @@ and it lingers for ~5 seconds before being pruned. Any traffic — a state
 patch, an event — also counts as proof of life, so busy tabs never flicker
 offline.
 
-Each peer is `{ id, kind, lastSeen }`, and `kind` distinguishes `'tab'` from
-`'worker'` — which is how the demo app renders workers as square dots.
+Each peer is `{ id, kind, lastSeen, metadata? }`, and `kind` distinguishes
+`'tab'` from `'worker'` — which is how the demo app renders workers as square
+dots.
+
+### Say who you are
+
+`id` answers _which_ tab, not _who_. For a display name, a tab title, or a
+cursor, publish metadata:
+
+```tsx
+usePresenceMetadata({ name: user.name, editing: currentDocId });
+
+const everyone = usePeers({ includeSelf: true });
+```
+
+Call it with a fresh object every render if you like — the value is compared by
+contents, so an unchanged one announces nothing and re-renders nobody.
+
+`includeSelf` is off by default because "who else is here" is what a presence
+strip asks. Turn it on for an avatar list, where leaving yourself out means
+every tab renders a different list of the same room.
 
 ## Combine them: react to _who_ did _what_
 
