@@ -68,7 +68,7 @@ jobs:
       - name: Create version PR or publish
         uses: changesets/action@v1
         with:
-          # `pnpm run release` builds the two libraries through Turbo before
+          # `pnpm run release` builds the three published packages through Turbo before
           # publishing — the demo and docs are not published, so a full
           # `turbo run build` would be wasted work here.
           version: pnpm exec changeset version

@@ -144,7 +144,7 @@ jobs:
       # packaging contract at all, so a `files` entry that dropped dist or an
       # exports map that resolved only for bundlers would have reached npm.
       #
-      # Both root scripts filter to the two published packages. Turbo schedules
+      # Both root scripts filter to the three published packages. Turbo schedules
       # a no-op task for every package that does not define the script, and each
       # of those still pulls in its own `build` — which would drag `docs#build`
       # and its chromium requirement into this job.
@@ -182,7 +182,7 @@ jobs:
       - name: Install ${{ matrix.browser }}
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       # `libs:build` first through Turbo — the demo app Playwright's webServer
-      # serves imports the two libraries — then the suite for this engine.
+      # serves imports the runtime libraries — then the suite for this engine.
       - name: End-to-end
         run: pnpm run libs:build && pnpm exec playwright test --project=${{ matrix.browser }}
       - uses: actions/upload-artifact@v7
