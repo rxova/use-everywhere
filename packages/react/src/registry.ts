@@ -12,6 +12,7 @@ import {
   type LeaderOptions,
   type MessageMap,
   type Presence,
+  type ReplyMap,
   type SharedReducer,
   type SharedStoreOptions,
 } from '@use-everywhere/core';
@@ -226,11 +227,13 @@ export function getReducer<S, A>(
   return existing as unknown as SharedReducer<S, A>;
 }
 
-export function getChannel<M extends MessageMap>(name: string): Channel<M> {
+export function getChannel<M extends MessageMap, R extends ReplyMap<M> = Record<never, never>>(
+  name: string,
+): Channel<M, R> {
   let channel = channels.get(name);
   if (!channel) {
     channel = isServer() ? createServerChannel(name) : createChannel(name, channelConfig.get(name));
     channels.set(name, channel);
   }
-  return channel as Channel<M>;
+  return channel as unknown as Channel<M, R>;
 }

@@ -66,7 +66,7 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "7.84 kB"
+      "limit": "8.09 kB"
     },
     {
       "name": "createLeader",
@@ -84,19 +84,19 @@
       "name": "createSharedReducer",
       "path": "dist/index.js",
       "import": "{ createSharedReducer }",
-      "limit": "3.78 kB"
+      "limit": "3.77 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "2.46 kB"
+      "limit": "2.74 kB"
     },
     {
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "2.32 kB"
+      "limit": "2.33 kB"
     },
     {
       "name": "openWindow (opener side)",

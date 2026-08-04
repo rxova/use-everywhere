@@ -77,13 +77,13 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "9.57 kB"
+      "limit": "9.91 kB"
     },
     {
       "name": "useSharedState",
       "path": "dist/index.js",
       "import": "{ useSharedState }",
-      "limit": "3.98 kB"
+      "limit": "3.99 kB"
     },
     {
       "name": "useSharedReducer",
@@ -95,7 +95,7 @@
       "name": "useChannel + useMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useMessage, useSend }",
-      "limit": "2.74 kB"
+      "limit": "3.06 kB"
     },
     {
       "name": "usePeers + useClientId",
@@ -113,7 +113,7 @@
       "name": "useLeader + useLeaderEffect",
       "path": "dist/index.js",
       "import": "{ useLeader, useLeaderEffect }",
-      "limit": "3.63 kB"
+      "limit": "3.62 kB"
     },
     {
       "name": "defineStore (persisted)",
