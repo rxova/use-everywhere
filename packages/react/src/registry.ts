@@ -75,7 +75,11 @@ export function getSharedStore(
 function configSignature(options: SharedStoreOptions | undefined): string {
   const persist = options?.persist;
   if (!persist) return 'none';
-  return `persist:${persist.keys?.join(',') ?? '*'}:${persist.debounceMs ?? 'default'}`;
+  // `version` is part of the signature and `migrate` is not, for the same
+  // reason as the adapter: a hot edit rebuilds the function, but changing the
+  // *version* is a deliberate statement that the store would be built
+  // differently — and one worth being told about if it comes too late.
+  return `persist:${persist.keys?.join(',') ?? '*'}:${persist.debounceMs ?? 'default'}:v${persist.version ?? 0}`;
 }
 
 export function configureStore(name: string, scope: ShareScope, options: SharedStoreOptions): void {

@@ -3,7 +3,7 @@ import { isVersion, newer } from './clock.js';
 import { devWarn } from './dev.js';
 import { freezeShared } from './dev-freeze.js';
 import type { MessageMeta, Version } from './common.types.js';
-import type { Persisted } from './persist.types.js';
+import type { Persisted, RestoreError } from './persist.types.js';
 import { createGate } from './schema.js';
 import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 
@@ -157,20 +157,96 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
   const persist = options.persist;
   let flushPersist: (() => void) | undefined;
+  // Resolved once the restore has been applied, or immediately when there is
+  // nothing to restore. Held here so `hydrated` can be handed out below whether
+  // or not persistence is configured.
+  let settle: () => void = () => {};
+  const hydrated = persist
+    ? new Promise<void>((resolve) => {
+        settle = resolve;
+      })
+    : Promise.resolve();
 
   if (persist) {
-    const { adapter, keys, debounceMs = 100 } = persist;
+    const {
+      adapter,
+      keys,
+      debounceMs = 100,
+      version: schemaVersion = 0,
+      migrate,
+      onRestoreError,
+    } = persist;
     const shouldPersist = (key: string) => !keys || keys.includes(key);
 
-    const hydrate = (saved: Persisted | undefined) => {
-      if (!saved) return;
-      for (const key in saved.state) {
-        const version = saved.versions[key];
+    const refuse = (error: RestoreError) => {
+      if (onRestoreError) onRestoreError(error);
+      else
+        devWarn(
+          `[use-everywhere] ${name}: persisted schema v${error.found} not restored, ` +
+            `expected v${error.expected} (${error.reason}). https://rxova.org/guides/persistence/`,
+        );
+    };
+
+    /**
+     * Bring what is on disk to this build's schema version, or refuse it.
+     *
+     * Returns `undefined` for anything that must not be applied, which is the
+     * same shape as "nothing was saved" — a refused restore leaves the store on
+     * its initial values rather than on a half-understood past.
+     */
+    const reconcile = (
+      saved: Persisted,
+    ): { state: Record<string, unknown>; migrated: boolean } | undefined => {
+      const found = saved.schema ?? 0;
+      if (found === schemaVersion) return { state: saved.state, migrated: false };
+      if (found > schemaVersion) {
+        // An older build reading what a newer one wrote. It cannot be asked to
+        // understand a shape that postdates it, and guessing would put values
+        // it misreads back on the wire with winning clocks. Same call the
+        // envelope makes for a protocol version it does not know.
+        refuse({ reason: 'ahead', found, expected: schemaVersion });
+        return undefined;
+      }
+      if (!migrate) {
+        refuse({ reason: 'no-migrate', found, expected: schemaVersion });
+        return undefined;
+      }
+      try {
+        return { state: migrate(saved.state, found), migrated: true };
+      } catch (cause) {
+        // A throwing migration is a bug in the migration, and the one thing it
+        // must not do is take the store down with it on every page load.
+        refuse({ reason: 'migrate-threw', found, expected: schemaVersion, cause });
+        return undefined;
+      }
+    };
+
+    const hydrate = (raw: Persisted | undefined) => {
+      const reconciled = raw && reconcile(raw);
+      if (!reconciled || !raw) {
+        settle();
+        return;
+      }
+      const { state: restored, migrated } = reconciled;
+      for (const key in restored) {
+        // A migration that *adds* a key — deriving `fullName` from `first` and
+        // `last`, the commonest migration there is — produces a value with no
+        // clock on disk, because the key did not exist when that file was
+        // written. Skipping it would silently drop exactly the thing the
+        // migration was written to add.
+        //
+        // So it gets minted one: counter 1, this client. That is a real write
+        // (counter >= 1 beats any registered initial) attributed to the tab that
+        // computed it, and it still loses to a live tab holding something newer
+        // — which is right, since live data outranks a migration of stale disk.
+        // Two tabs migrating the same file compute the same value, so the
+        // clientId tie-break between them is a coin toss with one outcome.
+        const version = raw.versions[key] ?? (migrated ? ([1, clientId] as Version) : undefined);
         if (!version || !shouldPersist(key)) continue;
         // Through the same LWW gate as any remote write, so a live tab holding
         // something newer still wins. `accept` is deliberately bypassed: it
         // gates what other clients may tell us, and this is our own past.
-        applyRemote(key, saved.state[key], version, { clientId, kind: bus.kind, self: true });
+        applyRemote(key, restored[key], version, { clientId, kind: bus.kind, self: true });
         // Re-broadcast, carrying the *persisted* version. Not an optimisation:
         // hello/snapshot only flows incumbent -> joiner, so a live tab sitting
         // on a staler value would never otherwise hear about the restored one,
@@ -181,16 +257,17 @@ export function createSharedStore<S extends Record<string, unknown>>(
           scope: 'state',
           type: 'patch',
           key,
-          value: saved.state[key],
+          value: restored[key],
           version,
           clientId,
           kind: bus.kind,
         });
       }
+      settle();
     };
 
     const collect = (): Persisted => {
-      const out: Persisted = { v: 1, state: {}, versions: {} };
+      const out: Persisted = { v: 1, schema: schemaVersion, state: {}, versions: {} };
       for (const key in versions) {
         const version = versions[key];
         // Counter 0 means "registered, never written" — somebody's `initial`,
@@ -253,6 +330,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   let storeClosed = false;
   return {
     clientId,
+    hydrated,
     state: proxy,
     getSnapshot: () => snapshot,
     getVersions: () => versionsSnapshot,

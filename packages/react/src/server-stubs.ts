@@ -38,6 +38,12 @@ const unsubscribe = () => noop;
 const INERT = Object.freeze({
   clientId: SERVER_CLIENT_ID,
   // store
+  //
+  // Resolved, unlike the leader's `waitForLeadership` below. A server render
+  // has nothing to restore and is documented to render defaults, so `await
+  // store.hydrated` must proceed — a never-settling promise would hang the
+  // render rather than describe it honestly.
+  hydrated: Promise.resolve(),
   state: EMPTY,
   getVersions: () => EMPTY,
   set: noop,
