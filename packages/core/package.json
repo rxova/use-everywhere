@@ -60,7 +60,7 @@
     "size": "size-limit",
     "check:exports": "publint --strict && attw --pack .",
     "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts",
-    "mutation": "stryker run"
+    "mutation": "stryker run && node --import tsx ../tooling/check-mutation.ts reports/mutation/mutation.json"
   },
   "size-limit": [
     {

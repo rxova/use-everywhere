@@ -6,7 +6,7 @@
   "vitest": {
     "configFile": "vitest.config.ts"
   },
-  "reporters": ["html", "clear-text", "progress"],
+  "reporters": ["html", "json", "clear-text", "progress"],
   "coverageAnalysis": "perTest",
   "mutate": [
     "src/clock.ts",
@@ -31,5 +31,8 @@
   "tempDirName": ".stryker-tmp",
   "plugins": ["@stryker-mutator/vitest-runner"],
   "_comment_plugins": "Named explicitly: pnpm's strict node_modules means Stryker's auto-discovery walks a tree the plugin is not hoisted into.",
-  "_comment_thresholds": "break is the roadmap's target, now met, and it applies to the overall score. Every individual module is also >=90 (see MUTATION.md); Stryker cannot gate per file, so that part is a review target. Ratchet this up as survivors die \u2014 never down."
+  "_comment_thresholds": "break is the roadmap's target, now met, and it applies to the overall score. Every individual module is also >=90 (see MUTATION.md); Stryker cannot gate per file, so that part is a review target. Ratchet this up as survivors die \u2014 never down.",
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  }
 }
