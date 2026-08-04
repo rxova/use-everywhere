@@ -66,67 +66,67 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "7.29 kB"
+      "limit": "7.84 kB"
     },
     {
       "name": "createLeader",
       "path": "dist/index.js",
       "import": "{ createLeader }",
-      "limit": "3.09 kB"
+      "limit": "3.23 kB"
     },
     {
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "3.55 kB"
+      "limit": "3.65 kB"
     },
     {
       "name": "createSharedReducer",
       "path": "dist/index.js",
       "import": "{ createSharedReducer }",
-      "limit": "3.65 kB"
+      "limit": "3.78 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "2.3 kB"
+      "limit": "2.46 kB"
     },
     {
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "2.15 kB"
+      "limit": "2.32 kB"
     },
     {
       "name": "openWindow (opener side)",
       "path": "dist/index.js",
       "import": "{ openWindow }",
-      "limit": "1.26 kB"
+      "limit": "1.24 kB"
     },
     {
       "name": "connectToOpener (child side)",
       "path": "dist/index.js",
       "import": "{ connectToOpener }",
-      "limit": "1.11 kB"
+      "limit": "1.09 kB"
     },
     {
       "name": "observeBus + enableDebug",
       "path": "dist/index.js",
       "import": "{ observeBus, enableDebug }",
-      "limit": "500 B"
+      "limit": "316 B"
     },
     {
       "name": "localStorageAdapter",
       "path": "dist/index.js",
       "import": "{ localStorageAdapter }",
-      "limit": "500 B"
+      "limit": "655 B"
     },
     {
       "name": "MemoryHub (testing subpath)",
       "path": "dist/testing.js",
       "import": "{ MemoryHub }",
-      "limit": "350 B"
+      "limit": "267 B"
     }
   ],
   "devDependencies": {

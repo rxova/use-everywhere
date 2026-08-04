@@ -1,3 +1,4 @@
+import { jsonSerializer, type Serializer } from './serializer.js';
 import type { Persisted, PersistAdapter } from './persist.types.js';
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -10,6 +11,16 @@ export interface WebStorageAdapterOptions {
    * not a recovery path. Errors thrown by the callback itself are swallowed.
    */
   onError?: (error: unknown, operation: 'read' | 'write' | 'remove') => void;
+  /**
+   * How values become text. Defaults to JSON, which refuses anything it would
+   * silently change — a `Date`, a `Map`, an `undefined` — rather than write a
+   * value that reads back different.
+   *
+   * Pass devalue or superjson to carry those instead. Not bundled: they cost
+   * 3.4-3.6 kB brotlied against a whole-library budget of 7.3 kB, and most
+   * state is JSON-shaped.
+   */
+  serializer?: Serializer;
 }
 
 function isPersisted(value: unknown): value is Persisted {
@@ -40,6 +51,7 @@ export function webStorageAdapter(
   key: string,
   options: WebStorageAdapterOptions = {},
 ): PersistAdapter {
+  const serializer = options.serializer ?? jsonSerializer;
   const report = (error: unknown, operation: 'read' | 'write' | 'remove') => {
     try {
       options.onError?.(error, operation);
@@ -62,7 +74,7 @@ export function webStorageAdapter(
       try {
         const raw = resolve('read')?.getItem(key);
         if (!raw) return undefined;
-        const parsed: unknown = JSON.parse(raw);
+        const parsed: unknown = serializer.parse(raw);
         return isPersisted(parsed) ? parsed : undefined;
       } catch (error) {
         report(error, 'read');
@@ -71,7 +83,7 @@ export function webStorageAdapter(
     },
     write(snapshot) {
       try {
-        resolve('write')?.setItem(key, JSON.stringify(snapshot));
+        resolve('write')?.setItem(key, serializer.stringify(snapshot));
       } catch (error) {
         // Quota exceeded, or storage blocked.
         report(error, 'write');

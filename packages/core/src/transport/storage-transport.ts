@@ -1,3 +1,4 @@
+import { jsonSerializer, type Serializer } from '../serializer.js';
 import type { Transport, TransportKind } from './transport.types.js';
 
 /**
@@ -11,10 +12,10 @@ import type { Transport, TransportKind } from './transport.types.js';
  * Two differences from the real thing, both deliberate and both documented:
  *
  * 1. **Fidelity is JSON, not structured clone.** `localStorage` holds strings.
- *    A `Date` arrives as an ISO string and a `Map` as `{}`. Values that cannot
- *    be represented at all — functions, symbols — are rejected rather than
- *    silently dropped, so a write still cannot leave this tab holding something
- *    its peers never received.
+ *    The default serializer therefore *rejects* every value JSON would quietly
+ *    change — a `Date`, a `Map`, a function — rather than let a write appear to
+ *    succeed while peers receive something else. Pass a `Serializer` (devalue,
+ *    superjson) to carry those instead.
  * 2. **The entry is removed immediately after writing.** Peers have already been
  *    notified by then (the event carries the value), and leaving application
  *    state sitting in `localStorage` would be both a quota cost and a privacy
@@ -28,8 +29,13 @@ export class StorageTransport implements Transport {
   private listeners = new Set<(data: unknown) => void>();
   private onStorage: (event: StorageEvent) => void;
   private seq = 0;
+  private serializer: Serializer;
 
-  constructor(name: string, storage: Storage = globalThis.localStorage) {
+  constructor(
+    name: string,
+    storage: Storage = globalThis.localStorage,
+    serializer: Serializer = jsonSerializer,
+  ) {
     // A bare `localStorage` default threw a bald `ReferenceError` in a worker,
     // where the global does not exist at all rather than being undefined.
     // `defaultTransport` never gets here — it probes first — but this class is
@@ -39,6 +45,7 @@ export class StorageTransport implements Transport {
         '[use-everywhere] StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.',
       );
     }
+    this.serializer = serializer;
     this.key = `use-everywhere:bus:${name}`;
     this.storage = storage;
     this.onStorage = (event) => {
@@ -46,7 +53,7 @@ export class StorageTransport implements Transport {
       if (event.key !== this.key || event.newValue === null) return;
       let payload: { data: unknown };
       try {
-        payload = JSON.parse(event.newValue) as { data: unknown };
+        payload = this.serializer.parse(event.newValue) as { data: unknown };
       } catch {
         return; // not ours, or truncated
       }
@@ -59,7 +66,7 @@ export class StorageTransport implements Transport {
     // `seq` makes every write a distinct string: `setItem` with an unchanged
     // value fires no storage event, so two identical posts in a row would
     // silently deliver once.
-    const envelope = JSON.stringify({ seq: this.seq++, data }, rejectUnrepresentable);
+    const envelope = this.serializer.stringify({ seq: this.seq++, data });
     try {
       this.storage.setItem(this.key, envelope);
       this.storage.removeItem(this.key);
@@ -79,17 +86,4 @@ export class StorageTransport implements Transport {
     this.listeners.clear();
     removeEventListener('storage', this.onStorage);
   }
-}
-
-/**
- * JSON drops functions and symbols silently, which would let a write appear to
- * succeed while peers received something different — the exact divergence the
- * store's all-or-nothing write exists to prevent. Throwing keeps the contract
- * identical to the BroadcastChannel path, where the browser rejects them.
- */
-function rejectUnrepresentable(_key: string, value: unknown): unknown {
-  if (typeof value === 'function' || typeof value === 'symbol') {
-    throw new TypeError(`${typeof value} values cannot be shared`);
-  }
-  return value;
 }

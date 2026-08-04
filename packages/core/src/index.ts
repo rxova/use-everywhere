@@ -21,6 +21,8 @@ export {
   sessionStorageAdapter,
 } from './persist-web-storage.js';
 export type { StorageLike, WebStorageAdapterOptions } from './persist-web-storage.js';
+export { jsonSerializer } from './serializer.js';
+export type { Serializer } from './serializer.js';
 export type { Persisted, PersistAdapter, PersistOptions, RestoreError } from './persist.types.js';
 export { openWindow, connectToOpener, CID_PARAM } from './window-channel.js';
 export type {
