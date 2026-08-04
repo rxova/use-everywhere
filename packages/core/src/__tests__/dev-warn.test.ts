@@ -5,7 +5,7 @@ describe('diagnostic', () => {
   it('stamps the code and the page that explains it', () => {
     expect(diagnostic('UE9999', 'something happened')).toBe(
       '[use-everywhere] UE9999: something happened\n' +
-        '  → https://rxova.github.io/use-everywhere/errors/#ue9999',
+        '  → https://rxova.org/packages/use-everywhere/errors/#ue9999',
     );
   });
 });

@@ -10,7 +10,7 @@ try {
 
 const warned = new Set<string>();
 
-const DOCS = 'https://rxova.github.io/use-everywhere/errors';
+const DOCS = 'https://rxova.org/packages/use-everywhere/errors';
 
 /**
  * Stamp a diagnostic with its code and the page that explains it.

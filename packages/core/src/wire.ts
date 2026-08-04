@@ -89,7 +89,7 @@ export function recordSkew(name: string, version: number): void {
       'UE1007',
       `bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
         `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? 'newer' : 'older'} deploy. They cannot ` +
-        `share state, presence, or a leader seat. https://rxova.org/under-the-hood/version-skew/`,
+        `share state, presence, or a leader seat. https://rxova.org/packages/use-everywhere/under-the-hood/version-skew/`,
     );
   }
 }

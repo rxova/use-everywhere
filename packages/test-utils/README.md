@@ -68,7 +68,7 @@ simulation matches a browser exactly.
 
 ## Docs
 
-[Testing guide](https://rxova.github.io/use-everywhere/guides/testing/)
+[Testing guide](https://rxova.org/packages/use-everywhere/guides/testing/)
 
 ## License
 
