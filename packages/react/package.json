@@ -83,13 +83,13 @@
       "name": "useSharedState",
       "path": "dist/index.js",
       "import": "{ useSharedState }",
-      "limit": "3.89 kB"
+      "limit": "4.17 kB"
     },
     {
       "name": "useChannel + useMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useMessage, useSend }",
-      "limit": "2.56 kB"
+      "limit": "2.93 kB"
     },
     {
       "name": "usePeers + useClientId",
@@ -113,7 +113,7 @@
       "name": "defineStore (persisted)",
       "path": "dist/index.js",
       "import": "{ defineStore, localStorageAdapter }",
-      "limit": "4.38 kB"
+      "limit": "4.56 kB"
     },
     {
       "name": "Inspector (devtools subpath)",

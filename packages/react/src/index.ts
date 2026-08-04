@@ -54,6 +54,12 @@ export {
 } from '@use-everywhere/core';
 export type {
   Channel,
+  ChannelOptions,
+  StandardSchemaV1,
+  SchemaMap,
+  SchemaOptions,
+  InvalidPayload,
+  OnInvalid,
   SharedStore,
   SharedStoreOptions,
   Presence,

@@ -1,7 +1,14 @@
 export { createChannel } from './channel.js';
-export type { Channel } from './channel.types.js';
+export type { Channel, ChannelOptions } from './channel.types.js';
 export { createSharedStore } from './shared-store.js';
 export type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
+export type {
+  StandardSchemaV1,
+  SchemaMap,
+  SchemaOptions,
+  InvalidPayload,
+  OnInvalid,
+} from './schema.types.js';
 export { createPresence } from './presence.js';
 export type { Presence, PresenceOptions } from './presence.types.js';
 export { createLeader } from './leader.js';
