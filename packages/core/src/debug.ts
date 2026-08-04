@@ -1,6 +1,7 @@
 import type { BusWire } from './bus.types.js';
 import type { BusEvent, BusObserver, DebugOptions } from './debug.types.js';
 import { DEFAULT_NAME } from './defaults.js';
+import { diagnostic } from './dev.js';
 
 /**
  * Observers keyed by bus name, looked up at emit time rather than handed to
@@ -21,7 +22,7 @@ export function emitBusEvent(name: string, direction: 'in' | 'out', wire: BusWir
     try {
       fn(event);
     } catch (error) {
-      console.error(`[use-everywhere] a bus observer for "${name}" threw`, error);
+      console.error(diagnostic('UE1012', `a bus observer for "${name}" threw`), error);
     }
   }
 }

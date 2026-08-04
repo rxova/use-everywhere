@@ -12,11 +12,27 @@ try {
 
 const warned = new Set<string>();
 
+const DOCS = 'https://rxova.github.io/use-everywhere/errors';
+
+/**
+ * Stamp a diagnostic with its code and the page that explains it. Core's twin
+ * of this, for the same reason the twin of `devWarn` exists — see above.
+ *
+ * Codes are permanent, and a retired one is never reused: an old build in
+ * somebody's browser is still emitting it. Core owns UE1xxx, this package
+ * UE2xxx.
+ */
+export function diagnostic(code: string, message: string): string {
+  return `[use-everywhere] ${code}: ${message}\n  → ${DOCS}/#${code.toLowerCase()}`;
+}
+
 /** Warn once per distinct message, development only. */
-export function devWarn(message: string): void {
-  if (!inDev || warned.has(message)) return;
-  warned.add(message);
-  console.warn(message);
+export function devWarn(code: string, message: string): void {
+  if (!inDev) return;
+  const line = diagnostic(code, message);
+  if (warned.has(line)) return;
+  warned.add(line);
+  console.warn(line);
 }
 
 /** The initial each key was first registered with. Populated only in development — dynamic keys would otherwise grow it without bound. */
@@ -40,7 +56,8 @@ export function warnOnInitialMismatch(storeName: string, key: string, initial: u
   const comparable = (v: unknown) => v === null || typeof v !== 'object';
   if (comparable(first) && comparable(initial) && !Object.is(first, initial)) {
     devWarn(
-      `[use-everywhere] useSharedState('${key}') was called with different initial values (${String(first)} and ${String(initial)}). ` +
+      'UE2001',
+      `useSharedState('${key}') was called with different initial values (${String(first)} and ${String(initial)}). ` +
         'The first registration wins, so the second is ignored. Define the default once — defineStore, or a shared constant.',
     );
   }

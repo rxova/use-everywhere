@@ -45,7 +45,8 @@ export function defaultTransport(name: string): Transport {
   if (isStorageEventAvailable()) {
     if (process.env.NODE_ENV !== 'production') {
       devWarn(
-        '[use-everywhere] no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.',
+        'UE1009',
+        'no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.',
       );
     }
     return new StorageTransport(name);
@@ -53,7 +54,8 @@ export function defaultTransport(name: string): Transport {
 
   if (process.env.NODE_ENV !== 'production') {
     devWarn(
-      '[use-everywhere] no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.',
+      'UE1010',
+      'no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.',
     );
   }
   return new NoopTransport();

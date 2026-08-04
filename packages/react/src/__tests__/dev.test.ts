@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { devWarn, warnOnInitialMismatch } from '../dev.js';
+import { devWarn, diagnostic, warnOnInitialMismatch } from '../dev.js';
 
 // No React here on purpose: these are the pure diagnostics helpers, and testing
 // the production build means re-importing the module, which would give a second
@@ -14,11 +14,12 @@ describe('devWarn', () => {
   it('warns once per distinct message and dedupes repeats', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    devWarn('react-dw: first');
-    devWarn('react-dw: first');
-    devWarn('react-dw: second');
+    devWarn('UE9101', 'first');
+    devWarn('UE9101', 'first');
+    devWarn('UE9102', 'second');
 
     expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenNthCalledWith(1, diagnostic('UE9101', 'first'));
   });
 
   it('is silent in production builds', async () => {
@@ -27,9 +28,18 @@ describe('devWarn', () => {
     const { devWarn: prodWarn } = await import('../dev.js');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    prodWarn('react-dw: never shown');
+    prodWarn('UE9103', 'never shown');
 
     expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe('diagnostic', () => {
+  it('stamps the code and the page that explains it, exactly as core does', () => {
+    expect(diagnostic('UE2001', 'something happened')).toBe(
+      '[use-everywhere] UE2001: something happened\n' +
+        '  → https://rxova.github.io/use-everywhere/errors/#ue2001',
+    );
   });
 });
 

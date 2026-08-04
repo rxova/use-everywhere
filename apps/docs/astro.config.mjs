@@ -64,6 +64,7 @@ export default defineConfig({
           { label: 'Core (without React)', items: [{ autogenerate: { directory: 'core' } }] },
           { label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] },
           { label: 'ESLint plugin', items: [{ autogenerate: { directory: 'eslint' } }] },
+          { label: 'Error codes', link: '/errors/' },
           {
             label: 'Under the hood',
             items: [{ autogenerate: { directory: 'under-the-hood' } }],

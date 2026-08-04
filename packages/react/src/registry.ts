@@ -96,7 +96,8 @@ export function configureStore(name: string, scope: ShareScope, options: SharedS
     if (configSignature(storeConfig.get(key)) === configSignature(options)) return;
     if (process.env.NODE_ENV !== 'production') {
       devWarn(
-        `[use-everywhere] defineStore('${name}') ran after that store was already created, with different options. ` +
+        'UE2002',
+        `defineStore('${name}') ran after that store was already created, with different options. ` +
           'The live store keeps the configuration it was built with. Move defineStore to module scope, ' +
           'before any component reads the store.',
       );
@@ -163,7 +164,8 @@ function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void 
     if (requested !== undefined && requested !== first?.[key]) {
       if (process.env.NODE_ENV !== 'production') {
         devWarn(
-          `[use-everywhere] leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
+          'UE2003',
+          `leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
         );
       }
     }
@@ -192,7 +194,8 @@ export function configureChannel<M extends MessageMap>(
     if (before.join() === after.join()) return;
     if (process.env.NODE_ENV !== 'production') {
       devWarn(
-        `[use-everywhere] defineChannel('${name}') ran after that channel was already created, with different options. ` +
+        'UE2004',
+        `defineChannel('${name}') ran after that channel was already created, with different options. ` +
           'The live channel keeps the configuration it was built with. Move defineChannel to module scope, ' +
           'before any component sends or receives on it.',
       );
