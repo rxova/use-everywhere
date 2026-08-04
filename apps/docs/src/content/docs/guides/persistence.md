@@ -121,6 +121,29 @@ browser's hydrating render would be a hydration mismatch in every app that used
 it, which is the same reason `useClientId` reports `''` until the commit after
 hydration.
 
+## Choosing an adapter
+
+|                | `localStorageAdapter`                                                  | `indexedDbAdapter`                             |
+| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------- |
+| Fidelity       | JSON — needs a [serializer](./serialization.md) for `Date`/`Map`/`Set` | structured clone, so those work as-is          |
+| Room           | a few MB, shared with the whole origin                                 | orders of magnitude more                       |
+| Restore        | synchronous, done before the store is returned                         | asynchronous — gate on `hydrated`              |
+| Flush on close | synchronous, so `pagehide` lands                                       | cannot be awaited; the last write may not land |
+
+The rule of thumb: **`localStorage` for small state you would mind losing,
+IndexedDB for everything large or not JSON-shaped.** Using both is normal —
+they are separate adapters on separate stores.
+
+```ts
+defineStore('settings', { persist: localStorageAdapter('app:settings') });
+defineStore('workspace', { persist: indexedDbAdapter('workspace') });
+```
+
+Note that `indexedDbAdapter` takes **no serializer**, on purpose. IndexedDB
+already stores with the structured clone algorithm — the same one
+`BroadcastChannel` uses — so handing it a JSON serializer would only reintroduce
+the losses the seam exists to prevent.
+
 ## Related
 
 - [Version skew & the wire contract](../under-the-hood/version-skew.md) — the

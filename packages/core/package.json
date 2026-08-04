@@ -66,7 +66,7 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "8.37 kB"
+      "limit": "8.64 kB"
     },
     {
       "name": "createLeader",
@@ -96,31 +96,37 @@
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "2.33 kB"
+      "limit": "2.32 kB"
     },
     {
       "name": "openWindow (opener side)",
       "path": "dist/index.js",
       "import": "{ openWindow }",
-      "limit": "1.23 kB"
+      "limit": "1.24 kB"
     },
     {
       "name": "connectToOpener (child side)",
       "path": "dist/index.js",
       "import": "{ connectToOpener }",
-      "limit": "1.08 kB"
+      "limit": "1.09 kB"
     },
     {
       "name": "observeBus + enableDebug",
       "path": "dist/index.js",
       "import": "{ observeBus, enableDebug }",
-      "limit": "317 B"
+      "limit": "316 B"
     },
     {
       "name": "localStorageAdapter",
       "path": "dist/index.js",
       "import": "{ localStorageAdapter }",
       "limit": "655 B"
+    },
+    {
+      "name": "indexedDbAdapter",
+      "path": "dist/index.js",
+      "import": "{ indexedDbAdapter }",
+      "limit": "447 B"
     },
     {
       "name": "MemoryHub (testing subpath)",
@@ -134,6 +140,7 @@
     "@size-limit/preset-small-lib": "^13.0.1",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "^0.28.1",
+    "fake-indexeddb": "^6.2.5",
     "fast-check": "^4.9.0",
     "happy-dom": "^20.11.1",
     "publint": "^0.3.21",

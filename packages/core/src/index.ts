@@ -28,6 +28,8 @@ export {
   sessionStorageAdapter,
 } from './persist-web-storage.js';
 export type { StorageLike, WebStorageAdapterOptions } from './persist-web-storage.js';
+export { indexedDbAdapter } from './persist-indexeddb.js';
+export type { IndexedDbAdapterOptions } from './persist-indexeddb.js';
 export { jsonSerializer } from './serializer.js';
 export type { Serializer } from './serializer.js';
 export type { Persisted, PersistAdapter, PersistOptions, RestoreError } from './persist.types.js';
