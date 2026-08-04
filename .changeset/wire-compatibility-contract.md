@@ -1,6 +1,5 @@
 ---
 '@use-everywhere/core': minor
-'use-everywhere': minor
 ---
 
 Make version skew a fact you can see rather than one you have to deduce.
@@ -17,4 +16,4 @@ Also fixes the store's wire dispatch, which ended in a bare `else`: every `state
 
 The contract both halves come from — what may be added within a version, what must bump it — is documented at `packages/core/src/wire.ts` and in the new **Version skew & the wire contract** docs page.
 
-Two size budgets move up by ~150 B: `useChannel + useMessage + useSend` and `usePeers + useClientId`, the two smallest entries, which carry the bus and therefore the skew check. Most of that is the development warning string, which survives into production bundles until dev-only stripping lands — the warning was rewritten terse with the explanation behind a link for exactly that reason, and this is what it costs after that.
+Three size budgets move up by ~150-200 B: `createSharedStore`, `createChannel` and `createPresence`, the entries that carry the bus and therefore the skew check. Most of that is the development warning string, which survives into production bundles until dev-only stripping lands — the warning was rewritten terse with the explanation behind a link for exactly that reason, and this is what it costs after that.

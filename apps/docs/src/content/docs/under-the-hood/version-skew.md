@@ -113,7 +113,6 @@ lives in `packages/core/src/wire.ts`.
 
 ## Related
 
-- [How sync works](/under-the-hood/how-sync-works/) — what's on the wire in the
-  first place
-- [Limitations & FAQ](/under-the-hood/limitations/) — the other things this
-  library declines to hide from you
+- [How sync works](./how-sync-works.md) — what's on the wire in the first place
+- [Limitations & FAQ](./limitations.md) — the other things this library declines
+  to hide from you
