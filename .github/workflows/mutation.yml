@@ -1,12 +1,12 @@
 name: Mutation
 
-# Nightly rather than per-PR. The run is ~8 minutes — longer than every other
+# Scheduled rather than per-PR. The run is ~8 minutes — longer than every other
 # job put together — and it was setting the wall-clock for every pull request
-# while catching something perhaps once a month. Nightly keeps the signal and
+# while catching something perhaps once a month. A schedule keeps the signal and
 # takes it off the critical path.
 #
 # The trade is real and worth stating: a regression can now land on main and go
-# unnoticed until the next night. That is acceptable because the thing being
+# unnoticed until the next run. That is acceptable because the thing being
 # measured is test *quality*, which drifts slowly, and because per-file coverage
 # thresholds still gate every PR — mutation testing catches the tests that pass
 # without asserting, not the ones that are missing.
@@ -15,9 +15,13 @@ name: Mutation
 #   pnpm run mutation
 on:
   schedule:
-    # 03:17 UTC. Deliberately not on the hour: GitHub queues scheduled jobs
-    # across every repository, and the top of the hour is where they pile up.
-    - cron: '17 3 * * *'
+    # Sunday, Wednesday and Friday at 03:17 UTC — roughly every other day, but
+    # on fixed weekdays. `*/2` on day-of-month would drift at every month
+    # boundary (the 31st is followed by the 1st, a one-day gap).
+    #
+    # Deliberately not on the hour: GitHub queues scheduled jobs across every
+    # repository, and the top of the hour is where they pile up.
+    - cron: '17 3 * * 0,3,5'
   workflow_dispatch:
 
 permissions:
