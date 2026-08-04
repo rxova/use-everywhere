@@ -1,5 +1,234 @@
 # @use-everywhere/core
 
+## 0.8.0
+
+### Minor Changes
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`1a3f8d3`](https://github.com/rxova/use-everywhere/commit/1a3f8d3c7081650a75fb0a36c9937aabed742bf0) - Complete the channel: `echo`, `once`, and request/response.
+
+  **`post(type, payload, { echo: true })`** delivers to this client's handlers as well. Not echoing is the `BroadcastChannel` default and usually right, but it was wrong for the case the README kept demonstrating: a component that updates locally _and_ tells everyone else writes the same effect twice, in two places, which then drift. `meta.self` is `true` on the echoed copy, so one handler can serve both.
+
+  **`on(type, handler, { once: true })`** unsubscribes after the first message. The returned unsubscribe stays safe to call afterwards.
+
+  **`ask(type, payload)` / `answer(type, responder)`** — request/response, which is what finally gives `msgId` a job. It was generated on every message and read by nothing: dead wire weight, or an unfinished feature, depending on how charitable you were feeling. A reply carries `replyTo: <the question's msgId>`, so it reaches the client that asked and nobody else — a bystander subscribed to that message type sees the question and not the answer.
+
+  ```ts
+  type Requests = { 'config:get': null };
+  type Replies = { 'config:get': { theme: string } };
+  const channel = createChannel<Requests, Replies>('app');
+
+  channel.answer('config:get', () => ({ theme: currentTheme }));
+  const { theme } = await channel.ask('config:get', null);
+  ```
+
+  Replies are a second, separate type map, empty by default, so `ask`/`answer` are opt-in and typed rather than `unknown` everywhere. `Channel<M>` keeps working unchanged.
+
+  `ask` **rejects on timeout** (default 5s) rather than hanging — an unanswered question is a fact worth having. If several clients answer, the first reply wins; gate the responder on leadership when it has to be a particular tab. A payload its schema rejects surfaces that error immediately instead of timing out five seconds later on a question that never left.
+
+  Adding `replyTo` is additive within wire v1: a build that predates `ask` neither sets nor reads it, which is exactly the rule for new optional fields.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`8318285`](https://github.com/rxova/use-everywhere/commit/8318285c398904dd6d6bd0237ccb3f71550a85a5) - Add `indexedDbAdapter` — persistence with room, and with real fidelity.
+
+  ```ts
+  defineStore('workspace', { persist: indexedDbAdapter('workspace') });
+  ```
+
+  Two things it has that `localStorage` does not.
+
+  **Fidelity, with no serializer at all.** IndexedDB stores values with the structured clone algorithm — the same one `BroadcastChannel` uses — so a `Date` comes back a `Date` and a `Map` a `Map`, for free. The whole JSON-degrades-your-types problem the `Serializer` seam exists to solve is simply not present here, and passing a serializer would only reintroduce it. That makes this the right home for state that is not JSON-shaped.
+
+  **Room.** `localStorage` is a few megabytes per origin, shared with everything else on it. IndexedDB is orders of magnitude larger.
+
+  And one thing it does not have: **a synchronous flush.** This is the adapter `store.hydrated` and `useHydrated` were built for — `read` resolves later, so the store is handed back before its state arrives, and a keystroke landing in that window is discarded by last-writer-wins when the restore turns up holding a higher counter. Gate first input on `hydrated`.
+
+  The same asymmetry applies on the way out: a `pagehide` flush cannot be awaited, so the last debounced write before a tab closes may not land. The debounce (`persist.debounceMs`, default 100) is the real protection — keep it short for state you would mind losing, or keep that state in `localStorageAdapter`, which writes synchronously, and the bulk here.
+
+  Failures degrade to a no-op and report through `onError`, like every other adapter: blocked storage, a corrupt record, a quota. An upgrade blocked by another tab holding the database open **rejects rather than hanging** — a promise nothing will settle would leave the store un-hydrated forever, with `hydrated` never resolving, which is worse than a reported failure.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`88fa0a0`](https://github.com/rxova/use-everywhere/commit/88fa0a0e9e892e8954c1591d25a9c2bf06b29896) - Add `createNamespace(name)`, so two independently deployed apps on one origin cannot collide by both taking the defaults.
+
+  A `BroadcastChannel` is global to the origin, so a bus name _is_ an identity. Two micro-frontends that each call `createSharedStore('cart', …)` — or each omit the name and land on `DEFAULT_NAME` — are not two carts. They are one cart, with two teams writing to it, one leader seat contended between them, and one presence roster counting both. Nothing warned, and nothing could: from the library's side that is indistinguishable from the case it exists to serve.
+
+  "Prefix your names" was the workaround, and it fails the way conventions fail — silently, once, in whichever app forgot.
+
+  ```ts
+  const checkout = createNamespace('checkout');
+  const cart = checkout.createSharedStore('cart', { items: [] }); // bus "checkout:cart"
+  ```
+
+  The namespace carries every factory, not a reduced subset, and `busName()` exposes the real bus name for `observeBus`, `getTransportKind` and devtools. An empty namespace throws rather than silently putting everything back on the shared defaults.
+
+  Named `createNamespace` rather than `createScope` — which is what the roadmap and audit both called it — because "scope" was already taken twice: `wire.scope` says _which engine_ a wire belongs to, and the React package's share scope says _how far_ a value travels. Three axes, three words.
+
+  It prevents collision, not access: everything here is same-origin and a namespace is a string, so anything on the page can construct the same one deliberately.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`5c1e1c0`](https://github.com/rxova/use-everywhere/commit/5c1e1c000015cb4b2d68283861609c0491252077) - Validate payloads against a schema instead of casting them and hoping.
+
+  Everything else here is checked before it is trusted — the envelope, the version clock, the origin on a window channel. The payload was the exception: `wire.payload` was cast to the receiving code's type, so what a handler believed it had was whatever the _sender's_ build thought the shape was. A rolling deploy turns that from a technicality into a bug.
+
+  `createChannel` and `createSharedStore` now take a **`schema`** map — per message type, per store key — of anything implementing [Standard Schema](https://standardschema.dev). That is Zod, Valibot, ArkType and anything else exposing `~standard`, without this library depending on any of them: the spec is a shape, not a package. Keys with no entry are not validated, so the seam is adoptable one message at a time.
+
+  Failure differs by direction, on purpose:
+
+  - **Inbound the payload is dropped** — the same choice the envelope makes for a wire it cannot read. The handler is not called and the channel keeps working; one bad payload does not cut a peer off.
+  - **Outbound `post()` and `set()` throw** — a value this tab just built and cannot describe is a bug here, and finding it here beats every peer finding it instead. Same all-or-nothing guarantee as the structured-clone pre-check.
+
+  **`onInvalid`** observes failures instead of the default development warning — it replaces the warning, not the outcome.
+
+  Two things worth knowing:
+
+  - In a store, validation sits **after** the last-writer-wins comparison, so a value that was going to lose anyway is neither validated nor reported as broken. It covers the restore from disk as well as the wire, which is the case that matters most: state written by last month's deploy outlives every tab that knew what it meant and restores with a winning clock.
+  - **Schemas must be synchronous.** Delivery on this bus is synchronous and documented as such, so a validator that answers later cannot gate a delivery that happens now — the alternatives are buffering every message behind a microtask or letting unvalidated values through while the schema thinks. An async validator is refused with an error naming the vendor rather than quietly awaited. Every synchronous Zod/Valibot/ArkType schema is unaffected.
+
+  New **Validating payloads** guide covers the whole seam.
+
+  Two size budgets move up by ~300 B: `createSharedStore` and `createChannel`, the two engines that gained the gate. That is paid by every caller, including the ones who never declare a schema — the strings are the bulk of it, and they were written terse with the explanation behind a link for exactly that reason.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`f8ec259`](https://github.com/rxova/use-everywhere/commit/f8ec259b395dcf87d83a4894d575962b0ac1e1ad) - Version and migrate persisted state, and make hydration observable.
+
+  Disk is where version skew has its longest fuse. A wire from another deploy is gone in a second; a value written by last month's build sits in storage until someone reopens that tab, and then restores carrying its original version clock — which beats every live tab, in whatever shape the app had a month ago. There was no way to notice, let alone act.
+
+  **`persist.version` + `persist.migrate`.** `version` is the shape of _your_ state, not the `v: 1` envelope the library owns. Default 0, which is also what anything written before this existed reads as, so adopting it works on data already out there.
+
+  - Same version → restored as-is.
+  - Older, with `migrate` → migrated, then restored. Migrated values **keep their clocks**, so a restored value re-enters the last-writer-wins order where the original left it. A key the migration _adds_ has no clock on disk, so it gets a fresh one — counter 1, attributed to the tab that ran the migration: a real write that beats an untouched initial and still loses to a live tab holding something newer.
+  - Older, no `migrate` → refused.
+  - **Newer than this build → refused, always.** A build cannot be asked to understand a shape that postdates it, and guessing would put values it misreads back on the wire with winning clocks. Same call the envelope makes for an unknown wire protocol. This happens for real on every rollback and every old tab reopened after a deploy.
+
+  A refused restore leaves the store on its initial values and reports through **`persist.onRestoreError`** (`'ahead' | 'no-migrate' | 'migrate-threw'`), defaulting to a development warning. A migration that throws is caught and reported with the original error as `cause` — a bug in a migration must not take the store down on every page load.
+
+  **`store.hydrated`** resolves once the restore has landed, been refused, or been found absent; already resolved when there is no persistence. It closes a gap that only async adapters have and that last-writer-wins makes invisible: the store returns on its initial values, a keystroke writes at counter 1, the restore arrives holding counter 5, and the newer keystroke is correctly discarded. Every step is right and the result is a lost keystroke with nothing to point at. It never rejects — a store that kept its initial values is usable, and a promise nobody can await is not.
+
+  Three size budgets move up by ~160-200 B on the entries carrying the store.
+
+  New **Persistence: versions, migrations, hydration** guide.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`627d3c3`](https://github.com/rxova/use-everywhere/commit/627d3c3f5c41300c63cc1d6e56614a62a4170cbf) - Presence carries metadata, and can include this client in its own roster.
+
+  Presence answered "who is here" and nothing about _who they are_. A display name, a tab title, a cursor — the things an avatar strip or a collaborative UI actually needs — had no way to travel.
+
+  `createPresence(name, { metadata })` publishes it; `presence.setMetadata(next)` changes it; every `Peer` carries what that client announced.
+
+  Two decisions that stop it churning:
+
+  - **Metadata rides `hello`, never `ping`.** A ping is a heartbeat and arrives constantly; attaching metadata would re-announce unchanged data forever and rebuild every subscriber's roster on a timer. A ping therefore leaves what is already known in place rather than blanking it.
+  - **It compares by value, not reference.** Metadata arrives freshly deserialised every time, so a reference check would call every announcement a change. `setMetadata` with an equal value announces nothing and notifies nobody, which is what makes it safe to call on every render.
+
+  **`includeSelf`** puts this client in its own roster, populated from the first read rather than appearing once somebody else turns up — an avatar list that starts empty and fills in later is a flicker, not a feature. Off by default, because the question a presence strip asks is who _else_ is here.
+
+  Adding `metadata` to the presence wire is additive within v1: a build that predates it neither sets nor reads it.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`4ca1aa4`](https://github.com/rxova/use-everywhere/commit/4ca1aa431124ec3ea3b9016f201a49de4d5dd73f) - Make the two text paths agree with the wire, or say so.
+
+  `BroadcastChannel` carries structured clone; the storage-event transport and disk persistence carry text. JSON is a strictly poorer format — a `Date` comes back a string, a `Map` comes back `{}`, an `undefined` property is simply gone — so the same call had two different answers depending on which transport the browser happened to offer. Persistence had no guard at all.
+
+  **The default serializer now refuses what it would silently change**: `Date`, `Map`, `Set`, `RegExp`, typed arrays, functions, symbols, and `undefined`. The error names the key. That is the same call `store.set()` already makes for a value structured clone rejects — one actionable error beats two replicas that quietly disagree. On the persistence path it reports through `onError` instead of throwing, because persistence is best-effort and must never break the page, but it is no longer silent. `BigInt` and cycles need no code: `JSON.stringify` already throws on both.
+
+  **A `Serializer` seam** carries the rest. Two methods, `stringify` and `parse`, accepted by `webStorageAdapter`/`localStorageAdapter`/`sessionStorageAdapter` and by `StorageTransport`, so wire and disk can be given matching fidelity:
+
+  ```ts
+  import * as devalue from 'devalue';
+
+  localStorageAdapter('settings', {
+    serializer: { stringify: devalue.stringify, parse: devalue.parse },
+  });
+  ```
+
+  **Deliberately not a bundled dependency.** Measured brotlied, bundled as a production app would: `@ungap/structured-clone` 1.0 kB, `devalue` 3.4 kB, `superjson` 3.6 kB, `seroval` 7.4 kB — against a whole-library budget of 7.3 kB. Bundling devalue would add 47% to every user for a fidelity most applications do not need, since most state is already JSON-shaped. The seam is the answer, not the dependency, the same call as payload schemas accepting any Standard Schema without depending on Zod.
+
+  New **Serialization** guide, including the measurements.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`0989a2c`](https://github.com/rxova/use-everywhere/commit/0989a2ce24d7f2e894298f55fd99bc22c726c957) - Add `createSharedReducer` — state that converges by replaying actions in one order, not by last-writer-wins on a value.
+
+  This closes the library's most visible correctness wart, and it was the README's own example: two tabs running `set('n', n => n + 1)` at the same moment both read 4, both write 5, and one increment is silently gone. Nothing errors, nothing warns, the number is just too small.
+
+  The cause is _what travels_. Last-writer-wins ships the **result** of the increment, so concurrent results overwrite each other. A reducer ships the **increment**, and two increments are two entries in a list every client replays.
+
+  ```ts
+  const votes = createSharedReducer('poll', (n, action) => n + action.by, 0);
+  votes.dispatch({ by: 1 });
+  ```
+
+  **The leader is the sequencer.** A dispatch is broadcast as a proposal; the leader stamps it with the next number; every client — the leader included — applies commits strictly in that order. That is what makes it correct for _any_ reducer.
+
+  Deliberately **not** an op-log CRDT for commutative operations, which is cheaper and needs no leader. That design converges only if the reducer happens to be commutative, and nothing in a function's type says whether it is. A library whose rule is that silent divergence is the worst failure mode cannot ship a primitive whose correctness depends on a property it cannot check.
+
+  Dispatches apply locally first, so a click never waits on the network, and are reconciled when their commit arrives. A value can therefore be _seen_ out of order for a moment and never _settles_ out of order; `pendingCount()` reports whether this client's view is fully confirmed. The tab holding the seat commits its own dispatches with no round trip at all.
+
+  It reuses an existing `Leader` when handed one, rather than running a second election, and several reducers share a bus by `key` the way store keys do.
+
+  Ordering rides a new `op` wire scope. Adding a scope is additive within wire v1 — every existing engine already ignores scopes it does not recognise — so a tab on an older build is unaffected rather than confused.
+
+  **What it is not.** Leadership is advisory: in the window where two tabs both believe they hold the seat, two commits can carry the same number. The second is dropped and the client re-syncs from a snapshot, so the outcome is a correction rather than a divergence — but anything that must happen exactly once still needs a server-side idempotency key. This is the ceiling for this library; past it, reach for a real CRDT.
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`c181625`](https://github.com/rxova/use-everywhere/commit/c1816257a729687143a4f54f86471efd1f8ea1e5) - Stop the late-joiner snapshot storm, and add `store.transaction()`.
+
+  **Joining cost scaled with how many people were already there.** Every peer answered every `hello` with a full snapshot, so opening one tab in a room of twenty put twenty complete copies of the state on the wire — each of which the joiner then applied, and each of which a peer paid to serialise.
+
+  A peer now answers after a short jittered pause and only if nobody else already did. One reply, whoever is quickest, no election and no leader: a room where every peer can equally well answer should not need a seat to decide who does. Because a snapshot is a broadcast, that single reply also serves every joiner waiting at the same moment.
+
+  Two rules keep the suppression honest, and the second was a bug found by its own test:
+
+  - A client with nothing **written** does not answer at all. Registered initials are not data, and answering with them would only crowd out a peer that has something real.
+  - A pending reply stands down only for a snapshot that says everything it would have. Cancelling on _any_ snapshot looked right and was not: a joiner that has nothing yet also answers `hello`s, and its empty snapshot would silence the peer holding the actual state — leaving everybody empty, and nobody wrong, until the next write.
+
+  Tune with `snapshotDelayMs` (default 40). The cost is that hydrating a late joiner now takes up to that long instead of a round trip.
+
+  **Applying a snapshot was O(K²).** The snapshot object was rebuilt per key — `{...state}` and `{...versions}`, both O(K) — so a K-key snapshot cost K rebuilds, once per peer that sent one. Snapshots now apply as a batch: one rebuild, O(K).
+
+  That also fixes something subtler. A subscriber called mid-loop used to observe a _half-applied_ snapshot, a state no tab ever intended and which was visible only from inside the loop applying it. Every listener now sees the settled state.
+
+  **`store.transaction(fn)`** exposes the same batching: several writes, one rebuild, subscribers that never see a partial group.
+
+  ```ts
+  store.transaction(() => {
+    store.set('firstName', 'Ada');
+    store.set('lastName', 'Lovelace');
+  });
+  ```
+
+  Local batching, **not** a distributed transaction — each write is still its own patch, so a peer may see them arrive separately. Making them atomic across tabs would need a wire type older builds silently ignore, which is a worse problem than the one being solved. Transactions nest, only the outermost flushes, and a throwing `fn` still delivers the writes that landed, because those are already on the wire.
+
+- [#52](https://github.com/rxova/use-everywhere/pull/52) [`21a4c33`](https://github.com/rxova/use-everywhere/commit/21a4c33266bceef06b8577d0b59ae2083141f94a) - Make version skew a fact you can see rather than one you have to deduce.
+
+  Every deploy puts two versions of your app on one origin for as long as it takes users to reload, both on the same bus. Wires from another protocol version were already dropped safely at the envelope — but dropped is all they were, which is indistinguishable from the peer having nothing to say. A tab could spend an afternoon sharing state with half the origin and never find out.
+
+  - **`getWireSkew(name)`** returns the foreign wire protocol versions heard on a bus, ascending. Empty is the normal case; non-empty means this page is partitioned from those peers by design, and is what a "reload for the latest version" banner should be gated on. Page-wide, so two library copies that are themselves partitioned still see the same answer — skew is a property of the origin, not of one bundle's view of it. Cumulative, so a stale tab closing does not un-report the deploy that produced it.
+  - Development gets a warning naming the bus, both versions, and which direction the other build is.
+  - **`WIRE_VERSION`** is exported for logging and assertions.
+
+  Recognising a skewed peer is deliberately strict — full envelope shape, numeric `v`, string `scope`/`type`/`clientId`. A bus name is only a `BroadcastChannel` name, and reporting an unrelated script on the origin as a stale deploy would make the signal worthless.
+
+  Also fixes the store's wire dispatch, which ended in a bare `else`: every `state` wire that was not a `hello` or a `patch` was read as a snapshot. Adding any new `state` type in a later minor would therefore have arrived at every older tab as a malformed snapshot, and the only reason that was harmless today is that the versions-map check happened to reject it. Unknown types are now ignored explicitly, which is what makes additive evolution within a protocol version safe by design rather than by luck.
+
+  The contract both halves come from — what may be added within a version, what must bump it — is documented at `packages/core/src/wire.ts` and in the new **Version skew & the wire contract** docs page.
+
+  Three size budgets move up by ~150-200 B: `createSharedStore`, `createChannel` and `createPresence`, the entries that carry the bus and therefore the skew check. Most of that is the development warning string, which survives into production bundles until dev-only stripping lands — the warning was rewritten terse with the explanation behind a link for exactly that reason, and this is what it costs after that.
+
+### Patch Changes
+
+- [#56](https://github.com/rxova/use-everywhere/pull/56) [`2eaf24a`](https://github.com/rxova/use-everywhere/commit/2eaf24abc2e5f5b1ffe1948dae9736f95c1f00bd) - Keep development warnings out of production bundles.
+
+  Every warning string was shipping to every user. `devWarn` checked `NODE_ENV` at runtime, so the _call_ was inert in production — but the message was built at the call site, so the string itself was in the bundle regardless. Four consecutive features paid 150–300 B each for this before the pattern was named, and the pressure ran the wrong way: every new warning was an argument for writing a terser warning.
+
+  Each call site now carries the guard literally:
+
+  ```ts
+  if (process.env.NODE_ENV !== 'production') {
+    devWarn(`[use-everywhere] …`);
+  }
+  ```
+
+  Written out rather than hidden behind a shared constant, because a bundler can only fold what it can see. It replaces `process.env.NODE_ENV` with `"production"`, the branch becomes statically false, and the string goes with it. In React's `useSharedState` the guard wraps the whole `warnOnInitialMismatch` call, so the bundler drops the function, its Map of seen initials, and its message together.
+
+  Measured on the real entry point, bundled the way a production app bundles it: **594 B brotlied**, 12 of 12 warnings gone. Two messages deliberately stay — a thrown `Error` a caller can catch, and the report of a throwing debug observer, which is a real fault being contained rather than a diagnostic.
+
+  Every size budget is retightened to the new measurement. Most are now **lower than before this stack started**, despite three features having landed on it.
+
+  `dev-stripping.test.ts` pins the guarantee: it bundles `src/index.ts` twice, once as development and once as production, and fails naming any warning that survives. A budget can notice that a bundle grew; it cannot say why, which is how this went unnoticed for four releases. A companion runtime test covers the production arm of each guard — Vitest runs with `NODE_ENV=test`, so without stubbing, the arm every real user takes is never executed.
+
+  **One trade worth knowing.** A browser loading this ESM directly, with no bundler to define `process`, now throws a `ReferenceError`. Prefixing `typeof process !== 'undefined'` would prevent that, but esbuild does not fold it away — measured, not assumed — which would leave a dead branch in every production bundle and an untestable one in coverage. Bundle the package, or shim `process.env.NODE_ENV`.
+
 ## 0.7.0
 
 ### Minor Changes
