@@ -37,6 +37,34 @@ It shows:
 The version column is the useful one. When two tabs disagree about a value, the
 clocks tell you which write actually won and who made it.
 
+## Reading a log that will not sit still
+
+Three controls, because a live log is unreadable at exactly the moment it
+matters:
+
+- **pause** freezes the log — and only the log. The panel keeps observing
+  (unsubscribing would leave a hole rather than a pause) and the crown keeps
+  updating, because leadership is state rather than history.
+- **clear** empties it, so the next thing you do is the only thing on screen.
+- **filter** matches on `scope/type` and on the sender: `leader` for the
+  election, `state` for writes, or the first characters of a client id to watch
+  one tab. The heading says how much is hidden — `Wires (3 of 41)` — rather than
+  pretending the rest is not there.
+
+## Editing state
+
+Click a value to edit it. Type JSON, press **Enter** to write it, **Escape** to
+abandon it.
+
+The write goes **through the store**, so it takes a version and travels to every
+tab, exactly as your own code's write would. That is the only edit worth having:
+one that changed a value only in the panel would be a lie the moment any peer
+looked.
+
+JSON, strictly. `"light"` is the string and `light` is a mistake — refused and
+marked, not guessed at, because guessing is how a debugger starts disagreeing
+with the wire it is showing you.
+
 ## Options
 
 ```tsx

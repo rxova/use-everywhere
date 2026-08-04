@@ -8,6 +8,7 @@ import { STYLES } from './styles.js';
 interface LoggedWire {
   id: number;
   direction: 'in' | 'out';
+  scope: string;
   label: string;
   from: string;
 }
@@ -42,8 +43,21 @@ export function Inspector({
   const [open, setOpen] = useState(defaultOpen);
   const [wires, setWires] = useState<readonly LoggedWire[]>([]);
   const [crown, setCrown] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [filter, setFilter] = useState('');
+  const [editing, setEditing] = useState<{ key: string; draft: string } | null>(null);
   const nextId = useRef(0);
   const crownAt = useRef(0);
+  // Read inside the observer, so pausing does not re-subscribe: tearing the
+  // observer down and back up would drop the traffic in between, and a log you
+  // paused is not a log with a hole in it.
+  const pausedRef = useRef(false);
+
+  // Written in the effect phase, like every other ref in this package: React
+  // forbids mutating one during render, and the observer only reads it later.
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   const peers = usePeers({ name });
   const store = getSharedStore(name);
@@ -78,12 +92,17 @@ export function Inspector({
         }
       }
 
+      // Paused freezes the *log*, never the crown above: leadership is state,
+      // not history, and showing a stale one would be a lie rather than a pause.
+      if (pausedRef.current) return;
+
       setWires((prev) =>
         [
           ...prev.slice(-(limit - 1)),
           {
             id: nextId.current++,
             direction,
+            scope: wire.scope,
             label: wireLabel(wire),
             from: short(wire.clientId),
           },
@@ -115,6 +134,46 @@ export function Inspector({
   // version by construction (registerKey, applyRemote, and setKey all write
   // both), so this drops an unreachable "key without a version" branch.
   const entries = Object.entries(versions);
+
+  // Matched against `scope/type` and the sender, which is what someone types
+  // when they mean "just the leader traffic" or "just that tab".
+  const needle = filter.trim().toLowerCase();
+  const shown = needle
+    ? wires.filter(
+        (wire) =>
+          wire.label.toLowerCase().includes(needle) || wire.from.toLowerCase().includes(needle),
+      )
+    : wires;
+
+  /**
+   * Write an edited value back to the store.
+   *
+   * Parsed as JSON, so `"dark"` is a string and `dark` is a mistake — which is
+   * the honest reading. The alternative, guessing between them, would make the
+   * panel disagree with the wire about what a value is.
+   */
+  const commit = (key: string, draft: string): void => {
+    let value: unknown;
+    try {
+      value = JSON.parse(draft);
+    } catch {
+      return;
+    }
+    // Through the store, not around it: the write takes a version, goes on the
+    // wire, and reaches every peer. A devtool that edited local state only
+    // would show a value no other tab has.
+    store.set(key, value as never);
+    setEditing(null);
+  };
+
+  const draftIsValid = (draft: string): boolean => {
+    try {
+      JSON.parse(draft);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   return (
     <div className={`ue-ins ue-ins--${position}`} data-testid="ue-inspector">
@@ -170,7 +229,32 @@ export function Inspector({
               entries.map(([key, version]) => (
                 <div className="ue-ins__row" key={key}>
                   <span className="ue-ins__k">{key}</span>
-                  <span className="ue-ins__v">{JSON.stringify(snapshot[key])}</span>
+                  {editing?.key === key ? (
+                    <input
+                      className={`ue-ins__edit${draftIsValid(editing.draft) ? '' : ' ue-ins__v--invalid'}`}
+                      value={editing.draft}
+                      autoFocus
+                      aria-label={`Value of ${key}`}
+                      onChange={(event) => setEditing({ key, draft: event.target.value })}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') commit(key, editing.draft);
+                        if (event.key === 'Escape') setEditing(null);
+                      }}
+                      onBlur={() => setEditing(null)}
+                      data-testid={`ue-edit-${key}`}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      className="ue-ins__v ue-ins__v--editable"
+                      onClick={() =>
+                        setEditing({ key, draft: JSON.stringify(snapshot[key]) ?? '' })
+                      }
+                      data-testid={`ue-value-${key}`}
+                    >
+                      {JSON.stringify(snapshot[key])}
+                    </button>
+                  )}
                   <span className="ue-ins__ver">
                     {version[0]}·{short(version[1])}
                   </span>
@@ -180,12 +264,45 @@ export function Inspector({
           </div>
 
           <div className="ue-ins__section">
-            <div className="ue-ins__h">Wires ({wires.length})</div>
-            {wires.length === 0 ? (
-              <div className="ue-ins__empty">nothing yet</div>
+            <div className="ue-ins__h">
+              Wires ({shown.length}
+              {shown.length === wires.length ? '' : ` of ${wires.length}`})
+              {paused ? <span className="ue-ins__paused"> · paused</span> : null}
+            </div>
+            <div className="ue-ins__tools">
+              <button
+                type="button"
+                className="ue-ins__btn"
+                aria-pressed={paused}
+                onClick={() => setPaused((value) => !value)}
+                data-testid="ue-pause"
+              >
+                {paused ? 'resume' : 'pause'}
+              </button>
+              <button
+                type="button"
+                className="ue-ins__btn"
+                onClick={() => setWires([])}
+                data-testid="ue-clear"
+              >
+                clear
+              </button>
+              <input
+                className="ue-ins__filter"
+                value={filter}
+                placeholder="filter"
+                aria-label="Filter wires"
+                onChange={(event) => setFilter(event.target.value)}
+                data-testid="ue-filter"
+              />
+            </div>
+            {shown.length === 0 ? (
+              <div className="ue-ins__empty">
+                {wires.length === 0 ? 'nothing yet' : 'no matches'}
+              </div>
             ) : (
               <div className="ue-ins__log">
-                {wires.map((wire) => (
+                {shown.map((wire) => (
                   <div className="ue-ins__wire" key={wire.id}>
                     <span className={`ue-ins__dir ue-ins__dir--${wire.direction}`}>
                       {wire.direction === 'out' ? '→' : '←'}

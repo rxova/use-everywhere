@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import {
@@ -207,5 +207,169 @@ describe('<Inspector />', () => {
     const panel = screen.getByTestId('ue-inspector');
     expect(panel.className).toContain('ue-ins--top-left');
     expect(panel.textContent).toContain('nobody else here');
+  });
+
+  describe('the wire log', () => {
+    it('freezes while paused and picks up again on resume', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('k', 1));
+      await flush();
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('Wires (1)');
+
+      act(() => screen.getByTestId('ue-pause').click());
+      act(() => store.set('k', 2));
+      await flush();
+
+      // Paused is paused: the traffic happened, the log did not move.
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('Wires (1)');
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('paused');
+
+      act(() => screen.getByTestId('ue-pause').click());
+      act(() => store.set('k', 3));
+      await flush();
+
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('Wires (2)');
+    });
+
+    it('empties on clear, and keeps recording afterwards', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('k', 1));
+      await flush();
+      act(() => screen.getByTestId('ue-clear').click());
+
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('nothing yet');
+
+      act(() => store.set('k', 2));
+      await flush();
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('Wires (1)');
+    });
+
+    it('filters by scope and by sender, and says when nothing matches', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('k', 1));
+      await flush();
+
+      const filter = screen.getByTestId('ue-filter');
+      act(() => {
+        fireEvent.change(filter, { target: { value: 'state' } });
+      });
+      expect(screen.getByTestId('ue-inspector').textContent).toContain('Wires (1)');
+
+      act(() => {
+        fireEvent.change(filter, { target: { value: 'nothing-like-this' } });
+      });
+      const panel = screen.getByTestId('ue-inspector');
+      expect(panel.textContent).toContain('no matches');
+      // The count still says how much is being hidden rather than pretending
+      // the log is empty.
+      expect(panel.textContent).toContain('of 1');
+    });
+  });
+
+  describe('editing a value', () => {
+    it('writes through the store, so every tab gets it', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('theme', 'dark'));
+      await flush();
+
+      act(() => screen.getByTestId('ue-value-theme').click());
+      const input = screen.getByTestId('ue-edit-theme');
+      act(() => {
+        fireEvent.change(input, { target: { value: '"light"' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+      await flush();
+
+      expect(store.getSnapshot().theme).toBe('light');
+      // Through the store means a version was taken; a local poke would not
+      // have moved the clock, and no peer would ever have heard about it.
+      expect(store.getVersions().theme?.[0]).toBe(2);
+    });
+
+    it('refuses a draft that is not JSON, and says so', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('theme', 'dark'));
+      await flush();
+
+      act(() => screen.getByTestId('ue-value-theme').click());
+      const input = screen.getByTestId('ue-edit-theme');
+      act(() => {
+        // Unquoted: what someone types when they mean the string. Guessing
+        // between that and an identifier is how a panel starts disagreeing
+        // with the wire, so it is simply refused.
+        fireEvent.change(input, { target: { value: 'light' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+
+      expect(store.getSnapshot().theme).toBe('dark');
+      expect(screen.getByTestId('ue-edit-theme').className).toContain('invalid');
+    });
+
+    it('starts from an empty draft for a value JSON has no word for', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      // `undefined` clones fine and JSON does not represent it, so the draft
+      // starts empty rather than saying "undefined" — which would round-trip
+      // as a parse error.
+      act(() => store.set('missing', undefined));
+      await flush();
+
+      act(() => screen.getByTestId('ue-value-missing').click());
+
+      expect((screen.getByTestId('ue-edit-missing') as HTMLInputElement).value).toBe('');
+    });
+
+    it('abandons the edit on Escape', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('theme', 'dark'));
+      await flush();
+
+      act(() => screen.getByTestId('ue-value-theme').click());
+      const input = screen.getByTestId('ue-edit-theme');
+      act(() => {
+        fireEvent.change(input, { target: { value: '"light"' } });
+        fireEvent.keyDown(input, { key: 'Escape' });
+      });
+
+      expect(store.getSnapshot().theme).toBe('dark');
+      expect(screen.queryByTestId('ue-edit-theme')).toBeNull();
+    });
+
+    it('closes the editor when it loses focus', async () => {
+      const name = uniqueName();
+      render(<Inspector name={name} defaultOpen />);
+      const store = getSharedStore(name);
+
+      act(() => store.set('theme', 'dark'));
+      await flush();
+
+      act(() => screen.getByTestId('ue-value-theme').click());
+      act(() => {
+        fireEvent.blur(screen.getByTestId('ue-edit-theme'));
+      });
+
+      expect(screen.queryByTestId('ue-edit-theme')).toBeNull();
+      expect(store.getSnapshot().theme).toBe('dark');
+    });
   });
 });
