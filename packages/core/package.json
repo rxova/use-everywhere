@@ -59,7 +59,8 @@
     "typecheck": "tsc --noEmit",
     "size": "size-limit",
     "check:exports": "publint --strict && attw --pack .",
-    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts"
+    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts",
+    "mutation": "stryker run"
   },
   "size-limit": [
     {
@@ -138,6 +139,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/preset-small-lib": "^13.0.1",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "^0.28.1",
     "fake-indexeddb": "^6.2.5",

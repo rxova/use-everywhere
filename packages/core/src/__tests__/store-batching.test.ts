@@ -146,23 +146,38 @@ describe('answering a late joiner', () => {
 
   it('is not silenced by a peer that knows less than it does', async () => {
     const hub = new MemoryHub();
-    const informed = build(hub, 'storm-partial', { a: 0, b: 0 });
+    // Slow to answer, and holds both keys.
+    const informed = createSharedStore<Shape>(
+      'storm-partial',
+      { a: 0, b: 0 },
+      { transport: () => hub.connect(), snapshotDelayMs: 300 },
+    );
     informed.set('a', 1);
     informed.set('b', 2);
+
+    // Answers first, and never learns `b`: `accept` refuses every remote write,
+    // which is the only way to keep a peer genuinely partial on a shared hub.
+    // Without it this peer hydrates from the first snapshot and is no longer
+    // missing anything — which is how the previous version of this test passed
+    // against a build that always cancelled.
+    const partial = createSharedStore<Shape>(
+      'storm-partial',
+      { a: 0, b: 0 },
+      { transport: () => hub.connect(), snapshotDelayMs: 1, accept: () => false },
+    );
+    partial.set('a', 9);
     await snapshotWindow();
 
-    // A peer holding only part of the state. Cancelling on *any* snapshot would
-    // let this one answer first and leave the joiner missing `b` — which is how
-    // an empty joiner could silence the tab that actually had the data.
-    const partial = build(hub, 'storm-partial', { a: 0, b: 0 });
-    await snapshotWindow();
-    partial.set('a', 1);
-    await tick();
+    const joiner = createSharedStore<Shape>(
+      'storm-partial',
+      { a: 0, b: 0 },
+      { transport: () => hub.connect() },
+    );
+    await snapshotWindow(500);
 
-    const joiner = build(hub, 'storm-partial', { a: 0, b: 0 });
-    await snapshotWindow();
-
-    expect(joiner.getSnapshot()).toEqual({ a: 1, b: 2 });
+    // The fast partial answer must not cancel the slow complete one, or `b`
+    // never reaches the joiner at all.
+    expect(joiner.getSnapshot().b).toBe(2);
 
     informed.close();
     partial.close();

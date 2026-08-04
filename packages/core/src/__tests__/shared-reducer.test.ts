@@ -34,6 +34,24 @@ const build = (hub: MemoryHub, isLeader: boolean, key = 'default') =>
     key,
   });
 
+/** Leadership that can be handed over mid-test, which the fixed stub cannot. */
+const promotableLeader = () => {
+  let leading = false;
+  return {
+    clientId: 'fake',
+    strategy: 'heartbeat' as const,
+    getSnapshot: () => ({ leaderId: leading ? 'fake' : 'other', isLeader: leading }),
+    subscribe: () => () => {},
+    waitForLeadership: () => Promise.resolve(),
+    resign: () => {},
+    setEligible: () => {},
+    close: () => {},
+    promote: () => {
+      leading = true;
+    },
+  };
+};
+
 describe('a shared reducer', () => {
   it('keeps both of two concurrent increments', async () => {
     const hub = new MemoryHub();
@@ -417,6 +435,50 @@ describe('a shared reducer', () => {
     // Closing must take the leader with it — the reducer built it.
     solo.close();
     solo.close(); // idempotent
+  });
+
+  it('numbers from the order it observed when it inherits the seat', async () => {
+    const hub = new MemoryHub();
+    const leader = promotableLeader();
+    const heir = createSharedReducer<number, Action>('red-handover', counter, 0, {
+      transport: () => hub.connect(),
+      leader,
+    });
+    const wire = hub.connect();
+    const issued: number[] = [];
+    wire.subscribe((data) => {
+      const w = data as { scope?: string; type?: string; seq?: number };
+      if (w.scope === 'op' && w.type === 'commit') issued.push(w.seq as number);
+    });
+
+    // Three commits from the outgoing leader, observed but not issued here.
+    for (let seq = 1; seq <= 3; seq++) {
+      wire.post({
+        v: 1,
+        scope: 'op',
+        type: 'commit',
+        key: 'default',
+        action: { type: 'inc', by: 1 },
+        opId: `op-${seq}`,
+        seq,
+        clientId: 'old-leader',
+        kind: 'tab',
+      });
+    }
+    await tick();
+    expect(heir.getSnapshot()).toBe(3);
+
+    leader.promote();
+    heir.dispatch({ type: 'inc', by: 1 });
+    await tick();
+
+    // 4, not 1. A tab that has just inherited the seat has issued nothing, so
+    // numbering from what it issued would reuse numbers every peer has already
+    // applied — and a reused number is silently dropped as a duplicate.
+    expect(issued).toEqual([4]);
+
+    heir.close();
+    wire.close();
   });
 
   it('does not notify when the value is unchanged', () => {
