@@ -12,6 +12,12 @@ export interface SharedStoreOptions<S = Record<string, unknown>>
   accept?: (meta: MessageMeta) => boolean;
   /** Restore this store on creation and write it back as it changes. */
   persist?: PersistOptions;
+  /**
+   * Longest pause before answering a late joiner's request for state, in ms.
+   * Default 40. The actual wait is random within it, so peers do not all
+   * answer at once and the first reply cancels the rest.
+   */
+  snapshotDelayMs?: number;
 }
 
 export interface SharedStore<S extends Record<string, unknown>> {
@@ -43,6 +49,26 @@ export interface SharedStore<S extends Record<string, unknown>> {
   /** The per-key version clocks behind the snapshot. Referentially stable, like getSnapshot. */
   getVersions(): Readonly<Record<string, Version>>;
   set<K extends keyof S & string>(key: K, value: S[K] | ((prev: S[K]) => S[K])): void;
+  /**
+   * Apply several writes, then notify subscribers once with the settled state.
+   *
+   * ```ts
+   * store.transaction(() => {
+   *   store.set('firstName', 'Ada');
+   *   store.set('lastName', 'Lovelace');
+   * });
+   * ```
+   *
+   * **Local batching, not a distributed transaction.** Each write is still its
+   * own patch on the wire, so a peer may see them arrive separately — making
+   * them atomic across tabs would need a wire type older builds would silently
+   * ignore, which is worse than the problem. What this buys is one re-render
+   * instead of N, and subscribers that never observe a half-applied group.
+   *
+   * Nests: only the outermost call flushes. Returns whatever `fn` returns, and
+   * flushes even if `fn` throws — the writes that did land are already real.
+   */
+  transaction<T>(fn: () => T): T;
   subscribe(fn: (key: keyof S & string, value: unknown, meta: MessageMeta) => void): () => void;
   subscribeKey(key: keyof S & string, fn: () => void): () => void;
   /**

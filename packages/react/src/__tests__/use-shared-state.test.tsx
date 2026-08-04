@@ -73,7 +73,9 @@ describe('useSharedState', () => {
     await flush();
 
     render(<Counter store="t4" />); // registry store for t4 is created now
-    await flush(); // hello → snapshot → hydrate
+    // hello → snapshot → hydrate. The peer answers after a jittered pause now,
+    // so that only one of N peers replies; a single flush is no longer enough.
+    await act(() => new Promise<void>((r) => setTimeout(r, 80)));
 
     expect(screen.getByTestId('count').textContent).toBe('7');
     peer.close();

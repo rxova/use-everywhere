@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSharedStore } from '../shared-store.js';
 import { MemoryHub } from '../transport/memory-hub.js';
-import { tick } from './helpers/tick.js';
+import { snapshotWindow, tick } from './helpers/tick.js';
 
 type State = { count: number; note: string };
 
@@ -70,8 +70,8 @@ describe('createSharedStore', () => {
     a.set('note', 'existing');
     await tick();
 
-    const late = makeClient(hub); // posts hello; a answers with a snapshot
-    await tick();
+    const late = makeClient(hub); // posts hello; one peer answers with a snapshot
+    await snapshotWindow();
 
     expect(late.getSnapshot()).toEqual({ count: 42, note: 'existing' });
   });
@@ -202,7 +202,7 @@ describe('createSharedStore', () => {
     await tick();
 
     const b = makeClient(hub);
-    await tick(); // snapshot already delivered count=99
+    await snapshotWindow(); // snapshot already delivered count=99
     b.registerKey('count', 0);
 
     expect(b.getSnapshot().count).toBe(99);
