@@ -141,7 +141,9 @@ describe('createSharedStore with persist', () => {
 
     const { storage } = fakeStorage({ k: saved({ theme: 'dark' }, { theme: [1, 'aaa'] }) });
     const restored = store('p-lose', webStorageAdapter(storage, 'k'));
-    await vi.advanceTimersByTimeAsync(0);
+    // Past the jittered snapshot window: the restored tab learns the live
+    // tab's newer value from a snapshot, which no longer arrives in one tick.
+    await vi.advanceTimersByTimeAsync(80);
 
     // [1,'aaa'] loses to [2,live]: the live tab's value wins, both converge.
     expect(restored.getSnapshot()['theme']).toBe('neon2');

@@ -51,12 +51,54 @@ export function createSharedStore<S extends Record<string, unknown>>(
   const listeners = new Set<(key: keyof S & string, value: unknown, meta: MessageMeta) => void>();
   const keyListeners = new Map<string, Set<() => void>>();
 
-  function notify(key: string, value: unknown, meta: MessageMeta) {
+  /** Depth, not a flag: transactions nest, and only the outermost one flushes. */
+  let batchDepth = 0;
+  /** Changes applied inside the current batch, in the order they happened. */
+  const batched: [key: string, value: unknown, meta: MessageMeta][] = [];
+
+  const rebuild = () => {
     snapshot = Object.freeze({ ...state }) as S;
     versionsSnapshot = Object.freeze({ ...versions });
+  };
+
+  const emit = (key: string, value: unknown, meta: MessageMeta) => {
     for (const fn of listeners) fn(key as keyof S & string, value, meta);
     const set = keyListeners.get(key);
     if (set) for (const fn of set) fn();
+  };
+
+  function notify(key: string, value: unknown, meta: MessageMeta) {
+    if (batchDepth > 0) {
+      batched.push([key, value, meta]);
+      return;
+    }
+    rebuild();
+    emit(key, value, meta);
+  }
+
+  /**
+   * Apply a group of changes, then rebuild and announce once.
+   *
+   * Rebuilding the snapshot is O(keys), and doing it per key made applying a
+   * K-key snapshot O(K²) — which is what a late joiner triggers in every peer,
+   * once per peer. Batching makes it O(K).
+   *
+   * It also fixes something subtler: a subscriber called mid-loop used to see a
+   * half-applied snapshot, because the rebuild happened before each key rather
+   * than after all of them. Now every listener sees the settled state.
+   */
+  function batch<T>(fn: () => T): T {
+    batchDepth++;
+    try {
+      return fn();
+    } finally {
+      batchDepth--;
+      if (batchDepth === 0 && batched.length > 0) {
+        const changes = batched.splice(0, batched.length);
+        rebuild();
+        for (const [key, value, meta] of changes) emit(key, value, meta);
+      }
+    }
   }
 
   function applyRemote(key: string, value: unknown, version: Version, meta: MessageMeta) {
@@ -75,11 +117,53 @@ export function createSharedStore<S extends Record<string, unknown>>(
     notify(key, value, meta);
   }
 
-  const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'state') return;
-    const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
-    if (wire.type === 'hello') {
-      // A late joiner arrived: answer with full state + versions.
+  /**
+   * Answering a `hello` after a random pause, and only if nobody else did.
+   *
+   * Every peer used to answer every joiner with a full snapshot. Opening one
+   * tab in a room of twenty therefore produced twenty full copies of the state
+   * on the wire, each of which the joiner then applied — and each peer paid to
+   * serialise its whole state. The cost of joining scaled with how many people
+   * were already there, which is backwards.
+   *
+   * The pause is jittered so peers do not all fire at once, and the first
+   * snapshot to land cancels everyone else's. One reply, whoever is quickest.
+   * Nobody is elected and no leader is required: a room where every peer is
+   * equally able to answer should not need a seat to decide who does.
+   */
+  const snapshotDelayMs = options.snapshotDelayMs ?? 40;
+  let snapshotTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Keys this client has actually written. Counter 0 is a registered initial, not data. */
+  const written = () => Object.keys(versions).filter((k) => (versions[k]?.[0] ?? 0) > 0);
+
+  /**
+   * Stand down only for a snapshot that says everything this one would.
+   *
+   * Cancelling on *any* snapshot looked right and was not: a joiner that has
+   * nothing yet also answers `hello`s, and its empty snapshot would silence the
+   * peer holding the actual state. Nobody would be wrong, and everybody would be
+   * empty until the next write.
+   */
+  const coveredBy = (theirs: Record<string, Version>) =>
+    written().every((key) => {
+      const mine = versions[key];
+      return mine !== undefined && !newer(mine, theirs[key]);
+    });
+
+  const cancelSnapshot = () => {
+    clearTimeout(snapshotTimer);
+    snapshotTimer = undefined;
+  };
+
+  const scheduleSnapshot = () => {
+    // Nothing written here is nothing a joiner needs, and answering anyway
+    // would only crowd out a peer that does have something.
+    if (written().length === 0) return;
+    // Already about to answer: one broadcast serves every joiner waiting.
+    if (snapshotTimer !== undefined) return;
+    snapshotTimer = setTimeout(() => {
+      snapshotTimer = undefined;
       bus.post({
         v: 1,
         scope: 'state',
@@ -89,6 +173,14 @@ export function createSharedStore<S extends Record<string, unknown>>(
         state: { ...state },
         versions: { ...versions },
       });
+    }, Math.random() * snapshotDelayMs);
+  };
+
+  const unsubscribe = bus.subscribe((wire) => {
+    if (wire.scope !== 'state') return;
+    const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
+    if (wire.type === 'hello') {
+      scheduleSnapshot();
       return;
     }
     if (accept && !accept(meta)) return;
@@ -103,10 +195,15 @@ export function createSharedStore<S extends Record<string, unknown>>(
     if (wire.type === 'snapshot') {
       const versions = wire.versions;
       if (typeof versions !== 'object' || versions === null) return;
-      for (const k in wire.state) {
-        const version = versions[k];
-        if (isVersion(version)) applyRemote(k, wire.state[k], version, meta);
-      }
+      // Somebody answered. Stand down only if they said everything this client
+      // would have — otherwise the pending reply still has something to add.
+      if (coveredBy(versions)) cancelSnapshot();
+      batch(() => {
+        for (const k in wire.state) {
+          const version = versions[k];
+          if (isVersion(version)) applyRemote(k, wire.state[k], version, meta);
+        }
+      });
       return;
     }
     // Named explicitly, where a bare `else` used to stand. Within one protocol
@@ -342,6 +439,9 @@ export function createSharedStore<S extends Record<string, unknown>>(
         typeof value === 'function' ? (value as (prev: unknown) => unknown)(state[key]) : value;
       setKey(key, next);
     },
+    transaction(fn) {
+      return batch(fn);
+    },
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
@@ -382,6 +482,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
         if (live > 0) liveStores.set(name, live);
         else liveStores.delete(name);
       }
+      cancelSnapshot();
       if (hasWindow) removeEventListener('pageshow', onPageShow);
       if (flushPersist) {
         flushPersist();

@@ -120,7 +120,9 @@ describe('persisted state at a different schema version', () => {
         },
       },
     );
-    await new Promise((r) => setTimeout(r, 0));
+    // Past the jittered snapshot window, which is how the restored tab hears
+    // the live tab's newer value.
+    await new Promise((r) => setTimeout(r, 80));
 
     // A minted [1, …] is a real write, but live data outranks a migration of
     // stale disk — the live tab is on counter 2.

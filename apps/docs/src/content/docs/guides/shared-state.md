@@ -87,7 +87,7 @@ paint. You don't write any code for this — but it's worth knowing why it
 works, because it's the part that kills the duplicate-tab-payment class of
 bug:
 
-1. The new tab broadcasts `hello`; every existing peer answers with a
+1. The new tab broadcasts `hello`; **one** existing peer answers with a
    snapshot of state and versions.
 2. Your `initial` value registers at version zero.
 3. Anything a peer actually _wrote_ has a higher version — so it beats your
@@ -96,6 +96,14 @@ bug:
 `useSharedState('pay-status', 'idle')` in a fresh tab hydrates to
 `'processing'` if that's the truth out there. The initial value never stomps
 a real one.
+
+**One peer, not all of them.** Peers wait a short jittered moment and the
+first snapshot to land cancels the rest, so joining a busy origin costs one
+copy of the state rather than one per tab already open. A peer with nothing
+written stays quiet entirely — an empty snapshot would only crowd out a tab
+that has something real. The trade is that hydration takes a few tens of
+milliseconds instead of a single round trip; `snapshotDelayMs` on the core
+store tunes it.
 
 ## Reach the state from outside React
 
@@ -149,6 +157,31 @@ the offending line instead of failing quietly. Production builds strip the
 freeze entirely — it costs you nothing shipped. (Same discipline as Redux
 state; the reasoning is [structured clone](../under-the-hood/limitations.md):
 values must be plain data anyway.)
+
+## Change several keys at once
+
+Each `set` notifies subscribers, so writing three keys in a row re-renders
+three times — and a subscriber reading the store between them sees a state
+you never intended.
+
+`transaction` groups them:
+
+```ts
+const store = getSharedStore('profile');
+
+store.transaction(() => {
+  store.set('firstName', 'Ada');
+  store.set('lastName', 'Lovelace');
+});
+```
+
+Subscribers are told about each changed key, but only after every write has
+landed — so none of them ever observes half the group.
+
+It is **local batching, not a distributed transaction.** Each write is still
+its own patch on the wire, and another tab may see them arrive separately.
+Making them atomic across tabs would need a message older deploys silently
+ignore, which is a worse problem than the one it solves.
 
 ## Where to next
 

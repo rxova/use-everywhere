@@ -77,13 +77,13 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "9.91 kB"
+      "limit": "10.16 kB"
     },
     {
       "name": "useSharedState",
       "path": "dist/index.js",
       "import": "{ useSharedState }",
-      "limit": "3.99 kB"
+      "limit": "4.23 kB"
     },
     {
       "name": "useSharedReducer",
@@ -113,19 +113,19 @@
       "name": "useLeader + useLeaderEffect",
       "path": "dist/index.js",
       "import": "{ useLeader, useLeaderEffect }",
-      "limit": "3.62 kB"
+      "limit": "3.63 kB"
     },
     {
       "name": "defineStore (persisted)",
       "path": "dist/index.js",
       "import": "{ defineStore, localStorageAdapter }",
-      "limit": "4.40 kB"
+      "limit": "4.65 kB"
     },
     {
       "name": "Inspector (devtools subpath)",
       "path": "dist/devtools/index.js",
       "import": "{ Inspector }",
-      "limit": "5.88 kB"
+      "limit": "6.12 kB"
     },
     {
       "name": "MemoryHub (testing subpath)",
