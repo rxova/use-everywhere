@@ -9,6 +9,8 @@ export type {
   InvalidPayload,
   OnInvalid,
 } from './schema.types.js';
+export { createSharedReducer } from './shared-reducer.js';
+export type { SharedReducer, SharedReducerOptions } from './shared-reducer.types.js';
 export { createPresence } from './presence.js';
 export type { Presence, PresenceOptions } from './presence.types.js';
 export { createLeader } from './leader.js';

@@ -86,6 +86,12 @@
       "limit": "3.88 kB"
     },
     {
+      "name": "useSharedReducer",
+      "path": "dist/index.js",
+      "import": "{ useSharedReducer }",
+      "limit": "4.07 kB"
+    },
+    {
       "name": "useChannel + useMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useMessage, useSend }",

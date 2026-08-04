@@ -1,4 +1,4 @@
-import type { Channel, Leader, MessageMap, Presence } from '@use-everywhere/core';
+import type { SharedReducer, Channel, Leader, MessageMap, Presence } from '@use-everywhere/core';
 import type { AnyStore } from './registry.types.js';
 
 /**
@@ -78,6 +78,19 @@ export const createServerLeader = (): Leader =>
     getSnapshot: () => NO_LEADER,
     waitForLeadership: NEVER,
   }) as unknown as Leader;
+
+/**
+ * A reducer carries its initial value, so it allocates too. `dispatch` is a
+ * no-op: a server render has no peers to order anything with, and an action
+ * applied here would show a value the browser is about to disagree with.
+ */
+export const createServerReducer = <S>(initial: S): SharedReducer<S, unknown> =>
+  ({
+    ...INERT,
+    getSnapshot: () => initial,
+    dispatch: noop,
+    pendingCount: () => 0,
+  }) as unknown as SharedReducer<S, unknown>;
 
 /** Channels carry their name, so this is the one double that allocates. */
 export const createServerChannel = <M extends MessageMap>(name: string): Channel<M> =>

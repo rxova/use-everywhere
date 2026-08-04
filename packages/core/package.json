@@ -81,6 +81,12 @@
       "limit": "3.55 kB"
     },
     {
+      "name": "createSharedReducer",
+      "path": "dist/index.js",
+      "import": "{ createSharedReducer }",
+      "limit": "3.65 kB"
+    },
+    {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import { useLeader } from '../use-leader.js';
 import { usePeers } from '../use-peers.js';
+import { useSharedReducer } from '../use-shared-reducer.js';
 import { useSharedState } from '../use-shared-state.js';
 
 describe('server rendering', () => {
@@ -31,5 +32,21 @@ describe('server rendering', () => {
     const html = renderToString(<Crown />);
 
     expect(html).toContain('none');
+  });
+
+  it('renders a reducer initial, and a dispatch on the server changes nothing', () => {
+    function Counter() {
+      const [count, dispatch] = useSharedReducer((n: number, a: { by: number }) => n + a.by, 7, {
+        name: 'ssr-reducer',
+      });
+      // A server render has no peers to order anything with, so dispatching
+      // here must not produce a value the browser is about to disagree with.
+      dispatch({ by: 100 });
+      return <span>{count}</span>;
+    }
+
+    const html = renderToString(<Counter />);
+
+    expect(html).toContain('7');
   });
 });
