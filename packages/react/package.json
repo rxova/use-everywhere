@@ -131,7 +131,7 @@
       "name": "Inspector (devtools subpath)",
       "path": "dist/devtools/index.js",
       "import": "{ Inspector }",
-      "limit": "6.32 kB"
+      "limit": "6.70 kB"
     },
     {
       "name": "MemoryHub (testing subpath)",

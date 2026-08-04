@@ -51,6 +51,13 @@ export const STYLES = `
 .ue-ins__row { display: flex; gap: 8px; padding: 1px 0; }
 .ue-ins__k { color: #79c0ff; flex: none; }
 .ue-ins__v { color: #e6edf3; overflow-wrap: anywhere; }
+button.ue-ins__v {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
 .ue-ins__ver { color: #6e7681; margin-left: auto; flex: none; }
 .ue-ins__empty { color: #6e7681; }
 
@@ -61,4 +68,41 @@ export const STYLES = `
 .ue-ins__dir--in { color: #3fb950; }
 .ue-ins__scope { color: #e6edf3; }
 .ue-ins__from { color: #6e7681; margin-left: auto; }
+
+.ue-ins__tools { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
+.ue-ins__btn {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 5px;
+  color: #c9d1d9;
+  font: inherit;
+  font-size: 10px;
+  padding: 1px 7px;
+  cursor: pointer;
+}
+.ue-ins__btn[aria-pressed='true'] { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+.ue-ins__filter {
+  flex: 1;
+  min-width: 0;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 5px;
+  color: #c9d1d9;
+  font: inherit;
+  font-size: 10px;
+  padding: 1px 6px;
+}
+.ue-ins__edit {
+  flex: 1;
+  min-width: 0;
+  background: #0d1117;
+  border: 1px solid #1f6feb;
+  border-radius: 4px;
+  color: #e6edf3;
+  font: inherit;
+  padding: 0 4px;
+}
+.ue-ins__v--editable { cursor: text; text-decoration: underline dotted #30363d; }
+.ue-ins__v--invalid { color: #f85149; }
+.ue-ins__paused { color: #d29922; }
 `;
