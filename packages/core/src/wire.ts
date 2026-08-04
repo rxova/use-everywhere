@@ -86,7 +86,8 @@ export function recordSkew(name: string, version: number): void {
   // around the call keeps it out of production bundles entirely; see env.d.ts.
   if (process.env.NODE_ENV !== 'production') {
     devWarn(
-      `[use-everywhere] bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
+      'UE1007',
+      `bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
         `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? 'newer' : 'older'} deploy. They cannot ` +
         `share state, presence, or a leader seat. https://rxova.org/under-the-hood/version-skew/`,
     );

@@ -28,7 +28,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
     if (live > 0) {
       if (process.env.NODE_ENV !== 'production') {
         devWarn(
-          `[use-everywhere] second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
+          'UE1001',
+          `second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
         );
       }
     }
@@ -281,7 +282,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
       if (onRestoreError) onRestoreError(error);
       else if (process.env.NODE_ENV !== 'production') {
         devWarn(
-          `[use-everywhere] ${name}: persisted schema v${error.found} not restored, ` +
+          'UE1002',
+          `${name}: persisted schema v${error.found} not restored, ` +
             `expected v${error.expected} (${error.reason}). https://rxova.org/guides/persistence/`,
         );
       }

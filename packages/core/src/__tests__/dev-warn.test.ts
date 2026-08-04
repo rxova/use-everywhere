@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { devWarn } from '../dev.js';
+import { devWarn, diagnostic } from '../dev.js';
+
+describe('diagnostic', () => {
+  it('stamps the code and the page that explains it', () => {
+    expect(diagnostic('UE9999', 'something happened')).toBe(
+      '[use-everywhere] UE9999: something happened\n' +
+        '  → https://rxova.github.io/use-everywhere/errors/#ue9999',
+    );
+  });
+});
 
 describe('devWarn', () => {
   afterEach(() => {
@@ -10,13 +19,13 @@ describe('devWarn', () => {
   it('warns once per distinct message and dedupes repeats', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    devWarn('dw-test: first');
-    devWarn('dw-test: first');
-    devWarn('dw-test: second');
+    devWarn('UE9001', 'first');
+    devWarn('UE9001', 'first');
+    devWarn('UE9002', 'second');
 
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(warn).toHaveBeenNthCalledWith(1, 'dw-test: first');
-    expect(warn).toHaveBeenNthCalledWith(2, 'dw-test: second');
+    expect(warn).toHaveBeenNthCalledWith(1, diagnostic('UE9001', 'first'));
+    expect(warn).toHaveBeenNthCalledWith(2, diagnostic('UE9002', 'second'));
   });
 
   it('is silent in production builds', async () => {
@@ -25,7 +34,7 @@ describe('devWarn', () => {
     const { devWarn: prodWarn } = await import('../dev.js');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    prodWarn('dw-test: never shown');
+    prodWarn('UE9003', 'never shown');
 
     expect(warn).not.toHaveBeenCalled();
   });
