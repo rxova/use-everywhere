@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Mutation testing over the modules where a surviving mutant means silent divergence rather than a visible bug. Coverage proves a line ran; this proves something checked what it did. Scoped rather than repo-wide because triage is the real cost, and a mutant in a dev warning is not worth anyone's afternoon.",
+  "packageManager": "pnpm",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "vitest.config.ts"
+  },
+  "reporters": ["html", "clear-text", "progress"],
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/clock.ts",
+    "src/shared-store.ts",
+    "src/leader.ts",
+    "src/leader-web-locks.ts",
+    "src/bus.ts",
+    "src/wire.ts",
+    "src/presence.ts",
+    "src/shared-reducer.ts",
+    "src/channel.ts",
+    "src/schema.ts",
+    "src/serializer.ts"
+  ],
+  "thresholds": {
+    "high": 95,
+    "low": 90,
+    "break": 84
+  },
+  "timeoutMS": 20000,
+  "concurrency": 4,
+  "tempDirName": ".stryker-tmp",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "_comment_plugins": "Named explicitly: pnpm's strict node_modules means Stryker's auto-discovery walks a tree the plugin is not hoisted into.",
+  "_comment_thresholds": "break is the measured baseline, not the target. The roadmap wants >=90 on core state modules; ratchet this up as survivors are killed, so the score can only improve. Setting it to the goal on day one would just mean a permanently red job nobody trusts."
+}
