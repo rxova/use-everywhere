@@ -1,0 +1,66 @@
+{
+  "name": "eslint-plugin-use-everywhere",
+  "version": "0.0.0",
+  "description": "ESLint rules for use-everywhere: module-scope definitions, stable names, cloneable values, leader-effect captures",
+  "license": "MIT",
+  "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rxova/use-everywhere.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "bugs": "https://github.com/rxova/use-everywhere/issues",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "use-everywhere",
+    "cross-tab",
+    "shared-state"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check:exports": "publint --strict && attw --pack .",
+    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@types/estree": "^1.0.9",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.7.0",
+    "publint": "^0.3.21",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.10"
+  }
+}
