@@ -28,7 +28,9 @@
     "e2e:ui": "pnpm run libs:build && playwright test --ui",
     "e2e:install": "playwright install --with-deps chromium firefox webkit",
     "e2e:chromium": "pnpm run libs:build && playwright test --project=chromium",
-    "mutation": "turbo run mutation --filter=@use-everywhere/core"
+    "mutation": "turbo run mutation --filter=@use-everywhere/core",
+    "bench": "pnpm --filter @use-everywhere/benchmarks bench",
+    "bench:check": "pnpm --filter @use-everywhere/benchmarks bench:check"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs}": [

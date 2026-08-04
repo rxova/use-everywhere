@@ -1,0 +1,49 @@
+name: Benchmarks
+
+# Scheduled rather than per-PR, and for a different reason than the mutation
+# run: this one is *noisy*, not slow. A hosted runner is shared, throttled, and
+# a different machine every time, so a per-PR performance gate would fail on
+# neighbours rather than on changes — and a gate that cries wolf is a gate
+# people stop reading.
+#
+# What makes the schedule worth anything is that every budget is a **ratio**
+# measured in the same run: the library against a raw BroadcastChannel doing the
+# same fan-out. A slow runner slows both sides, so the ratio holds where an
+# absolute millisecond budget would not. See packages/benchmarks/src/gate.ts.
+#
+# Run it yourself before merging anything that touches the wire, the store's
+# apply path, or the late-joiner handshake:
+#   pnpm run bench
+on:
+  schedule:
+    # Mondays at 04:23 UTC. Weekly is enough: what this catches is a structural
+    # regression — a per-peer loop, an unconditional snapshot reply — not drift.
+    #
+    # Deliberately off the hour: GitHub queues scheduled jobs across every
+    # repository, and the top of the hour is where they pile up.
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  benchmarks:
+    name: performance budgets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
+      - run: pnpm install --frozen-lockfile
+      # The suites import the workspace package, which resolves to its dist —
+      # so the thing measured is the built library, exactly as published, rather
+      # than sources that a bundler would treat differently.
+      - name: Build the library
+        run: pnpm exec turbo run build --filter=@use-everywhere/core
+      - name: Measure, and check the budgets
+        run: pnpm run bench:check
