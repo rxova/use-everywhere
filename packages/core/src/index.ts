@@ -34,6 +34,8 @@ export { WindowClosedError } from './errors/window-closed-error.js';
 export { HandshakeTimeoutError } from './errors/handshake-timeout-error.js';
 export { newer } from './clock.js';
 export { DEFAULT_NAME } from './defaults.js';
+export { createNamespace } from './namespace.js';
+export type { Namespace } from './namespace.js';
 export { observeBus, enableDebug } from './debug.js';
 export { getBusNames, getTransportKind } from './bus.js';
 export { WIRE_VERSION, getWireSkew } from './wire.js';
