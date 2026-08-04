@@ -2,6 +2,7 @@ import {
   createChannel,
   createLeader,
   createPresence,
+  createSharedReducer,
   createSharedStore,
   DEFAULT_NAME,
   NoopTransport,
@@ -11,6 +12,7 @@ import {
   type LeaderOptions,
   type MessageMap,
   type Presence,
+  type SharedReducer,
   type SharedStoreOptions,
 } from '@use-everywhere/core';
 import { devWarn } from './dev.js';
@@ -18,6 +20,7 @@ import type { AnyStore } from './registry.types.js';
 import {
   createServerChannel,
   createServerLeader,
+  createServerReducer,
   createServerPresence,
   createServerStore,
 } from './server-stubs.js';
@@ -188,6 +191,39 @@ export function configureChannel<M extends MessageMap>(
     return;
   }
   channelConfig.set(name, options as ChannelOptions<MessageMap>);
+}
+
+const reducers = new Map<string, SharedReducer<unknown, unknown>>();
+
+/**
+ * One reducer per name+key per tab, like every other engine here.
+ *
+ * The reducer is handed this tab's existing `Leader` rather than electing its
+ * own: the leader is the sequencer, and a page that already has a seat for this
+ * bus must not run a second election to get another one.
+ *
+ * The first caller's reducer function wins. A hook re-renders with a new
+ * function identity every time, and swapping the fold under a history that has
+ * already been applied would give this tab a different answer from its peers —
+ * which is the one thing an ordered reducer exists to prevent.
+ */
+export function getReducer<S, A>(
+  name: string,
+  key: string,
+  reducer: (state: S, action: A) => S,
+  initial: S,
+): SharedReducer<S, A> {
+  const id = `${name} ${key}`;
+  let existing = reducers.get(id);
+  if (!existing) {
+    existing = (
+      isServer()
+        ? createServerReducer(initial)
+        : createSharedReducer(name, reducer, initial, { key, leader: getLeader(name) })
+    ) as SharedReducer<unknown, unknown>;
+    reducers.set(id, existing);
+  }
+  return existing as unknown as SharedReducer<S, A>;
 }
 
 export function getChannel<M extends MessageMap>(name: string): Channel<M> {

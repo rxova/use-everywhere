@@ -28,7 +28,7 @@ export function defaultKind(): PeerKind {
  * could not — a post goes to the transport, and no transport loops back to the
  * context that made it.
  */
-const SHARED_WITHIN_CLIENT = new Set(['state', 'event']);
+const SHARED_WITHIN_CLIENT = new Set(['state', 'event', 'op']);
 
 function createBusCore(name: string, options: BusOptions, onShutdown: () => void): SharedBusCore {
   const transport = (options.transport ?? defaultTransport)(name);

@@ -6,7 +6,7 @@
 // cleared — one leak per name, per process, for the life of the server.
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getChannel, getLeader, getPresence, getStore } from '../registry.js';
+import { getChannel, getLeader, getPresence, getReducer, getStore } from '../registry.js';
 import { useClientId, usePeers } from '../use-peers.js';
 import { useIsLeader, useLeader } from '../use-leader.js';
 import { useSharedState } from '../use-shared-state.js';
@@ -62,6 +62,7 @@ describe('server rendering is inert', () => {
     const presence = getPresence('stub');
     const leader = getLeader('stub');
     const channel = getChannel('stub');
+    const reducer = getReducer<number, number>('stub', 'default', (n, a) => n + a, 7);
 
     // Writes are dropped rather than thrown: a component that sets state in an
     // effect must not crash a server render.
@@ -71,7 +72,13 @@ describe('server rendering is inert', () => {
       channel.post('ping', 1);
       leader.setEligible(false);
       leader.resign();
+      reducer.dispatch(100);
     }).not.toThrow();
+
+    // A server has no peers to order actions with, so the initial is the only
+    // honest answer and a dispatch must not move it.
+    expect(reducer.getSnapshot()).toBe(7);
+    expect(reducer.pendingCount()).toBe(0);
 
     expect(store.getSnapshot()).toEqual({});
     expect(store.getVersions()).toEqual({});

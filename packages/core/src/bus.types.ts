@@ -40,6 +40,43 @@ export type BusWire =
       clientId: string;
       kind: PeerKind;
     }
+  // The op scope carries reducer traffic, which is ordered rather than
+  // last-writer-wins. `key` separates reducers sharing one bus, the way the
+  // state scope's `key` separates store keys.
+  | { v: 1; scope: 'op'; type: 'hello'; key: string; clientId: string; kind: PeerKind }
+  | {
+      v: 1;
+      scope: 'op';
+      type: 'propose';
+      key: string;
+      action: unknown;
+      /** Identifies this dispatch across its proposal and its commit, so a commit can be recognised as one's own and applied once. */
+      opId: string;
+      clientId: string;
+      kind: PeerKind;
+    }
+  | {
+      v: 1;
+      scope: 'op';
+      type: 'commit';
+      key: string;
+      action: unknown;
+      opId: string;
+      /** The leader's ordering decision: a gapless counter every client replays in the same order. */
+      seq: number;
+      clientId: string;
+      kind: PeerKind;
+    }
+  | {
+      v: 1;
+      scope: 'op';
+      type: 'snapshot';
+      key: string;
+      state: unknown;
+      seq: number;
+      clientId: string;
+      kind: PeerKind;
+    }
   | {
       v: 1;
       scope: 'event';

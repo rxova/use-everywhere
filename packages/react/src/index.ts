@@ -1,4 +1,6 @@
 export { useSharedState } from './use-shared-state.js';
+export { useSharedReducer } from './use-shared-reducer.js';
+export type { UseSharedReducerOptions } from './use-shared-reducer.js';
 export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
 export { getSharedStore, DEFAULT_NAME } from './registry.js';
 export type { AnyStore } from './registry.types.js';
@@ -33,6 +35,7 @@ export type {
 export {
   createChannel,
   createSharedStore,
+  createSharedReducer,
   createPresence,
   createLeader,
   webStorageAdapter,
@@ -68,6 +71,8 @@ export type {
   OnInvalid,
   SharedStore,
   SharedStoreOptions,
+  SharedReducer,
+  SharedReducerOptions,
   Presence,
   PresenceOptions,
   Leader,
