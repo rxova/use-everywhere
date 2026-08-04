@@ -22,9 +22,11 @@ function randomHex(bytes: number): string {
   // a polyfill) degrades instead of throwing on import. Warned about rather
   // than silent: this weakens the window channel's nonce, and a security
   // property that quietly downgrades is worse than one that fails loudly.
-  devWarn(
-    '[use-everywhere] crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.',
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    devWarn(
+      '[use-everywhere] crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.',
+    );
+  }
   let out = '';
   while (out.length < bytes * 2)
     out += Math.floor(Math.random() * 256)

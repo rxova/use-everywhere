@@ -56,14 +56,15 @@ export function createGate(
     if (result.ok) return undefined;
     const info: InvalidPayload = { name, key, direction, payload, issues: result.issues };
     if (onInvalid) onInvalid(info);
-    // Terse, with the explanation behind the link: this string survives into
-    // production bundles until dev-only stripping lands, and it is paid for by
-    // every caller including the ones who never declare a schema.
-    else
+    // Terse, with the explanation behind the link — a warning earns its length
+    // in a console, not in prose. The NODE_ENV guard around the call is what
+    // keeps this string out of production bundles; see env.d.ts.
+    else if (process.env.NODE_ENV !== 'production') {
       devWarn(
         `[use-everywhere] ${name}/${key}: ${direction}bound payload rejected by its schema — ` +
           `${result.issues.join('; ')}. https://rxova.org/guides/validating-payloads/`,
       );
+    }
     return result.issues;
   };
 

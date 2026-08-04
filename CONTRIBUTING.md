@@ -67,6 +67,32 @@ Node 22 and 24.
 The e2e suite is not in `verify`: it drives a real browser and runs as its own CI
 job. Run it yourself with `pnpm e2e` when you touch anything cross-tab.
 
+### Development warnings must be guarded
+
+Every `devWarn` call site carries the guard literally:
+
+```ts
+if (process.env.NODE_ENV !== 'production') {
+  devWarn(`[use-everywhere] …`);
+}
+```
+
+`devWarn` already checks `NODE_ENV` at runtime, so the guard is not about
+whether the warning _fires_ — it is about whether the message _ships_. The
+string is built at the call site, so without the branch to fold, it lands in
+every user's bundle. Four consecutive features paid for that before anyone
+noticed, and it quietly turned every new warning into an argument for a terser
+warning.
+
+Write it out rather than reaching for a shared `isDev` constant: a bundler can
+only fold what it can see, and a constant imported from another module is not
+reliably propagated.
+
+`dev-stripping.test.ts` bundles the real entry point as production and fails
+naming any warning that survives, so a missed guard is caught rather than
+shipped. A thrown `Error` is not a development warning and needs no guard —
+stripping one would turn an actionable failure into an anonymous one.
+
 ## Branching & Releases
 
 - **`main` is the only long-lived branch**, and it always represents the latest
