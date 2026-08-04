@@ -9,7 +9,7 @@ here:
 
 ```
 [use-everywhere] UE1001: second shared store for "cart" in this tab — …
-  → https://rxova.github.io/use-everywhere/errors/#ue1001
+  → https://rxova.org/packages/use-everywhere/errors/#ue1001
 ```
 
 The code is the durable part. A message can be reworded between versions,
@@ -49,7 +49,7 @@ store — so this is a warning, not a throw.
 
 **Fix:** give `persist` a `version` and a `migrate`, or accept the reset and
 pass `onRestoreError` to say so deliberately. See
-[Persistence](/guides/persistence/).
+[Persistence](./guides/persistence.md).
 
 ## UE1003
 
@@ -62,7 +62,7 @@ Inbound, this is usually version skew: a tab on an older deploy sending the
 shape it knew. Outbound, it is a bug in the sender.
 
 **Fix:** handle it explicitly with `onInvalid` — telling the user to reload is
-often the right answer — and see [Validating payloads](/guides/validating-payloads/).
+often the right answer — and see [Validating payloads](./guides/validating-payloads.md).
 
 ## UE1004
 
@@ -108,7 +108,7 @@ This is normal _during_ a deploy and a bug if it persists.
 
 **Fix:** nothing, if it is transient — but prompt the user to reload rather than
 leaving them with a page that has silently stopped syncing. See
-[Version skew](/under-the-hood/version-skew/).
+[Version skew](./under-the-hood/version-skew.md).
 
 ## UE1008
 
@@ -130,7 +130,7 @@ structured clone. `Date`, `Map`, `Set` and `undefined` do not survive the round
 trip the way they do on the real transport.
 
 **Fix:** keep shared values JSON-shaped where this fallback can be reached, and
-see [Transports](/core/transports/).
+see [Transports](./core/transports.md).
 
 ## UE1010
 
@@ -186,7 +186,7 @@ The live store keeps the configuration it was built with, so the persistence (or
 scope, or options) you just declared is not applied.
 
 **Fix:** move `defineStore` to module scope, before any component reads the
-store. The [`define-at-module-scope`](/eslint/define-at-module-scope/) lint rule
+store. The [`define-at-module-scope`](./eslint/define-at-module-scope.md) lint rule
 catches this before it runs.
 
 ## UE2003

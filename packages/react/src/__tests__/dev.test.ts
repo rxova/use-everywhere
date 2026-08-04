@@ -38,7 +38,7 @@ describe('diagnostic', () => {
   it('stamps the code and the page that explains it, exactly as core does', () => {
     expect(diagnostic('UE2001', 'something happened')).toBe(
       '[use-everywhere] UE2001: something happened\n' +
-        '  → https://rxova.github.io/use-everywhere/errors/#ue2001',
+        '  → https://rxova.org/packages/use-everywhere/errors/#ue2001',
     );
   });
 });

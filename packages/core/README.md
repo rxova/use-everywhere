@@ -161,7 +161,7 @@ tabB.getSnapshot().n; // 1
 - SSR-safe: without `BroadcastChannel`, engines fall back to a local no-op
   transport.
 
-📖 **[Documentation](https://rxova.github.io/use-everywhere/)** — mental
+📖 **[Documentation](https://rxova.org/packages/use-everywhere/)** — mental
 model, how sync works, security model, recipes, and generated API reference.
 Source and demo app (with a real cross-origin payment flow):
 [github.com/rxova/use-everywhere](https://github.com/rxova/use-everywhere)

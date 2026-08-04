@@ -142,13 +142,13 @@ per-connection nonce, and source window.
 - Values must survive structured clone (no functions, DOM nodes); state lives
   as long as at least one context holds it — nothing is persisted.
 - Testing is first-class: inject a `MemoryHub` transport to simulate many tabs
-  in one test. See the [testing guide](https://rxova.github.io/use-everywhere/guides/testing).
+  in one test. See the [testing guide](https://rxova.org/packages/use-everywhere/guides/testing).
 
 This package re-exports the full framework-agnostic surface of
 [`@use-everywhere/core`](https://www.npmjs.com/package/@use-everywhere/core),
 so you never need to install core directly.
 
-📖 **[Documentation](https://rxova.github.io/use-everywhere/)** — mental
+📖 **[Documentation](https://rxova.org/packages/use-everywhere/)** — mental
 model, how sync works, security model, recipes, and generated API reference.
 Source and demo app: [github.com/rxova/use-everywhere](https://github.com/rxova/use-everywhere)
 

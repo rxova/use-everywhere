@@ -63,7 +63,7 @@ export function createGate(
       devWarn(
         'UE1003',
         `${name}/${key}: ${direction}bound payload rejected by its schema — ` +
-          `${result.issues.join('; ')}. https://rxova.org/guides/validating-payloads/`,
+          `${result.issues.join('; ')}. https://rxova.org/packages/use-everywhere/guides/validating-payloads/`,
       );
     }
     return result.issues;

@@ -7,7 +7,7 @@ Give every diagnostic a code and a link to the page that explains it.
 
 ```
 [use-everywhere] UE1001: second shared store for "cart" in this tab — …
-  → https://rxova.github.io/use-everywhere/errors/#ue1001
+  → https://rxova.org/packages/use-everywhere/errors/#ue1001
 ```
 
 The code is the durable part: a message can be reworded, mangled by a minifier
