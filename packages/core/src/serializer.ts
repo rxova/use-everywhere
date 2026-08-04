@@ -36,7 +36,11 @@ export interface Serializer {
  * download.
  */
 function lossyType(raw: unknown, value: unknown): string | undefined {
-  if (raw === undefined && value === undefined) return 'undefined';
+  // Checked on the *serialised* value, not the raw one. A property set to
+  // undefined and an object whose `toJSON` returns undefined are both dropped
+  // by JSON without a word, and only the first has an undefined `raw` — testing
+  // both halves let the second through.
+  if (value === undefined) return raw === undefined ? 'undefined' : 'undefined after toJSON';
   if (raw instanceof Date) return 'Date';
   if (raw instanceof Map) return 'Map';
   if (raw instanceof Set) return 'Set';

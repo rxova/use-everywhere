@@ -24,12 +24,12 @@
   "thresholds": {
     "high": 95,
     "low": 90,
-    "break": 84
+    "break": 90
   },
   "timeoutMS": 20000,
   "concurrency": 4,
   "tempDirName": ".stryker-tmp",
   "plugins": ["@stryker-mutator/vitest-runner"],
   "_comment_plugins": "Named explicitly: pnpm's strict node_modules means Stryker's auto-discovery walks a tree the plugin is not hoisted into.",
-  "_comment_thresholds": "break is the measured baseline, not the target. The roadmap wants >=90 on core state modules; ratchet this up as survivors are killed, so the score can only improve. Setting it to the goal on day one would just mean a permanently red job nobody trusts."
+  "_comment_thresholds": "break is the roadmap's target, now met, and it applies to the overall score. Every individual module is also >=90 (see MUTATION.md); Stryker cannot gate per file, so that part is a review target. Ratchet this up as survivors die \u2014 never down."
 }

@@ -27,51 +27,82 @@ best afternoon.
 
 ## The threshold is a ratchet
 
-`break` is set to the **measured baseline**, not the target. The roadmap wants
-≥90 on core state modules; the score was **84.63** when this landed. Raise
-`break` as survivors are killed, so the number can only go up.
+`break` is **90**, the roadmap's target for core state modules, and it applies
+to the **overall** score. Stryker cannot gate per file, so the per-module figures
+below are a review target rather than an enforced one — but every module is over
+the line, and the rule is that the number only ever goes up.
 
-Setting it to the goal on day one would mean a permanently red job, and a red job
-nobody can fix is a job everybody learns to ignore.
-
-## Baseline, at the commit that added this
+## Where it stands
 
 | Module                | Score     | Survivors |
 | --------------------- | --------- | --------- |
 | `clock.ts`            | 97.14     | 1         |
 | `channel.ts`          | 94.03     | 4         |
 | `schema.ts`           | 94.00     | 3         |
-| `wire.ts`             | 88.89     | 8         |
-| `leader.ts`           | 86.39     | 23        |
-| `serializer.ts`       | 85.71     | 6         |
-| `shared-store.ts`     | 84.57     | 50        |
-| `presence.ts`         | 83.33     | 16        |
-| `shared-reducer.ts`   | 83.33     | 20        |
-| `leader-web-locks.ts` | 78.29     | 28        |
-| `bus.ts`              | 78.18     | 36        |
-| **total**             | **84.63** | **195**   |
+| `bus.ts`              | 93.59     | 10        |
+| `serializer.ts`       | 91.84     | 3         |
+| `wire.ts`             | 91.67     | 6         |
+| `leader-web-locks.ts` | 90.83     | 11        |
+| `presence.ts`         | 90.74     | 8         |
+| `shared-store.ts`     | 90.17     | 29        |
+| `leader.ts`           | 90.00     | 16        |
+| `shared-reducer.ts`   | 90.00     | 12        |
+| **total**             | **91.40** | **103**   |
 
-## What the first run found
+Started at 84.63 with 195 survivors. `leader.ts` and `shared-reducer.ts` sit
+exactly on 90, so they are the two to watch: the next change to either is the one
+that drops below.
 
-Two tests that passed for the wrong reason. Both were **fixed in the same commit
-that added this file**, and both now fail when the mutant is applied by hand —
-which is the only way to be sure a test kills something.
+## What the runs found
+
+Four tests that passed for the wrong reason, and one real bug. Each was confirmed
+by applying the mutant by hand and watching the test go red — the only way to be
+sure a test kills something.
 
 **1. The snapshot suppression rule was untested.** `if (coveredBy(versions))
 cancelSnapshot()` survived being replaced with an unconditional
 `cancelSnapshot()` — the exact bug the surrounding code was written to fix. The
-test meant to cover it built a "partial" peer that had already hydrated from the
-first snapshot, so it was not missing anything, and the assertion held either
-way. It now keeps the peer genuinely partial with `accept: () => false`, and
-forces the ordering with per-peer `snapshotDelayMs` instead of hoping the race
-lands the right way round.
+test built a "partial" peer that had already hydrated from the first snapshot, so
+it was missing nothing and the assertion held either way. It now keeps the peer
+genuinely partial with `accept: () => false`, and forces the ordering with
+per-peer `snapshotDelayMs` instead of hoping the race lands the right way round.
 
 **2. Leader handover in the reducer was untested.** `Math.max(lastIssued, seq)`
-survived being replaced with `Math.min`. A tab that has just inherited the seat
-has issued nothing, so `lastIssued` is 0 while `seq` reflects everything it has
-observed — with `min`, it renumbers from 1 and reissues commit numbers every peer
-has already applied, which are then silently dropped as duplicates. The code
-comment described this case exactly; no test exercised it.
+survived becoming `Math.min`. A tab that has just inherited the seat has issued
+nothing, so `lastIssued` is 0 while `seq` reflects everything it has observed —
+with `min`, it renumbers from 1 and reissues commit numbers every peer has
+already applied, which are then silently dropped as duplicates. The code comment
+described this case exactly; no test exercised it.
+
+**3. A real serializer bug.** `lossyType` only reported `undefined` when _both_
+the raw and the serialised value were undefined. An object whose `toJSON()`
+returns `undefined` has a defined raw value, so JSON dropped the key and said
+nothing — the precise silent-loss class the serializer exists to prevent. Now
+checked on the serialised value, with the two cases named differently so a reader
+knows which one they hit.
+
+**4. Development warnings were only half-covered in production mode.** The
+runtime guard tests exercised four warnings; the bus option conflicts, the
+duplicate-store warning, the refused restore and the wire-skew warning were not
+among them, so nothing checked that those particular ones stay silent in a
+production build.
+
+**5. The Web Locks strategy had no test for who may vacate a seat.** A follower
+closing must not announce a resign — that would tell every peer the leader had
+gone while it sat there holding the lock.
+
+## Mutants deliberately left alive
+
+Two categories, marked in the source with `// Stryker disable next-line` and a
+reason rather than left as unexplained survivors:
+
+- **Environment detection.** `typeof document !== 'undefined' && typeof
+addEventListener === 'function'` is true in every browser-like test environment
+  and false in every Node one, so no mutant of it is distinguishable by anything
+  we run.
+- **Message text.** Warning and error strings are not asserted on. Pinning them
+  makes every reworded warning a failing test, which is a real cost for no real
+  safety.
 
 ## Triaging the rest
 

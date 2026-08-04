@@ -164,6 +164,28 @@ describe('telling a skewed peer from an unrelated script', () => {
     expect(foreignWireVersion('nope')).toBe(null);
   });
 
+  it('records each foreign version once, however often it is heard', async () => {
+    const hub = new MemoryHub();
+    const store = createSharedStore('skew-once', { a: 1 }, { transport: () => hub.connect() });
+    const nextWeek = hub.connect();
+
+    for (let i = 0; i < 5; i++) nextWeek.post(foreign({ v: 2 }));
+    await tick();
+
+    // The ledger is a set, not a log: a peer on another deploy talks constantly,
+    // and reporting it once per wire would make the signal unusable.
+    expect(getWireSkew('skew-once')).toEqual([2]);
+
+    store.close();
+    nextWeek.close();
+  });
+
+  it('calls an equal version neither newer nor older, because it is not foreign', () => {
+    // The direction wording is decided by a strict comparison, so the boundary
+    // case has to be the one that never reaches it at all.
+    expect(foreignWireVersion(foreign({ v: WIRE_VERSION }))).toBe(null);
+  });
+
   it('does not call our own version foreign', () => {
     expect(foreignWireVersion(foreign({ v: WIRE_VERSION }))).toBe(null);
     expect(isBusWire(foreign({ v: WIRE_VERSION }))).toBe(true);

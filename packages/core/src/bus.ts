@@ -101,6 +101,7 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
       post({ v: 1, scope: 'presence', type: 'hello', clientId, kind }, null);
     }
   };
+  // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   if (hasWindow) {
     addEventListener('pagehide', sayBye);

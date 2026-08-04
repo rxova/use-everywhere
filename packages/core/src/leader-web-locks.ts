@@ -133,6 +133,7 @@ export function createWebLocksLeader(
     joinQueue();
   }
 
+  // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   const onPageHide = () => resign();
   // No pageshow counterpart: a tab restored from bfcache still holds, or is

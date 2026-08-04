@@ -404,6 +404,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
       timer = setTimeout(flushPersist as () => void, debounceMs);
     });
 
+    // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
     if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
       addEventListener('pagehide', flushPersist);
     }
@@ -421,6 +422,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
     if (!(event as { persisted?: boolean }).persisted) return;
     sayHello();
   };
+  // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
   const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
   if (hasWindow) addEventListener('pageshow', onPageShow);
 
@@ -486,6 +488,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
       if (hasWindow) removeEventListener('pageshow', onPageShow);
       if (flushPersist) {
         flushPersist();
+        // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
         if (typeof document !== 'undefined' && typeof removeEventListener === 'function') {
           removeEventListener('pagehide', flushPersist);
         }

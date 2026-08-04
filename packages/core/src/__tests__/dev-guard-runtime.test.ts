@@ -3,7 +3,11 @@
 // localStorage, and stubbing those one at a time on the node environment only
 // discovers the next missing one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getBus } from '../bus.js';
 import { newClientId } from '../ids.js';
+import { createSharedStore } from '../shared-store.js';
+import { MemoryHub } from '../transport/memory-hub.js';
+import { recordSkew } from '../wire.js';
 import { busTable, resetRendezvous } from '../rendezvous.js';
 import { createGate } from '../schema.js';
 import type { StandardSchemaV1 } from '../schema.types.js';
@@ -102,6 +106,42 @@ describe('the development guard at runtime', () => {
     } finally {
       globalThis.BroadcastChannel = originalChannel;
     }
+  });
+
+  silentInProduction('a second store on one name', () => {
+    const first = createSharedStore('guard-dup', { a: 0 });
+    const second = createSharedStore('guard-dup', { a: 0 });
+    first.close();
+    second.close();
+  });
+
+  silentInProduction('a restore refused for being from a newer build', () => {
+    const store = createSharedStore(
+      'guard-restore',
+      { a: 0 },
+      {
+        transport: () => new MemoryHub().connect(),
+        persist: {
+          adapter: {
+            read: () => ({ v: 1, schema: 9, state: { a: 1 }, versions: { a: [1, 'x'] } }) as never,
+            write: () => {},
+          },
+          version: 1,
+        },
+      },
+    );
+    store.close();
+  });
+
+  silentInProduction('a later caller asking for different bus options', () => {
+    const first = getBus('guard-bus', { heartbeatMs: 100, kind: 'tab' });
+    const second = getBus('guard-bus', { heartbeatMs: 999, kind: 'worker' });
+    first.release();
+    second.release();
+  });
+
+  silentInProduction('a peer speaking another wire protocol', () => {
+    recordSkew('guard-skew', 2);
   });
 
   silentInProduction('a payload rejected by its schema', () => {
