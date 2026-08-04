@@ -12,6 +12,48 @@ public API. In this guide we'll simulate five tabs in a unit test, put a real
 component next to a fake "other tab", and drive the whole cross-origin window
 lifecycle without opening a window.
 
+## The short version: `@use-everywhere/test-utils`
+
+Everything below is available directly, and worth reading — it is what the
+library's own suite does. But the common cases are packaged:
+
+```sh
+pnpm add -D @use-everywhere/test-utils
+```
+
+```ts
+import { createScenario } from '@use-everywhere/test-utils';
+
+it('two tabs converge', async () => {
+  const browser = createScenario();
+  const cartA = browser.tab().store('cart', { items: 0 });
+  const cartB = browser.tab().store('cart', { items: 0 });
+
+  cartA.set('items', 3);
+  await browser.settle();
+
+  expect(cartB.getSnapshot().items).toBe(3);
+  browser.dispose();
+});
+```
+
+One scenario is one simulated browser: a hub every tab shares, a `navigator.locks`
+stand-in every tab queues on, and tabs that can be closed **or crashed** —
+
+```ts
+a.close(); // says goodbye: peers are told
+a.crash(); // cuts the wire: peers have to notice, and the platform reclaims the lock
+```
+
+— which is the distinction the rest of this guide keeps coming back to. A `Tab`
+is a lifecycle group: each primitive it creates gets its own hub connection, so
+keep one primitive per name per tab and the simulation matches a browser
+exactly.
+
+The package also publishes `FakeWindow`/`fakeWindowPair` for the window-channel
+seams, `FakeLockManager`, and `tick`/`snapshotWindow` — the two waits that
+actually matter.
+
 ## Simulate many tabs in one test: `MemoryHub`
 
 A `MemoryHub` is an in-process stand-in for the browser's channel: every
@@ -99,10 +141,11 @@ in a test runner means the whole test file.
 ## Testing window flows without windows
 
 `openWindow` and `connectToOpener` accept `localWindow`, `openFn`, `opener`,
-and `cid` seams. A fake window pair is ~40 lines (see
-`packages/core/src/__tests__/helpers/fake-window.ts` for the reference
-implementation the library itself uses); with one you can drive the whole
-lifecycle synchronously:
+and `cid` seams. `fakeWindowPair` from `@use-everywhere/test-utils` gives you
+two windows wired to each other — including the parts the handshake exists to
+defend against, via `injectMessage` (wrong origin, unrelated source) and
+`autoFlush = false` (a child that has not loaded yet). With a pair you can drive
+the whole lifecycle synchronously:
 
 ```ts
 const opened = openWindow(PAY_URL, {
@@ -173,8 +216,23 @@ it('a joiner adopts the incumbent instead of stealing the seat', async () => {
 ```
 
 To test **failover**, don't call `close()` — that resigns, which is the _fast_
-path. A real crash is silence, so simulate it with a raw hub connection that
-claims the seat and then says nothing:
+path. A real crash is silence. `createScenario` has that as one call:
+
+```ts
+const browser = createScenario();
+const a = browser.tab();
+const survivor = browser.tab().leader('feed');
+a.leader('feed');
+
+await browser.settle();
+a.crash(); // no goodbye, and the lock the dead tab held is reclaimed
+await browser.settle();
+
+expect(survivor.getSnapshot().isLeader).toBe(true);
+```
+
+By hand, simulate it with a raw hub connection that claims the seat and then
+says nothing:
 
 ```ts
 const ghost = hub.connect();
