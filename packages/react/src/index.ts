@@ -11,6 +11,10 @@ export { usePeers, useClientId } from './use-peers.js';
 export { useLeader, useIsLeader, useLeaderEffect } from './use-leader.js';
 export type { UseLeaderOptions } from './use-leader.types.js';
 export { getLeader } from './registry.js';
+// Shadows the core factory on purpose: a React app installs one package, and
+// the namespace it wants is the one that carries hooks.
+export { createNamespace } from './namespace.js';
+export type { ReactNamespace } from './namespace.js';
 export { useOpenedWindow } from './use-opened-window.js';
 export type {
   UseOpenedWindow,
@@ -53,6 +57,7 @@ export {
   isStorageEventAvailable,
 } from '@use-everywhere/core';
 export type {
+  Namespace,
   Channel,
   ChannelOptions,
   StandardSchemaV1,
