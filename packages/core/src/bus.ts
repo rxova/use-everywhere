@@ -6,20 +6,9 @@ import { devWarn } from './dev.js';
 import { newClientId } from './ids.js';
 import { busTable } from './rendezvous.js';
 import { defaultTransport } from './transport/default-transport.js';
+import { foreignWireVersion, isBusWire, recordSkew } from './wire.js';
 
-export function isBusWire(data: unknown): data is BusWire {
-  if (typeof data !== 'object' || data === null) return false;
-  const wire = data as { v?: unknown; scope?: unknown; type?: unknown; clientId?: unknown };
-  // Beyond the version marker, check the three fields every branch downstream
-  // reads unconditionally. The envelope is the only place a wire's shape is
-  // ever verified, and everything past this point treats it as typed.
-  return (
-    wire.v === 1 &&
-    typeof wire.scope === 'string' &&
-    typeof wire.type === 'string' &&
-    typeof wire.clientId === 'string'
-  );
-}
+export { isBusWire };
 
 export function defaultKind(): PeerKind {
   return typeof document === 'undefined' ? 'worker' : 'tab';
@@ -70,6 +59,15 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
   };
 
   const unsubscribe = transport.subscribe((data) => {
+    // A wire that is plainly ours but speaks another protocol version is a
+    // peer on a different deploy, not junk. Dropping it is still the only safe
+    // thing to do with it, but the drop is recorded and warned about rather
+    // than being indistinguishable from silence. See wire.ts for the contract.
+    const foreign = foreignWireVersion(data);
+    if (foreign !== null) {
+      recordSkew(name, foreign);
+      return;
+    }
     if (!isBusWire(data)) return;
     if (data.clientId === clientId) return;
     emitBusEvent(name, 'in', data);

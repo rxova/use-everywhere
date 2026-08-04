@@ -29,6 +29,7 @@ export { newer } from './clock.js';
 export { DEFAULT_NAME } from './defaults.js';
 export { observeBus, enableDebug } from './debug.js';
 export { getBusNames, getTransportKind } from './bus.js';
+export { WIRE_VERSION, getWireSkew } from './wire.js';
 export type { BusEvent, BusObserver, DebugOptions } from './debug.types.js';
 export type { BusWire } from './bus.types.js';
 export type { Transport, TransportKind } from './transport/transport.types.js';

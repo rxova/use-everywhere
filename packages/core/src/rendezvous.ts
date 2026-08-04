@@ -31,6 +31,17 @@ const PROTOCOL = 1;
 const TABLE = Symbol.for(`use-everywhere.rendezvous.${PROTOCOL}`);
 /** Unversioned, so copies compiled against *different* protocols still meet here. */
 const CENSUS = Symbol.for('use-everywhere.rendezvous.census');
+/**
+ * Also unversioned, and for the same reason plus a stronger one: skew is a fact
+ * about the *origin*, not about one bundle's view of it. If two copies on this
+ * page are partitioned from each other, both are still entitled to know that a
+ * third generation is out there in another tab — so they share one ledger.
+ *
+ * Safe to share across protocols in a way the bus table is not: this holds
+ * plain numbers in a built-in Set, with no methods of ours for a foreign copy
+ * to call.
+ */
+const SKEW = Symbol.for('use-everywhere.rendezvous.skew');
 
 interface Census {
   protocols: number[];
@@ -39,6 +50,7 @@ interface Census {
 type Global = typeof globalThis & {
   [TABLE]?: Map<string, SharedBusCore>;
   [CENSUS]?: Census;
+  [SKEW]?: Map<string, Set<number>>;
 };
 
 function announce(): void {
@@ -69,9 +81,22 @@ export function busTable(): Map<string, SharedBusCore> {
   return (g[TABLE] ??= new Map());
 }
 
+/**
+ * Foreign wire protocol versions heard on this page, by bus name.
+ *
+ * Kept here rather than on the bus so that a version's mark outlives the bus
+ * that heard it: a store closed and reopened on the same name has not undone
+ * the deploy that produced the skew.
+ */
+export function skewLedger(): Map<string, Set<number>> {
+  const g = globalThis as Global;
+  return (g[SKEW] ??= new Map());
+}
+
 /** @internal Test seam: forget the page-wide state so a case can start clean. */
 export function resetRendezvous(): void {
   const g = globalThis as Global;
   delete g[TABLE];
   delete g[CENSUS];
+  delete g[SKEW];
 }
