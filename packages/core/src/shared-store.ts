@@ -284,7 +284,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
         devWarn(
           'UE1002',
           `${name}: persisted schema v${error.found} not restored, ` +
-            `expected v${error.expected} (${error.reason}). https://rxova.org/guides/persistence/`,
+            `expected v${error.expected} (${error.reason}). https://rxova.org/packages/use-everywhere/guides/persistence/`,
         );
       }
     };

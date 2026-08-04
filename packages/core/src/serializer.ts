@@ -74,7 +74,7 @@ export const jsonSerializer: Serializer = {
       if (type) {
         throw new TypeError(
           `use-everywhere: ${key ? `"${key}" is ` : ''}${type}, which JSON cannot round-trip. ` +
-            `https://rxova.org/guides/serialization/`,
+            `https://rxova.org/packages/use-everywhere/guides/serialization/`,
         );
       }
       return forJson;

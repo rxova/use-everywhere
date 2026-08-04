@@ -13,7 +13,9 @@ describe('the plugin', () => {
   it('gives every rule a description and a docs link', () => {
     for (const [id, rule] of Object.entries(rules)) {
       expect(rule.meta?.docs?.description, id).toBeTruthy();
-      expect(rule.meta?.docs?.url, id).toBe(`https://rxova.github.io/use-everywhere/eslint/${id}/`);
+      expect(rule.meta?.docs?.url, id).toBe(
+        `https://rxova.org/packages/use-everywhere/eslint/${id}/`,
+      );
     }
   });
 

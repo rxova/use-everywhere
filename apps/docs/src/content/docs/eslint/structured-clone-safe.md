@@ -53,7 +53,7 @@ const user = useMemo(() => new User(shared.name), [shared.name]);
 
 If tabs need to trigger behaviour in one another, send a message naming the
 action rather than sharing the function that performs it — see
-[Messages and presence](/guides/messages-and-presence/).
+[Messages and presence](../guides/messages-and-presence.md).
 
 ## What it will not catch
 
@@ -67,5 +67,5 @@ useSharedState('cart', buildInitialCart()); // not judged
 The runtime pre-check still covers those; this rule catches them earlier, when
 they are written down.
 
-See [Serialization](/guides/serialization/) for what happens on the wire, and
+See [Serialization](../guides/serialization.md) for what happens on the wire, and
 which types survive a round trip.

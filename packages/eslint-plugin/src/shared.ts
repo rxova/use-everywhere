@@ -2,7 +2,7 @@ import type { Rule, Scope } from 'eslint';
 import type { CallExpression, Expression, Node, SpreadElement, Super } from 'estree';
 
 /** Where the rule docs live, so every message can point at a page. */
-const DOCS_BASE = 'https://rxova.github.io/use-everywhere/eslint';
+const DOCS_BASE = 'https://rxova.org/packages/use-everywhere/eslint';
 
 export const docsUrl = (rule: string): string => `${DOCS_BASE}/${rule}/`;
 
