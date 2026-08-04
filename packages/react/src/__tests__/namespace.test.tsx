@@ -154,6 +154,29 @@ describe('createNamespace (React)', () => {
     expect(seen).toEqual([]);
   });
 
+  it('carries useSharedStore, selecting from the namespaced store', async () => {
+    function App() {
+      const [, setValue] = checkout.useSharedState('picked', 0);
+      const doubled = checkout.useSharedStore<Record<string, unknown>, number>(
+        (s) => Number(s.picked ?? 0) * 2,
+      );
+      return (
+        <>
+          <button onClick={() => setValue(4)}>go</button>
+          <span data-testid="doubled">{doubled}</span>
+        </>
+      );
+    }
+    render(<App />);
+    await flush();
+
+    act(() => screen.getByText('go').click());
+    await flush();
+
+    // Selects from `checkout:use-everywhere`, not from the bare default store.
+    expect(screen.getByTestId('doubled').textContent).toBe('8');
+  });
+
   it('carries useHydrated, prefixed like everything else', async () => {
     function App() {
       const ready = checkout.useHydrated();

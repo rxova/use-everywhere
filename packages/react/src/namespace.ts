@@ -14,6 +14,8 @@ import { useHydrated } from './use-hydrated.js';
 import { useClientId, usePeers } from './use-peers.js';
 import { useIsLeader, useLeader, useLeaderEffect } from './use-leader.js';
 import type { UseLeaderOptions } from './use-leader.types.js';
+import { useSharedStore } from './use-shared-selector.js';
+import type { UseSharedSelectorOptions } from './use-shared-selector.js';
 import { useSharedState } from './use-shared-state.js';
 import type { UseSharedStateOptions } from './use-shared-state.types.js';
 import type { Peer, LeaderSnapshot } from '@use-everywhere/core';
@@ -37,6 +39,10 @@ export interface ReactNamespace extends CoreNamespace {
     initial: T,
     options?: UseSharedStateOptions,
   ): [T, (next: T | ((prev: T) => T)) => void];
+  useSharedStore<S extends Record<string, unknown>, T>(
+    selector: (state: S) => T,
+    options?: UseSharedSelectorOptions,
+  ): T;
   usePeers(options?: { name?: string }): readonly Peer[];
   useHydrated(options?: UseSharedStateOptions): boolean;
   useClientId(options?: { name?: string }): string;
@@ -77,6 +83,8 @@ export function createNamespace(namespace: string): ReactNamespace {
     getSharedStore: (name, scope) => getSharedStore(busName(name), scope),
     useSharedState: (key, initial, options) =>
       useSharedState(key, initial, { ...options, store: busName(options?.store) }),
+    useSharedStore: (selector, options) =>
+      useSharedStore(selector, { ...options, store: busName(options?.store) }),
     usePeers: (options) => usePeers({ name: busName(options?.name) }),
     useHydrated: (options) => useHydrated({ ...options, store: busName(options?.store) }),
     useClientId: (options) => useClientId({ name: busName(options?.name) }),
