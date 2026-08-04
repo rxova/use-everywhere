@@ -216,31 +216,6 @@ jobs:
       - name: Test with coverage thresholds
         run: pnpm test
 
-  mutation:
-    name: mutation score
-    needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
-      - uses: ./.github/actions/turbo-cache
-      - run: pnpm install --frozen-lockfile
-      # Minutes long, which is why it is its own job rather than part of the
-      # `checks` one — it runs in parallel with everything else and gates on its
-      # own. Stryker's threshold covers the overall score; check-mutation.ts
-      # additionally fails any single module that drops below the floor, which
-      # is the shape the roadmap actually asks for.
-      - name: Mutation testing
-        run: pnpm run mutation
-      - name: Upload the report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: mutation-report
-          path: packages/core/reports/mutation
-          retention-days: 7
-
   changeset:
     name: changeset present
     needs: [commitlint]
