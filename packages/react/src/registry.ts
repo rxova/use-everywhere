@@ -6,6 +6,7 @@ import {
   DEFAULT_NAME,
   NoopTransport,
   type Channel,
+  type ChannelOptions,
   type Leader,
   type LeaderOptions,
   type MessageMap,
@@ -149,10 +150,40 @@ function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void 
   }
 }
 
+/**
+ * Options to build a channel with when it is first needed. Registered by
+ * defineChannel at module scope and consumed by getChannel on creation — the
+ * same deferral defineStore uses, so declaring a schema constructs nothing on
+ * import.
+ */
+const channelConfig = new Map<string, ChannelOptions<MessageMap>>();
+
+export function configureChannel<M extends MessageMap>(
+  name: string,
+  options: ChannelOptions<M>,
+): void {
+  if (channels.has(name)) {
+    // Fast Refresh re-runs the defining module on every edit, rebuilding the
+    // schema objects each time, so identity comparison would call a no-op edit
+    // a conflict. Which keys are validated is what would actually build a
+    // different channel.
+    const before = Object.keys(channelConfig.get(name)?.schema ?? {}).sort();
+    const after = Object.keys(options.schema ?? {}).sort();
+    if (before.join() === after.join()) return;
+    devWarn(
+      `[use-everywhere] defineChannel('${name}') ran after that channel was already created, with different options. ` +
+        'The live channel keeps the configuration it was built with. Move defineChannel to module scope, ' +
+        'before any component sends or receives on it.',
+    );
+    return;
+  }
+  channelConfig.set(name, options as ChannelOptions<MessageMap>);
+}
+
 export function getChannel<M extends MessageMap>(name: string): Channel<M> {
   let channel = channels.get(name);
   if (!channel) {
-    channel = isServer() ? createServerChannel(name) : createChannel(name);
+    channel = isServer() ? createServerChannel(name) : createChannel(name, channelConfig.get(name));
     channels.set(name, channel);
   }
   return channel as Channel<M>;

@@ -78,13 +78,13 @@
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "3.34 kB"
+      "limit": "3.70 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "2.31 kB"
+      "limit": "2.69 kB"
     },
     {
       "name": "createPresence",

@@ -4,6 +4,7 @@ import { devWarn } from './dev.js';
 import { freezeShared } from './dev-freeze.js';
 import type { MessageMeta, Version } from './common.types.js';
 import type { Persisted } from './persist.types.js';
+import { createGate } from './schema.js';
 import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
 
 // Live-store count per name on the shared (registry) bus, to catch the
@@ -19,7 +20,7 @@ const liveStores = new Map<string, number>();
 export function createSharedStore<S extends Record<string, unknown>>(
   name: string,
   initial: S,
-  options: SharedStoreOptions = {},
+  options: SharedStoreOptions<S> = {},
 ): SharedStore<S> {
   const onSharedBus = !options.transport;
   if (onSharedBus) {
@@ -34,6 +35,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   const bus = getBus(name, options);
   const clientId = bus.clientId;
   const accept = options.accept;
+  const gate = createGate(name, options.schema, options.onInvalid);
 
   const state: Record<string, unknown> = { ...initial };
   const versions: Record<string, Version> = {};
@@ -57,6 +59,15 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
   function applyRemote(key: string, value: unknown, version: Version, meta: MessageMeta) {
     if (!newer(version, versions[key])) return;
+    // After the clock, before the write. Checking a value that loses
+    // last-writer-wins anyway would spend the work for nothing and report a
+    // peer's payload as broken when this tab was never going to use it.
+    //
+    // Every way a value enters this store from outside the running build funnels
+    // through here — a peer's patch, a snapshot, and the restore from disk,
+    // which is the one that matters most: state written by last month's deploy
+    // is the version-skew problem with a longer fuse.
+    if (gate && !gate.accepts(key, value)) return;
     versions[key] = version;
     state[key] = freezeShared(value);
     notify(key, value, meta);
@@ -105,6 +116,10 @@ export function createSharedStore<S extends Record<string, unknown>>(
   });
 
   function setKey(key: string, value: unknown) {
+    // Before the version is even minted, for the same reason the clone
+    // pre-check posts before committing: a write this tab cannot describe must
+    // not land locally and then fail to travel.
+    gate?.assert(key, value);
     const version: Version = [(versions[key]?.[0] ?? 0) + 1, clientId];
     // Post before committing locally: postMessage rejects non-cloneable values
     // (functions, DOM nodes, class instances) by throwing synchronously, and a

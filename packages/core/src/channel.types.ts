@@ -1,4 +1,7 @@
-import type { MessageMap, MessageMeta } from './common.types.js';
+import type { CommonOptions, MessageMap, MessageMeta } from './common.types.js';
+import type { SchemaOptions } from './schema.types.js';
+
+export interface ChannelOptions<M extends MessageMap> extends CommonOptions, SchemaOptions<M> {}
 
 export interface Channel<M extends MessageMap> {
   readonly name: string;
