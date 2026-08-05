@@ -1,7 +1,7 @@
 ---
 title: 'Playground'
 sidebar:
-  order: 5
+  order: 6
 ---
 
 Every frame below is a real client: same origin, same `BroadcastChannel`, no
