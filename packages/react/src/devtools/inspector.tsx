@@ -1,28 +1,14 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { DEFAULT_NAME, observeBus, type BusEvent, type BusWire } from '@use-everywhere/core';
-import { getSharedStore } from '../registry.js';
-import { usePeers } from '../use-peers.js';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { DEFAULT_NAME } from '@use-everywhere/core';
+import { Panel } from './panel.js';
 import type { InspectorProps } from './inspector.types.js';
 import { STYLES } from './styles.js';
 
-interface LoggedWire {
-  id: number;
-  direction: 'in' | 'out';
-  scope: string;
-  label: string;
-  from: string;
-}
-
-const short = (id: string) => id.slice(0, 6);
-
-function wireLabel(wire: BusWire): string {
-  return `${wire.scope}/${wire.type}`;
-}
-
 /**
  * A floating panel showing what this tab is saying and hearing on the bus:
- * peers, the leader, store keys with their version clocks, and a live wire log
- * in both directions.
+ * peers, the leader, store keys with their version clocks, a live wire log in
+ * both directions, and a timeline of the state each wire produced.
  *
  * It deliberately does **not** create a Leader. Under dynamic eligibility,
  * mounting one with `eligible: false` would disable candidacy for the whole
@@ -32,6 +18,17 @@ function wireLabel(wire: BusWire): string {
  *
  * Presence is fine to use: the bus heartbeats regardless of whether anything
  * created a Presence, so usePeers observes rather than perturbs.
+ *
+ * **The panel lives in a shadow root.** Its styles used to be a `<style>` tag
+ * in the page, which is only ever half true: `.ue-ins` could not leak out, but
+ * everything in the host document leaked *in* — a `* { box-sizing }` reset, an
+ * app-wide `button { text-transform: uppercase }`, a Tailwind preflight, any
+ * `!important`. A devtool that renders differently depending on whose app it is
+ * mounted in is a devtool you cannot trust when it looks wrong. Inside a shadow
+ * root, page CSS does not apply and the panel's own CSS cannot escape.
+ *
+ * A consequence worth knowing when testing an app that mounts it: the panel is
+ * **not** in `document`. Reach it through `host.shadowRoot`.
  */
 export function Inspector({
   name = DEFAULT_NAME,
@@ -40,282 +37,40 @@ export function Inspector({
   defaultOpen = false,
   leaseMs = 3000,
 }: InspectorProps = {}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const [wires, setWires] = useState<readonly LoggedWire[]>([]);
-  const [crown, setCrown] = useState<string | null>(null);
-  const [paused, setPaused] = useState(false);
-  const [filter, setFilter] = useState('');
-  const [editing, setEditing] = useState<{ key: string; draft: string } | null>(null);
-  const nextId = useRef(0);
-  const crownAt = useRef(0);
-  // Read inside the observer, so pausing does not re-subscribe: tearing the
-  // observer down and back up would drop the traffic in between, and a log you
-  // paused is not a log with a hole in it.
-  const pausedRef = useRef(false);
+  const [root, setRoot] = useState<ShadowRoot | null>(null);
 
-  // Written in the effect phase, like every other ref in this package: React
-  // forbids mutating one during render, and the observer only reads it later.
-  useEffect(() => {
-    pausedRef.current = paused;
-  }, [paused]);
-
-  const peers = usePeers({ name });
-  const store = getSharedStore(name);
-
-  // Both snapshots are referentially stable and only change when the store
-  // notifies, so useSyncExternalStore is the right shape here — same as every
-  // other hook in the package.
-  const subscribe = useCallback((onChange: () => void) => store.subscribe(onChange), [store]);
-  const snapshot = useSyncExternalStore(
-    subscribe,
-    () => store.getSnapshot(),
-    () => store.getSnapshot(),
-  );
-  const versions = useSyncExternalStore(
-    subscribe,
-    () => store.getVersions(),
-    () => store.getVersions(),
-  );
-
-  useEffect(() => {
-    return observeBus(name, (event: BusEvent) => {
-      const { wire, direction } = event;
-
-      // Infer the crown rather than joining the election.
-      if (wire.scope === 'leader') {
-        if (wire.type === 'resign') {
-          setCrown(null);
-          crownAt.current = 0;
-        } else if (wire.type === 'claim' || wire.type === 'heartbeat') {
-          setCrown(wire.clientId);
-          crownAt.current = Date.now();
-        }
-      }
-
-      // Paused freezes the *log*, never the crown above: leadership is state,
-      // not history, and showing a stale one would be a lie rather than a pause.
-      if (pausedRef.current) return;
-
-      setWires((prev) =>
-        [
-          ...prev.slice(-(limit - 1)),
-          {
-            id: nextId.current++,
-            direction,
-            scope: wire.scope,
-            label: wireLabel(wire),
-            from: short(wire.clientId),
-          },
-        ].slice(-limit),
-      );
-    });
-  }, [name, limit]);
-
-  // A leader that stopped talking is no leader. Without this the crown would
-  // linger on a tab that crashed.
-  useEffect(() => {
-    const timer = setInterval(
-      () => {
-        if (crownAt.current && Date.now() - crownAt.current > leaseMs) {
-          setCrown(null);
-          crownAt.current = 0;
-        }
-      },
-      // Quarter of the lease, so a vacated crown clears well within it. The
-      // floor is low enough that a short lease still works rather than being
-      // silently rounded up to something coarser than the lease itself.
-      Math.max(50, Math.floor(leaseMs / 4)),
-    );
-    return () => clearInterval(timer);
-  }, [leaseMs]);
-
-  const selfId = store.clientId;
-  // Iterate the version map, not the snapshot: every key in the store has a
-  // version by construction (registerKey, applyRemote, and setKey all write
-  // both), so this drops an unreachable "key without a version" branch.
-  const entries = Object.entries(versions);
-
-  // Matched against `scope/type` and the sender, which is what someone types
-  // when they mean "just the leader traffic" or "just that tab".
-  const needle = filter.trim().toLowerCase();
-  const shown = needle
-    ? wires.filter(
-        (wire) =>
-          wire.label.toLowerCase().includes(needle) || wire.from.toLowerCase().includes(needle),
-      )
-    : wires;
-
-  /**
-   * Write an edited value back to the store.
-   *
-   * Parsed as JSON, so `"dark"` is a string and `dark` is a mistake — which is
-   * the honest reading. The alternative, guessing between them, would make the
-   * panel disagree with the wire about what a value is.
-   */
-  const commit = (key: string, draft: string): void => {
-    let value: unknown;
-    try {
-      value = JSON.parse(draft);
-    } catch {
-      return;
-    }
-    // Through the store, not around it: the write takes a version, goes on the
-    // wire, and reaches every peer. A devtool that edited local state only
-    // would show a value no other tab has.
-    store.set(key, value as never);
-    setEditing(null);
-  };
-
-  const draftIsValid = (draft: string): boolean => {
-    try {
-      JSON.parse(draft);
-      return true;
-    } catch {
-      return false;
-    }
+  // A callback ref rather than an effect over a ref: this runs only when React
+  // has an element, so there is no "the ref might be null" branch to write and
+  // leave untested. `attachShadow` throws if one is already attached, which
+  // StrictMode's double-invoked lifecycles make routine rather than exotic.
+  const attach = (host: HTMLDivElement | null) => {
+    if (!host || root) return;
+    setRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
   };
 
   return (
-    <div className={`ue-ins ue-ins--${position}`} data-testid="ue-inspector">
-      <style>{STYLES}</style>
-
-      <button
-        type="button"
-        className="ue-ins__bar"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <span className="ue-ins__dot" />
-        <span className="ue-ins__title">use-everywhere</span>
-        <span className="ue-ins__muted">{name}</span>
-        {crown ? (
-          <span className="ue-ins__crown" data-testid="ue-crown">
-            ♔ {crown === selfId ? 'this tab' : short(crown)}
-          </span>
-        ) : null}
-      </button>
-
-      {open ? (
-        <div className="ue-ins__body">
-          <div className="ue-ins__section">
-            <div className="ue-ins__h">This tab</div>
-            <div className="ue-ins__row">
-              <span className="ue-ins__k">{short(selfId)}</span>
-              <span className="ue-ins__v">
-                {crown === selfId ? 'leader' : crown ? 'follower' : 'no leader'}
-              </span>
-            </div>
-          </div>
-
-          <div className="ue-ins__section">
-            <div className="ue-ins__h">Peers ({peers.length})</div>
-            {peers.length === 0 ? (
-              <div className="ue-ins__empty">nobody else here</div>
-            ) : (
-              peers.map((peer) => (
-                <div className="ue-ins__row" key={peer.id}>
-                  <span className="ue-ins__k">{short(peer.id)}</span>
-                  <span className="ue-ins__v">{peer.kind}</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="ue-ins__section">
-            <div className="ue-ins__h">State ({entries.length})</div>
-            {entries.length === 0 ? (
-              <div className="ue-ins__empty">no keys yet</div>
-            ) : (
-              entries.map(([key, version]) => (
-                <div className="ue-ins__row" key={key}>
-                  <span className="ue-ins__k">{key}</span>
-                  {editing?.key === key ? (
-                    <input
-                      className={`ue-ins__edit${draftIsValid(editing.draft) ? '' : ' ue-ins__v--invalid'}`}
-                      value={editing.draft}
-                      autoFocus
-                      aria-label={`Value of ${key}`}
-                      onChange={(event) => setEditing({ key, draft: event.target.value })}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') commit(key, editing.draft);
-                        if (event.key === 'Escape') setEditing(null);
-                      }}
-                      onBlur={() => setEditing(null)}
-                      data-testid={`ue-edit-${key}`}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      className="ue-ins__v ue-ins__v--editable"
-                      onClick={() =>
-                        setEditing({ key, draft: JSON.stringify(snapshot[key]) ?? '' })
-                      }
-                      data-testid={`ue-value-${key}`}
-                    >
-                      {JSON.stringify(snapshot[key])}
-                    </button>
-                  )}
-                  <span className="ue-ins__ver">
-                    {version[0]}·{short(version[1])}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="ue-ins__section">
-            <div className="ue-ins__h">
-              Wires ({shown.length}
-              {shown.length === wires.length ? '' : ` of ${wires.length}`})
-              {paused ? <span className="ue-ins__paused"> · paused</span> : null}
-            </div>
-            <div className="ue-ins__tools">
-              <button
-                type="button"
-                className="ue-ins__btn"
-                aria-pressed={paused}
-                onClick={() => setPaused((value) => !value)}
-                data-testid="ue-pause"
-              >
-                {paused ? 'resume' : 'pause'}
-              </button>
-              <button
-                type="button"
-                className="ue-ins__btn"
-                onClick={() => setWires([])}
-                data-testid="ue-clear"
-              >
-                clear
-              </button>
-              <input
-                className="ue-ins__filter"
-                value={filter}
-                placeholder="filter"
-                aria-label="Filter wires"
-                onChange={(event) => setFilter(event.target.value)}
-                data-testid="ue-filter"
+    <div ref={attach} data-testid="ue-inspector-host">
+      {/*
+       * Nothing renders until the shadow root exists, which means nothing
+       * renders on the server. That is the right answer for a devtool — it has
+       * no business in server HTML, and rendering it there only to move it
+       * client-side would be a hydration mismatch in every app that ships it.
+       */}
+      {root
+        ? createPortal(
+            <>
+              <style>{STYLES}</style>
+              <Panel
+                name={name}
+                position={position}
+                limit={limit}
+                defaultOpen={defaultOpen}
+                leaseMs={leaseMs}
               />
-            </div>
-            {shown.length === 0 ? (
-              <div className="ue-ins__empty">
-                {wires.length === 0 ? 'nothing yet' : 'no matches'}
-              </div>
-            ) : (
-              <div className="ue-ins__log">
-                {shown.map((wire) => (
-                  <div className="ue-ins__wire" key={wire.id}>
-                    <span className={`ue-ins__dir ue-ins__dir--${wire.direction}`}>
-                      {wire.direction === 'out' ? '→' : '←'}
-                    </span>
-                    <span className="ue-ins__scope">{wire.label}</span>
-                    <span className="ue-ins__from">{wire.from}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : null}
+            </>,
+            root,
+          )
+        : null}
     </div>
   );
 }

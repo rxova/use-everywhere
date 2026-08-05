@@ -16,7 +16,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   target: 'es2020',
-  external: ['react'],
+  external: ['react', 'react-dom'],
   // Every entry is client-only (useSyncExternalStore, BroadcastChannel). The
   // banner marks the built modules as a React Server Components client boundary,
   // so hooks can be imported directly in a Next.js App Router file without the
