@@ -216,6 +216,53 @@ jobs:
       - name: Test with coverage thresholds
         run: pnpm test
 
+      # One leg uploads, not both: two reports for the same commit differing
+      # only by Node version would make Codecov's patch gate a coin flip on
+      # whichever arrived last. 24 is the version the release runs on.
+      #
+      # `continue-on-error` because coverage reporting must never be the reason
+      # a correct branch cannot merge — the thresholds that actually gate are
+      # vitest's, and they ran above.
+      - name: Upload coverage
+        if: matrix.node-version == 24
+        continue-on-error: true
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # Every package writes its own lcov; naming them keeps a drop
+          # attributable to one package instead of to "the repo".
+          files: >-
+            packages/core/coverage/lcov.info,
+            packages/react/coverage/lcov.info,
+            packages/eslint-plugin/coverage/lcov.info,
+            packages/test-utils/coverage/lcov.info
+          fail_ci_if_error: false
+
+  # The peer range is `react >=18`, and until this job existed nothing checked
+  # the lower bound — every test ran against the 19 in the lockfile. React 18's
+  # `useSyncExternalStore` is a different implementation, and it is the hook
+  # every hook here is built on, so "supports 18" was a claim, not a fact.
+  #
+  # Tests only, deliberately: typechecking against 18 would need @types/react@18
+  # too, and the types are already exercised by the `check` job against the
+  # version people install today. What this leg proves is runtime behaviour.
+  react18:
+    name: unit (react 18)
+    needs: [commitlint]
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      # Not `--frozen-lockfile` compatible by definition: this is the one job
+      # that wants a dependency the lockfile does not pin. The checkout is
+      # throwaway, so the mutated lockfile never leaves the runner.
+      - name: Downgrade React to 18
+        run: pnpm --filter use-everywhere add -D react@^18.3.1 react-dom@^18.3.1
+      - name: Test the hooks against React 18
+        run: pnpm --filter use-everywhere test
+
   changeset:
     name: changeset present
     needs: [commitlint]

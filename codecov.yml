@@ -1,0 +1,42 @@
+# Coverage reporting. The numbers themselves are enforced by vitest — every
+# package fails its own `test` run below 95% per file, and most sit at 100% — so
+# this file exists for the thing a local threshold cannot do: judge a *diff*.
+#
+# The project gate is deliberately slack (`threshold: 0.5%`) and the patch gate
+# is not. A rewrite that moves a covered branch around should not turn CI red;
+# a pull request that adds twenty uncovered lines should, even though the
+# repo-wide average barely moves.
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+        informational: false
+    patch:
+      default:
+        # Every line a pull request adds or changes must be exercised. This is
+        # the gate the per-file thresholds cannot express: vitest sees files,
+        # Codecov sees the diff.
+        target: 90%
+        threshold: 0%
+
+# The comment is the point of the integration — a reviewer should see what the
+# branch did to coverage without leaving the pull request.
+comment:
+  layout: 'condensed_header, diff, flags, components'
+  require_changes: true
+
+# Flags mirror the packages, so a drop points at one of them rather than at
+# "the repo". Carryforward: a pull request touching only core still reports
+# react's last known coverage instead of showing it as zero.
+flag_management:
+  default_rules:
+    carryforward: true
+
+ignore:
+  - 'apps/**'
+  - 'e2e/**'
+  - 'packages/benchmarks/**'
+  - '**/*.types.ts'
+  - '**/__tests__/**'
