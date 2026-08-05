@@ -26,7 +26,7 @@ ratios are what hold.
 | --------------------------------------- | -------- | ----------- | ----- |
 | Write → 5 peers applied it (p50)        | 0.073 ms | 0.040 ms    | 1.8×  |
 | Write → 5 peers applied it (p95)        | 0.125 ms | 0.060 ms    | 2.1×  |
-| Channel throughput (messages/second)    | ~95,000  | ~277,000    | 0.34× |
+| Channel throughput (messages/second)    | ~88,000  | ~272,000    | 0.32× |
 | Snapshots answering one joiner, 20 tabs | 2        | —           | —     |
 
 Read that as: a shared write costs **under twice** a hand-rolled post, and buys
@@ -34,6 +34,36 @@ last-writer-wins ordering with per-key version clocks, an envelope a peer on
 another build can still read, and presence tracking on the same connection. The
 channel gives up more — a third of raw throughput — because every message
 carries that envelope and, if you asked for one, a schema check.
+
+## Against the incumbent
+
+The [`broadcast-channel`](https://www.npmjs.com/package/broadcast-channel)
+package is the closest thing to a competitor, and the suite now measures it.
+
+| Benchmark                            | Library | `broadcast-channel` | Ratio |
+| ------------------------------------ | ------- | ------------------- | ----- |
+| Channel throughput (messages/second) | ~86,000 | ~202,000            | 0.43× |
+
+**It is faster at this, and that is the honest number.** Sending a message there
+costs less because less travels: this library puts an envelope, a client id and
+(if you asked for one) a schema check on every message, which is what makes the
+same wire carry state, presence, version clocks and cross-version interop. You
+are paying roughly two messages in five for the things a bare channel does not
+do. If all you want is a channel, that is a real argument for a bare channel.
+
+Making the comparison fair is most of the work, and three decisions move the
+number:
+
+- **The same primitive underneath.** It is pinned to `type: 'native'`, so both
+  sides sit on the same `BroadcastChannel`. Left alone it would pick its
+  filesystem-backed IPC under Node, and that would measure Node's filesystem.
+- **No leader election on either side.** Opt-in there, opt-in here, off in both.
+- **Its `postMessage` returns a promise.** Awaiting each one in turn would turn
+  a burst into a round-trip per message and flatter nobody honestly, so the
+  burst is fired and awaited together.
+
+The gate's floor is 0.3 rather than the measured 0.43 — headroom for a loaded
+runner, tight enough that losing another third of the throughput fails.
 
 ## The one that is not a ratio
 
@@ -72,11 +102,12 @@ Each budget carries the reason for its number, printed when it fails:
 
 ## What is not measured yet
 
-Comparison against the [`broadcast-channel`](https://www.npmjs.com/package/broadcast-channel)
-package — the closest thing to a competitor — is not in the suite. It belongs
-there, and the omission is deliberate rather than forgotten: a fair comparison
-means matching its fallback modes and its leader election as well as its
-throughput, which is a benchmark design problem, not a benchmark run.
+The comparison above covers message throughput on a matched primitive. It does
+**not** cover the two libraries' fallback modes against each other — its
+`localstorage` and `simulate` types against this library's storage transport —
+or its leader election against this one's. Those are separate benchmarks with
+separate fairness problems, and claiming a winner on throughput alone would be
+the kind of chart that makes people distrust charts.
 
 Nothing here measures a real browser either. `BroadcastChannel` in Node is the
 same shape but not the same implementation, and structured clone across a real
