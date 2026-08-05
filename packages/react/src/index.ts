@@ -62,9 +62,11 @@ export {
   BroadcastChannelTransport,
   NoopTransport,
   StorageTransport,
+  SharedWorkerTransport,
   defaultTransport,
   isBroadcastChannelAvailable,
   isStorageEventAvailable,
+  isSharedWorkerAvailable,
 } from '@use-everywhere/core';
 export type {
   Namespace,
@@ -103,6 +105,7 @@ export type {
   ConnectToOpenerOptions,
   WindowLike,
   WindowEventTarget,
+  SharedWorkerTransportOptions,
   MessageEventLike,
   BusEvent,
   BusObserver,

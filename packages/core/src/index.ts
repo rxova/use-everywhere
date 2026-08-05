@@ -65,6 +65,15 @@ export { BroadcastChannelTransport } from './transport/broadcast-channel-transpo
 export { NoopTransport } from './transport/noop-transport.js';
 export { StorageTransport } from './transport/storage-transport.js';
 export {
+  SharedWorkerTransport,
+  isSharedWorkerAvailable,
+} from './transport/shared-worker-transport.js';
+export type {
+  SharedWorkerTransportOptions,
+  SharedWorkerLike,
+  MessagePortLike,
+} from './transport/shared-worker-transport.js';
+export {
   defaultTransport,
   isBroadcastChannelAvailable,
   isStorageEventAvailable,
