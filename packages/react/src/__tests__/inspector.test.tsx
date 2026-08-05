@@ -442,7 +442,11 @@ describe('<Inspector />', () => {
   describe('per-scope views', () => {
     it('shows one scope at a time, and combines with the filter', async () => {
       const name = uniqueName();
-      render(<Inspector name={name} defaultOpen />);
+      // A generous limit, because the leader below heartbeats every 20ms and a
+      // loaded runner can stretch the 60ms wait far enough to evict the one
+      // state wire this test is about. The eviction is correct behaviour; a
+      // test that depends on how fast the machine is, is not.
+      render(<Inspector name={name} limit={500} defaultOpen />);
       const store = getSharedStore(name);
       const leader = createLeader(name, {
         heartbeatMs: 20,
