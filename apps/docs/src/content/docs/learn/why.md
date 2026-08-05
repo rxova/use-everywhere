@@ -1,7 +1,7 @@
 ---
 title: 'Why this exists'
 sidebar:
-  order: 2
+  order: 3
 ---
 
 The bugs are familiar. A user opens checkout in a second tab and clicks
@@ -142,8 +142,8 @@ behind a `useState`-shaped API. The same-origin rows become
 
 ## Where to next
 
-- [Getting started](./getting-started.md) — the two-minute version, if you
-  skipped ahead.
+- [Getting started](../index.md) — the two-minute version, if you skipped
+  ahead.
 - [The mental model](./mental-model.md) — the two ideas everything else
   follows from.
 - [How sync works](../under-the-hood/how-sync-works.md) — how version clocks

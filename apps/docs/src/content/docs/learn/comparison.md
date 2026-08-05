@@ -1,7 +1,7 @@
 ---
 title: 'Compared to the alternatives'
 sidebar:
-  order: 4
+  order: 5
 ---
 
 There is a real question behind "should I use this", and it is not "is it

@@ -1,7 +1,7 @@
 ---
 title: 'The mental model'
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Everything in use-everywhere follows from two ideas. Once they click, the
