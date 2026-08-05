@@ -144,7 +144,7 @@
       "name": "Inspector (devtools subpath)",
       "path": "dist/devtools/index.js",
       "import": "{ Inspector }",
-      "limit": "6.70 kB"
+      "limit": "7.20 kB"
     },
     {
       "name": "SharedWorker relay (shared-worker subpath)",
@@ -163,7 +163,13 @@
     "@use-everywhere/core": "workspace:*"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
