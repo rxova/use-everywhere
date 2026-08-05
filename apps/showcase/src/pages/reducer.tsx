@@ -48,9 +48,26 @@ export function ReducerPage() {
           </button>
         </div>
         <p className="hint">
-          Press <strong>+1 × 10</strong> in two tabs at the same time. The total lands short of 20,
-          and it is not a bug: both tabs read 4, both wrote 5, and 5 is the correct last-writer-wins
-          answer. The value converged; the <em>intent</em> did not survive.
+          Press <strong>+1 × 10</strong> in two tabs at the same time. The total lands short of 20 —
+          and nothing went wrong. Walk one collision through:
+        </p>
+        <ol className="hint" style={{ paddingLeft: 18 }}>
+          <li>Both tabs are showing 4.</li>
+          <li>
+            Both press +1. Each one computes <code>4 + 1</code> <em>with the value it has</em>, and
+            each sends the <strong>result</strong>: the number 5.
+          </li>
+          <li>
+            Two writes of 5 arrive. Last-writer-wins picks one of them. The answer is 5, in every
+            tab, forever after.
+          </li>
+        </ol>
+        <p className="hint">
+          Two presses, one increment. The state converged perfectly — every tab agrees on 5 — but
+          one of the two intentions is simply gone, because{' '}
+          <strong>what crossed the wire was the total, not the act of adding</strong>. Totals
+          overwrite each other. That is what a register is for, and it is the right answer for
+          "which theme is selected"; it is the wrong one for "how many".
         </p>
       </Card>
 
@@ -72,10 +89,23 @@ export function ReducerPage() {
           </button>
         </div>
         <p className="hint">
-          The same race, and this one reaches 20 every time. Each press is an{' '}
-          <strong>action</strong> rather than a value: the leader puts every action in one order,
-          and every tab replays that order. Your own dispatch applies locally first, so the UI never
-          waits for a round trip — if the committed order turns out different, the tab reconciles.
+          Same race, reaches 20 every time. The difference is what travels: each press sends the{' '}
+          <strong>action</strong> — <code>{'{ type: "add", by: 1 }'}</code> — and never a total. Two
+          actions arriving from two tabs are two different things to do, so both are kept and both
+          are applied: 4 → 5 → 6.
+        </p>
+        <p className="hint">
+          Something has to decide the order, and that is the leader's job: it puts every action in
+          one sequence and every tab replays that same sequence, which is why they all end up at the
+          same number even though nobody sent one. Your own dispatch applies locally first, so the
+          UI never waits for a round trip; if the committed order turns out different from your
+          optimistic guess, the tab quietly reconciles.
+        </p>
+        <p className="hint">
+          The short version: a register is a whiteboard — you rub out the number and write a new
+          one, and the last hand to touch it wins. A reducer is a ledger — you write "+1" and the
+          total is whatever the entries add up to. Neither is better; they answer different
+          questions.
         </p>
       </Card>
 
