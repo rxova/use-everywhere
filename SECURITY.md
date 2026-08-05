@@ -19,6 +19,12 @@ Include:
 
 Public disclosure should happen after a fix is available.
 
+## Supported Versions
+
+Fixes land on the **current minor** and ship as a patch; older minors are not
+backported. See the [stability policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/)
+for the reasoning and for what else the project does and does not promise.
+
 ## Scope Notes
 
 The cross-origin window channel (`openWindow` / `connectToOpener`) is a
