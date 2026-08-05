@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>use-everywhere playground</title>
+    <!--
+      The shell that holds the simulated tabs. Deliberately dependency-free and
+      unbuilt: it owns no library state, it only opens and closes frames, and a
+      demonstration of a library should not need the library to draw its own
+      chrome. Each frame is a real, separate client on the origin's bus.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          13px/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        color: #e6edf3;
+        background: #010409;
+        padding: 10px;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .bar__hint {
+        color: #6e7681;
+        margin-left: auto;
+        font-size: 12px;
+      }
+      button {
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        color: #c9d1d9;
+        font: inherit;
+        padding: 3px 10px;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        border-color: #58a6ff;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 10px;
+      }
+      .frame {
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #0d1117;
+        height: 190px;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <button type="button" id="open">open a tab</button>
+      <button type="button" id="close">close the last one</button>
+      <span class="bar__hint">each frame is a real client — so is this page in another window</span>
+    </div>
+    <div class="tabs" id="tabs"></div>
+
+    <script>
+      const tabs = document.getElementById('tabs');
+      const openButton = document.getElementById('open');
+      const closeButton = document.getElementById('close');
+
+      // Labels never repeat, even after a close: two frames called "B" in one
+      // session would read as the same tab coming back, which is the one thing
+      // this is meant to make legible.
+      let next = 0;
+      const nameFor = (index) => String.fromCharCode(65 + (index % 26)) + (index > 25 ? index : '');
+
+      function open() {
+        const frame = document.createElement('div');
+        frame.className = 'frame';
+        const iframe = document.createElement('iframe');
+        iframe.src = `./tab.html?label=${encodeURIComponent(nameFor(next++))}`;
+        iframe.title = 'A simulated tab';
+        frame.append(iframe);
+        tabs.append(frame);
+        sync();
+      }
+
+      function close() {
+        // Removing the frame is a *clean* close: the document unloads, the bus
+        // says goodbye, and peers drop it at once. The crash button inside a
+        // tab is the other half of the story.
+        tabs.lastElementChild?.remove();
+        sync();
+      }
+
+      function sync() {
+        closeButton.disabled = tabs.childElementCount === 0;
+        openButton.disabled = tabs.childElementCount >= 6;
+      }
+
+      openButton.addEventListener('click', open);
+      closeButton.addEventListener('click', close);
+
+      open();
+      open();
+    </script>
+  </body>
+</html>
