@@ -51,6 +51,10 @@ matters:
   one tab. The heading says how much is hidden — `Wires (3 of 41)` — rather than
   pretending the rest is not there.
 
+- **scope** narrows to one kind of traffic — `state`, `leader`, `presence`,
+  `channel`, or `all`. The filter still applies on top, so `leader` + `a1b2` is
+  "the election, as seen from that tab".
+
 ## Editing state
 
 Click a value to edit it. Type JSON, press **Enter** to write it, **Escape** to
@@ -64,6 +68,44 @@ looked.
 JSON, strictly. `"light"` is the string and `light` is a mistake — refused and
 marked, not guessed at, because guessing is how a debugger starts disagreeing
 with the wire it is showing you.
+
+## Going back to a state you had
+
+Every `state` wire records a frame: the store's keys as they were once that wire
+was applied. The **Timeline** lists them, and **restore** puts one back.
+
+Restoring is a **write**, not a rewind. Each key that differs is set through the
+store, takes a fresh version, and goes on the wire — so every tab converges on
+the restored value instead of one tab quietly disagreeing with the rest. Nothing
+in the log is undone, which is why the button says restore.
+
+Two consequences worth stating:
+
+- **Keys the frame never saw are left alone.** A frame from before a key existed
+  does not delete it; removing a key other tabs are using is a bigger claim than
+  a devtool should make from a picture of the past.
+- **The frame is state, not history.** Restoring twice is idempotent, and
+  restoring an old frame does not un-happen what came after it.
+
+## Isolated from your CSS
+
+The panel renders inside a **shadow root**. Its styles were always scoped under
+`.ue-ins`, which is only half the problem: the panel could not leak out, but
+every reset, `!important`, and framework preflight in the host page leaked in. A
+devtool that looks different depending on whose app it is mounted in is one you
+cannot trust when it looks wrong.
+
+One consequence, if your own tests assert on the panel: it is not in `document`.
+Reach it through the host.
+
+```ts
+const host = screen.getByTestId('ue-inspector-host');
+const panel = within(host.shadowRoot as unknown as HTMLElement);
+```
+
+It also renders **nothing on the server** — no DOM there to attach a shadow root
+to, and devtool markup in server HTML was never useful to anyone. There is
+nothing to mismatch on hydration.
 
 ## Options
 
