@@ -1,0 +1,62 @@
+name: Showcase
+
+# The interactive showcase, published to GitHub Pages.
+#
+# Separate from the Docs workflow on purpose: the documentation is composed into
+# rxova.org by the aggregator, while this is a standalone app that has to be
+# opened in two tabs to make its point — so it wants its own origin, and Pages
+# gives it one for free.
+#
+# The published URL is https://rxova.github.io/use-everywhere/, which is why the
+# build sets a base path. A custom domain later means dropping SHOWCASE_BASE and
+# adding a CNAME; nothing in the source knows where it is served from.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/showcase/**'
+      - 'packages/core/**'
+      - 'packages/react/**'
+      - '.github/workflows/showcase.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time, and never cancel one in flight: a half-published Pages
+# deployment is a broken site rather than an out-of-date one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
+      - run: pnpm install --frozen-lockfile
+      # The app imports the workspace packages, which resolve to their dist —
+      # so what ships is the built library, exactly as published.
+      - run: pnpm run libs:build
+      - name: Build the showcase
+        env:
+          SHOWCASE_BASE: /use-everywhere/
+        run: pnpm --filter @use-everywhere/showcase build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/showcase/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

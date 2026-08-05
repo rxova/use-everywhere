@@ -22,7 +22,8 @@
 
 Your app already runs in more than one tab. `useState` doesn't know that. This library gives you the primitives that do, without a server, a Provider, or a state-management rewrite.
 
-**[→ Read the documentation](https://rxova.org/packages/use-everywhere/)** ·
+**[→ Try it in two tabs](https://rxova.github.io/use-everywhere/)** ·
+**[Read the documentation](https://rxova.org/packages/use-everywhere/)** ·
 **[Compared to the alternatives](https://rxova.org/packages/use-everywhere/learn/comparison/)**
 
 ```bash
