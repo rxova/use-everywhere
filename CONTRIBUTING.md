@@ -4,14 +4,30 @@
 
 use-everywhere is a small pnpm monorepo:
 
+Published:
+
 - `packages/core`: framework-agnostic engine — transports, shared-state store
   (LWW version clocks + late-joiner handshake), typed pub/sub channels,
-  presence, and the cross-origin opener/child window channel.
-- `packages/react`: React hooks (`useSharedState`, `useMessage`, `usePeers`,
-  `useOpenedWindow`, …) layered on core; re-exports the full core surface.
-- `apps/demo`: Vite playground, including the cross-origin payment flow.
-- `apps/docs`: Docusaurus site; the API reference is generated from source by
-  TypeDoc on every build.
+  presence, leadership, and the cross-origin opener/child window channel.
+- `packages/react` (`use-everywhere`): React hooks (`useSharedState`,
+  `useMessage`, `usePeers`, `useOpenedWindow`, …) layered on core; re-exports a
+  curated core surface, and ships the Inspector on a `devtools` subpath.
+- `packages/eslint-plugin` (`eslint-plugin-use-everywhere`): the four mistakes
+  that are silent at runtime.
+- `packages/test-utils`: `createScenario` and friends — several simulated tabs
+  in one process, including ones that crash.
+
+Not published:
+
+- `packages/tooling`: the repo's own scripts (the verify gate, changeset checks,
+  pack smoke test, mutation-score gate), each with tests.
+- `packages/benchmarks`: what the library costs over a raw `BroadcastChannel`,
+  with ratio-based budgets.
+- `apps/demo`: Vite playground, including the cross-origin payment flow, and the
+  fixtures the e2e suite drives.
+- `apps/docs`: Astro + Starlight site. The API reference is generated from
+  source by TypeDoc on every build, and the interactive playground is built from
+  `apps/docs/playground` into `public/` — neither is committed.
 
 Start in `packages/core` for engine/protocol behavior and `packages/react` for
 hook APIs. One class per file; types live in sibling `*.types.ts` files.
@@ -40,6 +56,8 @@ pnpm format:check
 pnpm e2e            # real-tab Playwright suite (builds the libraries first)
 pnpm dev            # demo app at http://localhost:5173
 pnpm docs           # docs site dev server
+pnpm bench          # measure against a raw BroadcastChannel
+pnpm mutation       # Stryker over core, with the per-module score gate
 ```
 
 ### Package-scoped commands
@@ -56,7 +74,7 @@ Two hooks, deliberately split so the slow one runs least often:
 - **pre-commit** — `lint-staged`: eslint and prettier over the staged files only.
 - **pre-push** — `pnpm verify`: audit, dependency dedupe, formatting, lint, then
   build + typecheck + test + size budgets in one Turbo invocation. The ordered
-  list lives in [`scripts/verify.mjs`](./scripts/verify.mjs) and is the same list
+  list lives in [`packages/tooling/verify.ts`](./packages/tooling/verify.ts) and is the same list
   CI runs, so a green push means a green pipeline. Turbo caches what did not
   change, so a repeat run is seconds.
 
@@ -73,9 +91,16 @@ Every `devWarn` call site carries the guard literally:
 
 ```ts
 if (process.env.NODE_ENV !== 'production') {
-  devWarn(`[use-everywhere] …`);
+  devWarn('UE1234', `…`);
 }
 ```
+
+Every warning also carries a **code**, and the code is permanent — a retired one
+is never reused, because an old build in somebody's browser is still emitting
+it. `UE1xxx` belongs to core, `UE2xxx` to the React package. Add the matching
+`## UEnnnn` entry to `apps/docs/src/content/docs/errors.md` in the same commit:
+`packages/tooling/error-codes.test.ts` fails on a code with no entry, and on an
+entry whose code no longer exists.
 
 `devWarn` already checks `NODE_ENV` at runtime, so the guard is not about
 whether the warning _fires_ — it is about whether the message _ships_. The
@@ -112,7 +137,7 @@ stripping one would turn an actionable failure into an anonymous one.
 2. Merging the PR into `main` runs CI on the merge commit. **Once CI passes**,
    the Release workflow (`.github/workflows/release.yml`) applies all pending
    changesets: bumps versions, writes changelogs, builds, publishes
-   `use-everywhere` and `@use-everywhere/core` to npm **with provenance**, tags,
+   every package with a pending changeset to npm **with provenance**, tags,
    creates GitHub releases, and pushes the version commit back to `main`.
 
 The release is gated on that CI run rather than firing on the push itself, so a
@@ -127,5 +152,8 @@ published and versions stay put.
 - Target `main`.
 - Keep PRs focused; explain the why, not just the what.
 - Include a changeset (`pnpm changeset`) for anything user-facing.
-- Update guides in `apps/docs/docs` when behavior changes; the API reference
-  regenerates itself from source.
+- Update guides in `apps/docs/src/content/docs` when behavior changes; the API
+  reference regenerates itself from source.
+- Anything that changes what the library promises belongs in the
+  [stability policy](./apps/docs/src/content/docs/under-the-hood/stability.md)
+  as well as the changeset.
