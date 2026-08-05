@@ -1,17 +1,46 @@
+/**
+ * The showcase wears the rxova palette: warm neutrals, one violet accent, and
+ * the logo gradient's blue -> magenta arc for anything that has to be many
+ * colours at once (peer dots). Tokens come from @rxova/brand, so this file only
+ * maps them onto the short names the components were written against — and the
+ * app follows the reader's light/dark preference for free, because every
+ * neutral in the token set flips.
+ */
+@import '@rxova/brand/fonts.css';
+@import '@rxova/brand/tokens.css';
+
 :root {
-  --bg: #0b0f14;
-  --panel: #111823;
-  --panel-2: #0e141d;
-  --line: #1e2937;
-  --ink: #e6edf3;
-  --ink-soft: #8b9bb0;
-  --ink-dim: #5d6b7d;
-  --accent: #0f8f6a;
-  --accent-soft: #12b083;
-  --gold: #d29922;
-  --bad: #f85149;
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
-  color-scheme: dark;
+  --bg: var(--rx-bg);
+  --panel: var(--rx-card);
+  --panel-2: color-mix(in srgb, var(--rx-card) 55%, var(--rx-bg));
+  --line: var(--rx-rule);
+  --ink: var(--rx-fg);
+  --ink-soft: var(--rx-muted);
+  --ink-dim: var(--rx-faint);
+  /* --rx-primary is already lightened in dark mode, so one token carries both
+     the fills and the accent text and still clears AA either way. */
+  --accent: var(--rx-primary);
+  --accent-soft: var(--rx-primary);
+  /* Live state markers. The blue is the gradient's first stop, not a second
+     brand hue; red is the one colour a warning cannot borrow. Both are darkened
+     in light mode, where the bright versions fall under AA. */
+  --gold: #0a63c9;
+  --bad: #d92d20;
+  --mono: var(--rx-font-mono);
+  --sunken: color-mix(in srgb, var(--rx-bg) 70%, var(--rx-tag-bg));
+  --tint: color-mix(in srgb, var(--rx-primary) 12%, var(--rx-bg));
+}
+
+:root[data-theme='dark'] {
+  --gold: var(--rx-accent-a);
+  --bad: #ff6a5e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --gold: var(--rx-accent-a);
+    --bad: #ff6a5e;
+  }
 }
 
 * {
@@ -22,12 +51,7 @@
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: var(--rx-font-sans);
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -40,7 +64,7 @@ a {
 code {
   font-family: var(--mono);
   font-size: 0.9em;
-  background: #0a0e14;
+  background: var(--rx-tag-bg);
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.05em 0.35em;
@@ -113,12 +137,12 @@ code {
 }
 
 .nav__link:hover {
-  background: #172130;
+  background: var(--rx-tag-bg);
   color: var(--ink);
 }
 
 .nav__link[aria-current='page'] {
-  background: #14261f;
+  background: var(--tint);
   color: var(--accent-soft);
 }
 
@@ -166,7 +190,7 @@ code {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  border: 1px solid #0006;
+  border: 1px solid color-mix(in srgb, var(--rx-fg) 25%, transparent);
 }
 
 .peer--worker {
@@ -174,11 +198,42 @@ code {
 }
 
 .peer--self {
-  box-shadow: 0 0 0 2px #ffffff22;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rx-fg) 22%, transparent);
 }
 
 .top__spacer {
   margin-left: auto;
+}
+
+/* ---------- theme toggle ---------- */
+
+.seg {
+  display: flex;
+  border: 1px solid var(--rx-rule-strong);
+  border-radius: var(--rx-radius-pill);
+  background: var(--rx-tag-bg);
+  padding: 2px;
+  gap: 2px;
+}
+
+.seg__btn {
+  background: transparent;
+  border: 0;
+  border-radius: var(--rx-radius-pill);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 2px 9px;
+}
+
+.seg__btn:hover:not([aria-pressed='true']) {
+  color: var(--ink);
+}
+
+.seg__btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--rx-bg);
 }
 
 /* ---------- page ---------- */
@@ -213,7 +268,7 @@ code {
   margin-top: 18px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--rx-radius);
   padding: 16px;
 }
 
@@ -259,7 +314,7 @@ code {
 .note {
   margin-top: 16px;
   border-left: 2px solid var(--accent);
-  background: #0d1a16;
+  background: var(--tint);
   padding: 10px 14px;
   border-radius: 0 8px 8px 0;
   font-size: 13.5px;
@@ -273,8 +328,8 @@ code {
 /* ---------- controls ---------- */
 
 button {
-  background: #1a2432;
-  border: 1px solid #26364a;
+  background: var(--rx-tag-bg);
+  border: 1px solid var(--rx-rule-strong);
   color: var(--ink);
   font: inherit;
   font-size: 13.5px;
@@ -295,7 +350,7 @@ button:disabled {
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #04120d;
+  color: var(--rx-bg);
   font-weight: 600;
 }
 
@@ -305,13 +360,13 @@ button.ghost {
 
 button.danger {
   color: var(--bad);
-  border-color: #4a2020;
+  border-color: color-mix(in srgb, var(--bad) 40%, var(--rx-rule));
 }
 
 input[type='text'],
 input[type='number'] {
-  background: #0a0e14;
-  border: 1px solid #26364a;
+  background: var(--sunken);
+  border: 1px solid var(--rx-rule-strong);
   color: var(--ink);
   font: inherit;
   font-size: 13.5px;
@@ -338,21 +393,21 @@ input[type='number']:focus {
   font-family: var(--mono);
   font-size: 11px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--rx-radius-pill);
   padding: 1px 8px;
   color: var(--ink-soft);
 }
 
 .tag--on {
   color: var(--gold);
-  border-color: #3a2f11;
-  background: #1a1508;
+  border-color: color-mix(in srgb, var(--gold) 35%, var(--rx-rule));
+  background: color-mix(in srgb, var(--gold) 10%, var(--rx-bg));
 }
 
 .tag--bad {
   color: var(--bad);
-  border-color: #43201f;
-  background: #1a0d0d;
+  border-color: color-mix(in srgb, var(--bad) 35%, var(--rx-rule));
+  background: color-mix(in srgb, var(--bad) 10%, var(--rx-bg));
 }
 
 /* ---------- data ---------- */
@@ -374,7 +429,7 @@ th {
 
 td {
   padding: 3px 8px 3px 0;
-  border-bottom: 1px solid #141c27;
+  border-bottom: 1px solid color-mix(in srgb, var(--rx-rule) 55%, var(--rx-bg));
   color: var(--ink-soft);
   vertical-align: top;
 }
@@ -417,7 +472,7 @@ td:first-child {
 .code {
   position: relative;
   margin-top: 14px;
-  background: #080c11;
+  background: var(--sunken);
   border: 1px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
@@ -430,7 +485,7 @@ td:first-child {
   font-family: var(--mono);
   font-size: 12.5px;
   line-height: 1.6;
-  color: #c9d6e4;
+  color: var(--ink);
 }
 
 .code__copy {

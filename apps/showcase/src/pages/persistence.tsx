@@ -80,7 +80,7 @@ export function PersistencePage() {
       </Card>
 
       <Card title="What is actually on disk" aside={`localStorage['${KEY}']`}>
-        <pre style={{ margin: 0, fontSize: 12, overflowX: 'auto', color: '#8b9bb0' }}>
+        <pre style={{ margin: 0, fontSize: 12, overflowX: 'auto', color: 'var(--ink-soft)' }}>
           {disk ? JSON.stringify(JSON.parse(disk), null, 2) : '(nothing written yet)'}
         </pre>
         <p className="hint">
