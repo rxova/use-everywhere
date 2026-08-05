@@ -9,6 +9,7 @@ export default defineConfig({
     index: 'src/index.ts',
     'devtools/index': 'src/devtools/index.ts',
     testing: 'src/testing.ts',
+    'shared-worker': 'src/shared-worker.ts',
   },
   // Dual ESM + CJS so `require('use-everywhere')` works (Jest/CJS toolchains).
   format: ['esm', 'cjs'],

@@ -24,7 +24,7 @@ import { MemoryHub } from '@use-everywhere/core/testing';
 createSharedStore('settings', {}, { transport: (name) => new MemoryHub().connect() });
 ```
 
-## The five that ship
+## The six that ship
 
 **`BroadcastChannelTransport`** — the real one. Same-origin, cross-tab,
 cross-worker.
@@ -60,6 +60,9 @@ _rejected_ rather than silently dropped, so a write still cannot leave your tab
 holding something its peers never received. Keep shared values JSON-shaped if
 you support browsers that land here.
 
+**`SharedWorkerTransport`** — one relay for the whole origin, opt-in. See
+[below](#one-worker-instead-of-n-tabs).
+
 **`NoopTransport`** — swallows everything, receives nothing. This is how
 `scope: 'tab'` works: a store that never leaves the tab is just a store on a
 transport that goes nowhere.
@@ -68,6 +71,49 @@ transport that goes nowhere.
 then `StorageTransport`, then `NoopTransport`. Falling back is not silent: both
 degradations warn in development, because a library that quietly shares nothing
 looks exactly like one that is working.
+
+## One worker instead of N tabs
+
+`BroadcastChannel` is a better default for fan-out and stays the default. The
+SharedWorker transport buys something else: a place that is **not a tab**.
+
+The relay outlives any individual tab, so "one connection, owned by something
+the user cannot close mid-flight" stops needing a leader election. The tab that
+holds the socket is no longer a tab.
+
+It is opt-in, and it needs a script URL:
+
+```js
+// sw-relay.js — a file your app serves
+import 'use-everywhere/shared-worker';
+```
+
+```ts
+import { createSharedStore, SharedWorkerTransport } from 'use-everywhere';
+
+createSharedStore(
+  'cart',
+  { items: [] },
+  {
+    transport: () => new SharedWorkerTransport({ url: new URL('./sw-relay.js', import.meta.url) }),
+  },
+);
+```
+
+**Why a URL and not an inlined worker.** A SharedWorker's identity is its script
+URL plus its name. A dedicated worker can be built from a `Blob`, but every tab
+that builds its own Blob gets its own URL — and therefore its own private
+"shared" worker, sharing nothing. Inlining would look like a convenience and
+behave like the bug this transport exists to prevent.
+
+**What it does not buy: durability.** The worker is torn down when the last port
+closes, exactly like a channel with no listeners. State still lives in the tabs.
+This moves the wire, not the source of truth.
+
+**Where it does not exist.** `isSharedWorkerAvailable()` is false inside a
+dedicated worker (they cannot nest one) and on Chrome for Android. The
+constructor throws rather than degrading, so check before choosing it — or keep
+the default chain, which never leaves you without a wire.
 
 ## Is anything actually connected?
 
@@ -78,7 +124,7 @@ right:
 import { getTransportKind } from 'use-everywhere';
 
 getTransportKind('use-everywhere');
-// 'broadcast-channel' | 'storage' | 'none' | 'custom' | null
+// 'broadcast-channel' | 'storage' | 'shared-worker' | 'none' | 'custom' | null
 ```
 
 `'none'` means writes stay in this tab and no peer will ever see them — usually

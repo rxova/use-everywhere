@@ -24,7 +24,10 @@
     "access": "public"
   },
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/shared-worker.js",
+    "./dist/shared-worker.cjs"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,6 +40,16 @@
       "require": {
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
+      }
+    },
+    "./shared-worker": {
+      "import": {
+        "types": "./dist/shared-worker.d.ts",
+        "default": "./dist/shared-worker.js"
+      },
+      "require": {
+        "types": "./dist/shared-worker.d.cts",
+        "default": "./dist/shared-worker.cjs"
       }
     },
     "./testing": {
@@ -130,6 +143,18 @@
       "limit": "447 B"
     },
     {
+      "name": "SharedWorkerTransport",
+      "path": "dist/index.js",
+      "import": "{ SharedWorkerTransport }",
+      "limit": "380 B"
+    },
+    {
+      "name": "SharedWorker relay (shared-worker subpath)",
+      "path": "dist/shared-worker.js",
+      "import": "*",
+      "limit": "280 B"
+    },
+    {
       "name": "MemoryHub (testing subpath)",
       "path": "dist/testing.js",
       "import": "{ MemoryHub }",
@@ -154,6 +179,9 @@
   },
   "typesVersions": {
     "*": {
+      "shared-worker": [
+        "./dist/shared-worker.d.ts"
+      ],
       "testing": [
         "./dist/testing.d.ts"
       ]
