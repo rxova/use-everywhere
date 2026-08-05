@@ -17,8 +17,9 @@ runner slows the baseline too.
   percentile is wrong produces a number people go on to quote.
 - `src/gate.ts` — the verdict, and why each number is what it is.
 - `src/budgets.ts` — the budgets themselves.
-- `src/suites/` — the benchmarks: store write latency, channel throughput, and
-  the late-joiner snapshot storm.
+- `src/suites/` — the benchmarks: store write latency, channel throughput,
+  throughput against the `broadcast-channel` package, and the late-joiner
+  snapshot storm.
 
 See [the docs page](https://rxova.org/packages/use-everywhere/under-the-hood/benchmarks/)
 for the current numbers and what they mean.

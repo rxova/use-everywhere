@@ -3,6 +3,7 @@ import { BUDGETS } from './budgets.js';
 import { checkBudgets, type Reading } from './gate.js';
 import { mean } from './measure.js';
 import { channelThroughput } from './suites/channel-throughput.js';
+import { competitorThroughput } from './suites/competitor-throughput.js';
 import { snapshotStorm } from './suites/snapshot-storm.js';
 import { storeLatency, summarise } from './suites/store-latency.js';
 
@@ -32,6 +33,11 @@ async function main(): Promise<void> {
   console.log(`  library   ${Math.round(channel.library).toLocaleString('en-US')}`);
   console.log(`  raw       ${Math.round(channel.raw).toLocaleString('en-US')}`);
 
+  const versus = await competitorThroughput();
+  console.log('\nchannel throughput vs the broadcast-channel package (messages/second, best of 5)');
+  console.log(`  library             ${Math.round(versus.library).toLocaleString('en-US')}`);
+  console.log(`  broadcast-channel   ${Math.round(versus.package_).toLocaleString('en-US')}`);
+
   const storm = await snapshotStorm();
   console.log('\nsnapshots answering one late joiner');
   for (const result of storm) {
@@ -44,12 +50,13 @@ async function main(): Promise<void> {
     { metric: 'store.p50-vs-raw', value: library.p50 / raw.p50 },
     { metric: 'store.p95-vs-raw', value: library.p95 / raw.p95 },
     { metric: 'channel.throughput-vs-raw', value: channel.library / channel.raw },
+    { metric: 'channel.throughput-vs-package', value: versus.library / versus.package_ },
     { metric: 'storm.snapshots-at-20', value: twenty },
   ];
 
   console.log('\nratios (what the gate reads)');
   for (const reading of readings) {
-    console.log(`  ${reading.metric.padEnd(28)} ${reading.value.toFixed(2)}`);
+    console.log(`  ${reading.metric.padEnd(32)} ${reading.value.toFixed(2)}`);
   }
   console.log(
     `\n  mean library store write ${mean(store.library).toFixed(3)}ms over ${store.library.length} samples`,
