@@ -12,9 +12,11 @@
     <img src="https://github.com/rxova/use-everywhere/actions/workflows/docs.yml/badge.svg?branch=main" alt="Docs" />
   </a>
   <a href="https://www.npmjs.com/package/use-everywhere">
-    <img src="https://img.shields.io/npm/v/use-everywhere?color=0f8f6a" alt="npm" />
+    <img src="https://img.shields.io/npm/v/use-everywhere?color=6b3df0" alt="npm" />
   </a>
-  <img src="https://img.shields.io/badge/coverage-100%25-0f8f6a" alt="coverage 100%" />
+  <a href="https://codecov.io/gh/rxova/use-everywhere">
+    <img src="https://codecov.io/gh/rxova/use-everywhere/branch/main/graph/badge.svg" alt="coverage" />
+  </a>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict" />
 </p>
 
