@@ -1,11 +1,12 @@
 import { useSharedState } from 'use-everywhere';
 import { Card, Page } from '../shell/Page.js';
+import { useTheme } from '../shell/theme.js';
 import { Code } from '../shell/Code.js';
 
 export function SharedStatePage() {
   const [count, setCount] = useSharedState('count', 0);
   const [note, setNote] = useSharedState('note', '');
-  const [theme, setTheme] = useSharedState<'system' | 'light' | 'dark'>('theme', 'system');
+  const [theme, setTheme] = useTheme();
 
   return (
     <Page
@@ -51,7 +52,7 @@ export function SharedStatePage() {
         </div>
       </Card>
 
-      <Card title="A key can hold anything cloneable" aside="theme">
+      <Card title="A key can hold anything cloneable" aside="the toggle up there writes this key">
         <div className="row">
           {(['system', 'light', 'dark'] as const).map((option) => (
             <button
@@ -65,10 +66,12 @@ export function SharedStatePage() {
           ))}
         </div>
         <p className="hint">
-          Values cross the wire by <strong>structured clone</strong>: objects, arrays,{' '}
-          <code>Date</code>, <code>Map</code>, <code>Set</code>, typed arrays. Not functions, not
-          class instances — a write that cannot be cloned throws where you made it, rather than
-          leaving this tab holding a value no peer will ever see.
+          These are the same three buttons as the toggle in the top bar, because they are the same
+          key in the same store — press one and every open tab repaints. Values cross the wire by{' '}
+          <strong>structured clone</strong>: objects, arrays, <code>Date</code>, <code>Map</code>,{' '}
+          <code>Set</code>, typed arrays. Not functions, not class instances — a write that cannot
+          be cloned throws where you made it, rather than leaving this tab holding a value no peer
+          will ever see.
         </p>
       </Card>
 

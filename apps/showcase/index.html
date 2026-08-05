@@ -12,6 +12,19 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>◎</text></svg>"
     />
+    <script>
+      // The theme is shared state like everything else here, so React owns it —
+      // but it is persisted, and reading it back after mount would mean a frame
+      // of the wrong palette. Same storage key and envelope as the store writes.
+      try {
+        const saved = JSON.parse(localStorage.getItem('use-everywhere:showcase-theme'))?.state
+          ?.theme;
+        if (saved === 'light' || saved === 'dark')
+          document.documentElement.setAttribute('data-theme', saved);
+      } catch {
+        // No stored choice, or storage is blocked: fall back to the OS preference.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

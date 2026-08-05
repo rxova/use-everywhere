@@ -4,13 +4,17 @@ import { LeaderDemo } from './demos/LeaderDemo.js';
 import { PersistDemo } from './demos/PersistDemo.js';
 import { PresenceStrip } from './demos/PresenceStrip.js';
 import { SharedStateDemo } from './demos/SharedStateDemo.js';
+import { ThemeToggle } from './theme.js';
 
 export function App() {
   return (
     <div className="wrap">
-      <h1>
-        use-everywhere<span className="paren">( )</span>
-      </h1>
+      <header className="masthead">
+        <h1>
+          use-everywhere<span className="paren">( )</span>
+        </h1>
+        <ThemeToggle />
+      </header>
       <p className="tagline">
         State that exists in every tab, window, and worker — plus a secure channel to windows on
         other origins. Open this page in a second tab and watch them sync.

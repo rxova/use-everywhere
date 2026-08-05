@@ -27,8 +27,13 @@ export function otherOrigin(): string {
   return `${protocol}//${otherHost}${port ? `:${port}` : ''}`;
 }
 
-/** Stable color per client id, shared by all presence/patch-log UI. */
+/**
+ * Stable color per client id, shared by all presence/patch-log UI. Hues stay
+ * inside the rxova logo's blue -> violet -> magenta arc (209deg to 326deg)
+ * rather than roaming the whole wheel, so a room full of tabs still reads as
+ * one palette.
+ */
 export function colorOf(id: string): string {
-  const hue = [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
-  return `hsl(${hue} 55% 45%)`;
+  const hue = [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 118, 7);
+  return `hsl(${209 + hue} 62% 55%)`;
 }
