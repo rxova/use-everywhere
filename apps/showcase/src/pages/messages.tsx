@@ -6,6 +6,7 @@ import {
   useClientId,
   useIsLeader,
   useMessage,
+  usePeers,
   useSend,
 } from 'use-everywhere';
 import { Card, Page } from '../shell/Page.js';
@@ -33,6 +34,10 @@ type Replies = {
 export function MessagesPage() {
   const self = useClientId();
   const isLeader = useIsLeader();
+  // An ask goes to *peers*. With one tab open there is nobody to answer it,
+  // which is worth showing rather than letting the reader discover it as a
+  // timeout they assume is a bug.
+  const alone = usePeers().length === 0;
   const channel = useChannel<Messages, Replies>('showcase-events');
   const post = useSend(channel);
   const ask = useAsk(channel);
@@ -156,18 +161,23 @@ export function MessagesPage() {
 
       <Card
         title="ask — a question with an answer"
-        aside={isLeader ? 'this tab answers' : 'the leader answers'}
+        aside={alone ? 'needs a second tab' : isLeader ? 'this tab answers' : 'the leader answers'}
       >
         <div className="row">
-          <button type="button" onClick={() => void askLeader()}>
+          <button type="button" onClick={() => void askLeader()} disabled={alone}>
             ask who has focus
           </button>
-          <code>{answer || '—'}</code>
+          <code>{alone ? 'open another tab to ask one' : answer || '—'}</code>
         </div>
         <p className="hint">
-          <code>ask</code> returns a promise. The responder here is gated on leadership, so the
-          reply comes from one specific tab rather than whichever answered first — and if that tab
-          has just died, the ask rejects on its timeout instead of hanging.
+          <code>ask</code> returns a promise, and it asks <strong>the other tabs</strong> — a
+          question you could answer yourself is a function call, not a message, so a lone tab has
+          nobody to ask. Open a second one and this lights up.
+        </p>
+        <p className="hint">
+          The responder is gated on leadership, so the reply comes from one specific tab rather than
+          whichever answered first. If that tab has just died, the ask rejects on its timeout
+          instead of hanging.
         </p>
       </Card>
 
