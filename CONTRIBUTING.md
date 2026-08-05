@@ -147,6 +147,34 @@ fails, nothing publishes; fix forward and the next green run releases.
 If the merge contains no changesets, the workflow is a no-op — nothing is
 published and versions stay put.
 
+## Proposing a Change That Cannot Be Undone Cheaply
+
+Renames, removals, a changed default, a stricter value, a wire-protocol change,
+or a new primitive go through an [RFC](./rfcs/README.md) rather than straight to
+a pull request. Two-week comment period, and a rejected RFC is merged too — the
+argument is the artefact.
+
+Everything else is a pull request. If you are unsure which you have, open the
+pull request and say so.
+
+## How Decisions Get Made
+
+One maintainer, which is worth stating plainly rather than implying a committee:
+
+- **Pull requests** — reviewed and merged by the maintainer.
+- **RFCs** — decided by the maintainer, in writing, after the comment period.
+  The reasoning is public even when the answer is no.
+- **Conduct** — see the [Code of Conduct](./CODE_OF_CONDUCT.md), including the
+  honest note about what escalation looks like when the report concerns the only
+  maintainer.
+
+Contributors who land several changes are offered triage rights, which is the
+only rung this ladder has until there is a second person on it.
+
+Issues labelled `good first issue` are curated to mean it: each one names the
+file to start in and what "done" looks like. If one does not, that is a bug in
+the issue.
+
 ## Pull Requests
 
 - Target `main`.
@@ -157,3 +185,6 @@ published and versions stay put.
 - Anything that changes what the library promises belongs in the
   [stability policy](./apps/docs/src/content/docs/under-the-hood/stability.md)
   as well as the changeset.
+- Anything a `0.x` user will have to do by hand at 1.0 belongs in the
+  [migration guide](./apps/docs/src/content/docs/guides/migration.md), in the
+  same pull request that creates the work.
