@@ -123,14 +123,20 @@ nothing _throws_, even `onError` stays quiet. Persist from a tab, not a worker.
 
 ## SharedWorker and Service Workers
 
-Not supported as transports today, and worth being precise about why the answer
-is not simply "use a SharedWorker."
+A `SharedWorker` can join the bus like any other context, because it runs
+`BroadcastChannel` too — and since 0.9 it can also **be** the wire, through
+[`SharedWorkerTransport`](../core/transports.md#one-worker-instead-of-n-tabs).
 
-A `SharedWorker` **can** join the bus like any other context, because it runs
-`BroadcastChannel` too. What it is not is a _transport_ — the library will not
-route traffic through one, so it buys you nothing over the channel you already
-have. The case where it would help is a browser without `BroadcastChannel`, and
-that is also where SharedWorker support is thinnest.
+The reason to reach for it is not speed. It is that a SharedWorker is a place
+that is not a tab: something that owns the WebSocket, holds the poll interval,
+or talks to the server exactly once, and does not disappear when the user closes
+the tab that happened to be elected leader. With the relay in place, "the leader
+owns the socket" becomes "the worker owns the socket", and leadership stops
+being load-bearing for that job.
+
+It stays opt-in, and `BroadcastChannel` stays the default: the transport needs a
+script URL your app serves, does not exist inside a dedicated worker or on
+Chrome for Android, and buys nothing for plain fan-out between tabs.
 
 Service Workers are a different shape again: they are killed and restarted at the
 browser's discretion, so a Service Worker is a poor holder of anything the rest of
