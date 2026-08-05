@@ -34,6 +34,18 @@ export const BUDGETS: readonly Budget[] = [
       'throughput is the floor; below it, the per-message path grew something it should not have.',
   },
   {
+    metric: 'channel.throughput-vs-package',
+    comparison: 'at-least',
+    limit: 0.3,
+    because:
+      'Against the incumbent (broadcast-channel, pinned to its native mode so both sit on the ' +
+      'same primitive) this library measures around 0.43 — it sends roughly two messages for ' +
+      'every five the thinner API sends, because every message carries an envelope, a client id ' +
+      'and a schema hook. That is the price of a wire that also does state, presence and version ' +
+      'clocks, and publishing it beats implying parity. The floor is 0.3: enough headroom for a ' +
+      'loaded runner, close enough that losing another third of the throughput fails here.',
+  },
+  {
     metric: 'storm.snapshots-at-20',
     comparison: 'at-most',
     limit: 5,
