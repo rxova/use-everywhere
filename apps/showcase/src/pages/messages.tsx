@@ -118,7 +118,7 @@ export function MessagesPage() {
               <li key={item.seq}>
                 <span
                   className="peer"
-                  style={{ background: item.who === 'you' ? '#8b9bb0' : colorOf(item.who) }}
+                  style={{ background: item.who === 'you' ? 'var(--ink-soft)' : colorOf(item.who) }}
                 />
                 <span>{item.text}</span>
                 <span className="who">{item.who === 'you' ? 'you' : item.who.slice(0, 6)}</span>

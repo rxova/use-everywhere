@@ -96,7 +96,7 @@ export function ConflictsPage() {
           both saw counter 3 therefore both write counter 4 — a tie. The tie is settled by comparing
           the two client ids as plain strings, and the higher string wins:
         </p>
-        <pre style={{ margin: '10px 0 0', fontSize: 12.5, color: '#8b9bb0' }}>
+        <pre style={{ margin: '10px 0 0', fontSize: 12.5, color: 'var(--ink-soft)' }}>
           {'newer(a, b) = a.counter > b.counter\n' +
             '           || (a.counter === b.counter && a.clientId > b.clientId)'}
         </pre>

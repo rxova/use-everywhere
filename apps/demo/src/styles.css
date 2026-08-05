@@ -1,15 +1,45 @@
+/**
+ * The demo wears the rxova palette: warm neutrals, one violet accent, and the
+ * logo gradient's blue -> magenta arc for the per-client dots. Tokens come from
+ * @rxova/brand, so this file only maps them onto the short names the markup was
+ * written against — and both light and dark come free, because every neutral in
+ * the token set flips.
+ */
+@import '@rxova/brand/fonts.css';
+@import '@rxova/brand/tokens.css';
+
 :root {
-  --paper: #f7f8f6;
-  --ink: #1c2430;
-  --ink-soft: #5b6675;
-  --line: #d9dde1;
-  --card: #ffffff;
-  --accent: #2f5d8a;
-  --ok: #2e7d4f;
-  --warn: #b3651a;
+  --paper: var(--rx-bg);
+  --ink: var(--rx-fg);
+  --ink-soft: var(--rx-muted);
+  --line: var(--rx-rule);
+  --card: var(--rx-card);
+  /* --rx-primary is already lightened for dark mode, so one token clears AA
+     against either surface. */
+  --accent: var(--rx-primary);
+  /* Status colours, darkened in light mode where the bright versions fall
+     under AA. Green and amber are the two meanings the brand's single hue
+     cannot carry. */
+  --ok: #1f7a4d;
+  --warn: #8a5209;
   --bad: #b0413e;
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --mono: var(--rx-font-mono);
 }
+
+:root[data-theme='dark'] {
+  --ok: #4bcf8c;
+  --warn: #e0a34a;
+  --bad: #ff6a5e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --ok: #4bcf8c;
+    --warn: #e0a34a;
+    --bad: #ff6a5e;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -17,12 +47,7 @@
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: var(--rx-font-sans);
   min-height: 100vh;
   padding: 32px 20px 60px;
 }
@@ -39,6 +64,43 @@ h1 .paren {
   color: var(--ink-soft);
   font-weight: 400;
 }
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.seg {
+  display: flex;
+  border: 1px solid var(--rx-rule-strong);
+  border-radius: var(--rx-radius-pill);
+  background: var(--rx-tag-bg);
+  padding: 2px;
+  gap: 2px;
+}
+
+.seg__btn {
+  background: transparent;
+  border: 0;
+  border-radius: var(--rx-radius-pill);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+}
+
+.seg__btn:hover:not([aria-pressed='true']) {
+  color: var(--ink);
+}
+
+.seg__btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--rx-bg);
+}
+
 .tagline {
   color: var(--ink-soft);
   margin-top: 6px;
@@ -51,7 +113,7 @@ h1 .paren {
   padding: 12px 16px;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--rx-radius);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -91,7 +153,7 @@ h1 .paren {
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--rx-radius);
   padding: 18px;
 }
 .card h2 {
@@ -175,7 +237,7 @@ input[type='text'] {
   margin-top: 14px;
   font-weight: 600;
   font-size: 15px;
-  color: #fff;
+  color: var(--rx-bg);
   background: var(--accent);
   border: none;
   border-radius: 9px;
