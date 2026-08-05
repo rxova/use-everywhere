@@ -1,6 +1,5 @@
 ---
 '@use-everywhere/core': minor
-'use-everywhere': minor
 ---
 
 Give every diagnostic a code and a link to the page that explains it.
