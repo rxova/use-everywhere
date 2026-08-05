@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>use-everywhere playground tab</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          13px/1.45 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        color: #e6edf3;
+        background: #0d1117;
+      }
+      .tab {
+        position: relative;
+        height: 100vh;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .tab__bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #21262d;
+        padding-bottom: 6px;
+      }
+      .tab__name {
+        font-weight: 600;
+      }
+      .tab__seat {
+        margin-left: auto;
+        color: #8b949e;
+      }
+      .tab__seat--leader {
+        color: #d29922;
+      }
+      .tab__row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .tab__row--foot {
+        margin-top: auto;
+        border-top: 1px solid #21262d;
+        padding-top: 6px;
+      }
+      .tab__k {
+        color: #8b949e;
+        width: 34px;
+        flex: none;
+      }
+      .tab__count,
+      .tab__peers {
+        min-width: 22px;
+        text-align: center;
+        color: #79c0ff;
+      }
+      button {
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 5px;
+        color: #c9d1d9;
+        font: inherit;
+        padding: 1px 9px;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        border-color: #58a6ff;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .tab__crash {
+        margin-left: auto;
+        color: #f85149;
+      }
+      .tab__note {
+        flex: 1;
+        min-width: 0;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 5px;
+        color: #e6edf3;
+        font: inherit;
+        padding: 1px 6px;
+      }
+      .tab--dead {
+        opacity: 0.55;
+        /* Room for the veil, so it never lands on top of the last row. */
+        padding-bottom: 30px;
+      }
+      .tab__veil {
+        position: absolute;
+        inset: auto 0 0 0;
+        background: #490202;
+        color: #ffdcd7;
+        text-align: center;
+        padding: 3px;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./tab.tsx"></script>
+  </body>
+</html>

@@ -3,10 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/build-playground.mjs && astro dev",
+    "build": "node scripts/build-playground.mjs && astro build",
     "preview": "astro preview",
-    "typecheck": "astro check"
+    "typecheck": "astro check",
+    "playground": "node scripts/build-playground.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.41.4",
@@ -22,9 +23,15 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@use-everywhere/core": "workspace:*",
+    "@vitejs/plugin-react": "^6.0.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "^6.0.3",
     "use-everywhere": "workspace:*",
-    "typescript": "^6.0.3"
+    "vite": "^8.1.5"
   },
   "engines": {
     "node": ">=20"
