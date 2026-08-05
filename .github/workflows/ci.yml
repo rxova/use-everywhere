@@ -260,8 +260,12 @@ jobs:
       # throwaway, so the mutated lockfile never leaves the runner.
       - name: Downgrade React to 18
         run: pnpm --filter use-everywhere add -D react@^18.3.1 react-dom@^18.3.1
+      # `libs:build` first, the way every other job that runs tests does it
+      # through Turbo's `^build`: this job calls vitest directly, and vitest
+      # resolves `@use-everywhere/core` through its exports map — which points
+      # at a dist that does not exist on a fresh checkout.
       - name: Test the hooks against React 18
-        run: pnpm --filter use-everywhere test
+        run: pnpm run libs:build && pnpm --filter use-everywhere test
 
   changeset:
     name: changeset present
