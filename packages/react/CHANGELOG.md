@@ -1,5 +1,22 @@
 # use-everywhere
 
+## 0.10.0
+
+### Minor Changes
+
+- [#65](https://github.com/rxova/use-everywhere/pull/65) [`29a1991`](https://github.com/rxova/use-everywhere/commit/29a19914587fe9ae5ff61119ba9f05c19edf91d0) - The Inspector now renders inside a shadow root, so the host page's CSS cannot reach it (its own styles already could not leak out — that was only half the problem). It also gains per-scope views over the wire log and a timeline: every state wire records a frame, and **restore** writes one back through the store so every tab converges rather than one tab disagreeing quietly.
+
+  Two behaviour changes worth knowing: the panel is no longer in `document` — reach it through `host.shadowRoot` if your tests assert on it — and it renders nothing during server rendering, where it previously emitted markup no one could use. `react-dom` is now an optional peer dependency, used for the portal.
+
+- [#65](https://github.com/rxova/use-everywhere/pull/65) [`6c7ab4b`](https://github.com/rxova/use-everywhere/commit/6c7ab4bac60f360f65c5fd2dfacd02fba55b3274) - Re-export `SharedWorkerTransport` / `isSharedWorkerAvailable`, and mirror the relay at `use-everywhere/shared-worker`, so a React app still needs one dependency to put its bus in a SharedWorker.
+
+### Patch Changes
+
+- [#65](https://github.com/rxova/use-everywhere/pull/65) [`cc6b69e`](https://github.com/rxova/use-everywhere/commit/cc6b69e9e13c1374890caf729990169a93a50973) - Docs and governance for the road to 1.0: an RFC process for changes that cannot be undone cheaply, RFC 0001 (the naming sweep), a migration guide written before the migration exists, and a code of conduct. No code changes.
+
+- Updated dependencies [[`6c7ab4b`](https://github.com/rxova/use-everywhere/commit/6c7ab4bac60f360f65c5fd2dfacd02fba55b3274)]:
+  - @use-everywhere/core@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes
