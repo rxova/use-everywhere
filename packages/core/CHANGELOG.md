@@ -1,5 +1,11 @@
 # @use-everywhere/core
 
+## 0.10.0
+
+### Minor Changes
+
+- [#65](https://github.com/rxova/use-everywhere/pull/65) [`6c7ab4b`](https://github.com/rxova/use-everywhere/commit/6c7ab4bac60f360f65c5fd2dfacd02fba55b3274) - Add `SharedWorkerTransport` and the relay it talks to (`@use-everywhere/core/shared-worker`), so a bus can run through one worker per origin instead of a channel between N tabs. The point is a place that is not a tab: the relay can own the socket that leadership used to be needed for. Opt-in — `BroadcastChannel` stays the default — and `isSharedWorkerAvailable()` reports the contexts (dedicated workers, Chrome for Android) where the constructor would throw.
+
 ## 0.9.0
 
 ### Minor Changes
