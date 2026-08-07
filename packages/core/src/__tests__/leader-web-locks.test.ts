@@ -210,6 +210,34 @@ describe('leader election on Web Locks', () => {
     waiter.close();
   });
 
+  it('a tab that withdrew from the queue rejoins it when it opts back in', async () => {
+    // The other half of the test above. Leaving the queue is only correct if it
+    // is reversible: a tab that never held the lock has nothing to release, so
+    // opting back in must put it back in line — otherwise a follower that
+    // toggled eligibility off and on is silently out of the running forever,
+    // and the seat is left empty when the holder goes away.
+    const { locks, tab } = setup();
+    const holder = tab();
+    const waiter = tab();
+    await tick();
+    expect(locks.queued('wl')).toBe(1);
+
+    waiter.setEligible(false);
+    await tick();
+    expect(locks.queued('wl')).toBe(0);
+
+    waiter.setEligible(true);
+    await tick();
+    expect(locks.queued('wl')).toBe(1);
+
+    // And the queue it rejoined is a real one: the seat actually reaches it.
+    holder.close();
+    await tick();
+    expect(waiter.getSnapshot().isLeader).toBe(true);
+
+    waiter.close();
+  });
+
   it('a late joiner learns the incumbent without waiting for a heartbeat', async () => {
     const { tab } = setup();
     const incumbent = tab();

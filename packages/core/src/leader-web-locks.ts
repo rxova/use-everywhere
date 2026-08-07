@@ -93,8 +93,9 @@ export function createWebLocksLeader(
     if (closed || !eligible || releaseHeld || pending) return;
     const controller = new AbortController();
     pending = controller;
+    let grant!: () => void;
     const held = new Promise<void>((resolve) => {
-      releaseHeld = resolve;
+      grant = resolve;
     });
     // The callback holds the lock for as long as its promise is unsettled,
     // which is the whole mechanism: we keep it until we resign, close, or the
@@ -103,6 +104,13 @@ export function createWebLocksLeader(
       .request(name, { signal: controller.signal }, async () => {
         pending = null;
         if (closed || !eligible) return;
+        // Only here, where the browser has actually granted the lock, does
+        // `releaseHeld` become real. Publishing the resolver at request time
+        // would make a merely *queued* tab look like a holder: withdrawing
+        // aborts the request but has no lock to let go of, so the stale
+        // resolver would survive and joinQueue()'s guard would refuse to put
+        // the tab back in line when it opted in again.
+        releaseHeld = grant;
         setLeader(clientId);
         announce();
         await held;

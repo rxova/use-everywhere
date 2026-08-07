@@ -466,7 +466,7 @@ describe('joining the queue', () => {
     // grant never resolves.
     waiting.setEligible(true);
     await settle();
-    expect(locks.queued(`use-everywhere:leader:${name}`)).toBeLessThanOrEqual(1);
+    expect(locks.queued(name)).toBe(1);
 
     holder.close();
     await settle();
@@ -483,7 +483,7 @@ describe('joining the queue', () => {
     await settle();
 
     expect(standby.getSnapshot().isLeader).toBe(false);
-    expect(locks.isHeld(`use-everywhere:leader:${name}`)).toBe(false);
+    expect(locks.isHeld(name)).toBe(false);
 
     standby.close();
   });
