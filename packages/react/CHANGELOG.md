@@ -1,5 +1,37 @@
 # use-everywhere
 
+## 0.9.0
+
+### Minor Changes
+
+- [#64](https://github.com/rxova/use-everywhere/pull/64) [`9e1bc3b`](https://github.com/rxova/use-everywhere/commit/9e1bc3be190f3b7d06698b72486f182bc3936d86) - The Inspector's wire log becomes usable while something is going wrong: pause,
+  clear, and a filter that matches on `scope/type` and on the sender.
+
+  Pausing freezes the log and nothing else. The observer stays subscribed — tearing
+  it down and back up would drop the traffic in between, and a log you paused is
+  not a log with a hole in it — and the crown keeps updating, because leadership
+  is state rather than history and a frozen one would be a lie.
+
+  State is editable, too. Click a value, type JSON, press Enter: the write goes
+  **through the store**, so it takes a version and reaches every tab, which is the
+  only edit worth having. A draft that is not JSON is refused and marked rather
+  than guessed at — `light` and `"light"` mean different things, and a panel that
+  picks one for you starts disagreeing with the wire.
+
+- [#64](https://github.com/rxova/use-everywhere/pull/64) [`2ee96f4`](https://github.com/rxova/use-everywhere/commit/2ee96f4bfd87c08b83c2849a6b242a5b5881dff4) - Re-export the coded diagnostics from core, so a warning printed through the React
+  package carries the same `UE####` code and the same link to the page that
+  explains it.
+
+  The code is the durable part: a message can be reworded, mangled by a minifier
+  or truncated by a log aggregator, and `UE1001` survives all three. Code that
+  matched on the text — a test asserting a console warning, a log filter — should
+  match on the code instead.
+
+### Patch Changes
+
+- Updated dependencies [[`9aa146f`](https://github.com/rxova/use-everywhere/commit/9aa146fbe9d6ada23377e8e1e3645657754bcb04), [`2ee96f4`](https://github.com/rxova/use-everywhere/commit/2ee96f4bfd87c08b83c2849a6b242a5b5881dff4)]:
+  - @use-everywhere/core@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes

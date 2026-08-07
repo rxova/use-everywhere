@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-use-everywhere",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ESLint rules for use-everywhere: module-scope definitions, stable names, cloneable values, leader-effect captures",
   "license": "MIT",
   "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",

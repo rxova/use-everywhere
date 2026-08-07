@@ -1,5 +1,33 @@
 # @use-everywhere/core
 
+## 0.9.0
+
+### Minor Changes
+
+- [#64](https://github.com/rxova/use-everywhere/pull/64) [`9aa146f`](https://github.com/rxova/use-everywhere/commit/9aa146fbe9d6ada23377e8e1e3645657754bcb04) - Export the `LockManagerLike` type, and document `LeaderOptions.locks` as the
+  supported test seam it now is: `@use-everywhere/test-utils` passes a
+  `FakeLockManager` there so several simulated tabs can queue on one seat, and so
+  a crashed tab's lock is reclaimed, in a plain test process.
+
+- [#64](https://github.com/rxova/use-everywhere/pull/64) [`2ee96f4`](https://github.com/rxova/use-everywhere/commit/2ee96f4bfd87c08b83c2849a6b242a5b5881dff4) - Give every diagnostic a code and a link to the page that explains it.
+
+  ```
+  [use-everywhere] UE1001: second shared store for "cart" in this tab — …
+    → https://rxova.org/packages/use-everywhere/errors/#ue1001
+  ```
+
+  The code is the durable part: a message can be reworded, mangled by a minifier
+  or truncated by a log aggregator, and `UE1001` survives all three. Codes are
+  permanent and never reused — an old build in somebody's browser is still
+  emitting them.
+
+  Warnings still cost nothing in production: the call sites keep their
+  `process.env.NODE_ENV` guard, and the test that proves it now counts codes
+  rather than scanning for a prefix, so a leak names the warning that leaked.
+
+  The message text is otherwise unchanged. Code that matched on it — a test
+  asserting a console warning, a log filter — should match on the code instead.
+
 ## 0.8.0
 
 ### Minor Changes
