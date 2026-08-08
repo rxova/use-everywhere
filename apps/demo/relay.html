@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>A SharedWorker that owns the connection</title>
+  </head>
+  <body>
+    <!--
+      A fixture, not a demo. Tabs of this page hold no connection of their own:
+      one SharedWorker owns it, publishes over the relay it is hosting, and
+      outlives any tab that happens to close. Everything the e2e asserts is
+      readable as text so the page needs no framework of its own.
+    -->
+    <h1>A SharedWorker that owns the connection</h1>
+
+    <p>transport <span id="transport"></span></p>
+    <p>client <span id="client"></span></p>
+    <p>tick <span id="tick"></span></p>
+    <p>socket <span id="socket"></span></p>
+
+    <script type="module" src="/src/relay-main.ts"></script>
+  </body>
+</html>

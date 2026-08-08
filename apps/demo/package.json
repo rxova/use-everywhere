@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node build-mfe.mjs && vite",
-    "build": "vite build",
+    "dev": "node build-fixtures.mjs && vite",
+    "build": "node build-fixtures.mjs && vite build",
     "typecheck": "tsc --noEmit",
-    "build:mfe": "node build-mfe.mjs"
+    "build:fixtures": "node build-fixtures.mjs"
   },
   "dependencies": {
     "@rxova/brand": "^0.11.0",
