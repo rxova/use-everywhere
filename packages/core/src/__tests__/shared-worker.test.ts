@@ -6,6 +6,7 @@ import {
   type SharedWorkerLike,
 } from '../transport/shared-worker-transport.js';
 import { startRelay, type RelayPort, type RelayScope } from '../shared-worker.js';
+import { createSharedStore } from '../shared-store.js';
 
 /**
  * A port pair the way the browser gives them out: what a tab posts arrives at
@@ -199,11 +200,289 @@ describe('startRelay', () => {
     const scope = { onconnect: null } as RelayScope;
     vi.stubGlobal('self', scope);
     try {
-      await import('../shared-worker.js');
+      const module = await import('../shared-worker.js');
       expect(typeof scope.onconnect).toBe('function');
+      // The installed relay is exported, so a worker that does other work can
+      // join the bus without calling startRelay again — which would install a
+      // second relay over this one and strand the ports this handler holds.
+      expect(module.relay).toBeDefined();
     } finally {
       vi.unstubAllGlobals();
       vi.resetModules();
     }
+  });
+
+  it('has no relay to export outside a worker', async () => {
+    vi.resetModules();
+    try {
+      const module = await import('../shared-worker.js');
+      expect(module.relay).toBeUndefined();
+    } finally {
+      vi.resetModules();
+    }
+  });
+
+  it('broadcasts to every port, the relay itself having nothing to echo to', () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const a = new FakePort();
+    const b = new FakePort();
+    connect(scope, a);
+    connect(scope, b);
+
+    relay.broadcast({ from: 'the worker' });
+
+    expect(a.sent).toEqual([{ from: 'the worker' }]);
+    expect(b.sent).toEqual([{ from: 'the worker' }]);
+  });
+
+  it('prunes a dead port when the relay itself is the sender', () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const dead = new FakePort();
+    const alive = new FakePort();
+    connect(scope, dead);
+    connect(scope, alive);
+    dead.broken = true;
+
+    relay.broadcast('first');
+    expect(alive.sent).toEqual(['first']);
+
+    dead.broken = false;
+    relay.broadcast('second');
+    expect(dead.sent).toEqual([]);
+    expect(alive.sent).toEqual(['first', 'second']);
+  });
+
+  it('counts the ports it holds, and not its own seats', () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    expect(relay.size).toBe(0);
+
+    connect(scope, new FakePort());
+    connect(scope, new FakePort());
+    expect(relay.size).toBe(2);
+
+    // The worker is not one of its own tabs: a seat must not keep `size` above
+    // zero, or "idle the socket when nobody is looking" never fires.
+    const seat = relay.connect();
+    expect(relay.size).toBe(2);
+    seat.close();
+    expect(relay.size).toBe(2);
+  });
+
+  it('forgets a port that died, in the count as well as the fan-out', () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const sender = new FakePort();
+    const dead = new FakePort();
+    connect(scope, sender);
+    connect(scope, dead);
+    dead.broken = true;
+
+    sender.deliver('anything');
+    expect(relay.size).toBe(1);
+  });
+});
+
+describe('the relay as a peer of itself', () => {
+  const connect = (scope: RelayScope, port: RelayPort) => {
+    scope.onconnect?.({ ports: [port] });
+  };
+
+  /** The seat delivers on a microtask, so every assertion waits one out. */
+  const tick = () => Promise.resolve();
+
+  it('declares the kind the transport does, so diagnostics agree', () => {
+    const relay = startRelay({ onconnect: null });
+    expect(relay.connect().kind).toBe('shared-worker');
+  });
+
+  it('receives what a port sends', async () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const tab = new FakePort();
+    connect(scope, tab);
+
+    const seen: unknown[] = [];
+    relay.connect().subscribe((data) => seen.push(data));
+
+    tab.deliver({ hello: 'worker' });
+    expect(seen).toEqual([]); // not synchronously, inside the tab's listener
+    await tick();
+    expect(seen).toEqual([{ hello: 'worker' }]);
+  });
+
+  it('sends to every port', () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const a = new FakePort();
+    const b = new FakePort();
+    connect(scope, a);
+    connect(scope, b);
+
+    relay.connect().post({ tick: 1 });
+
+    expect(a.sent).toEqual([{ tick: 1 }]);
+    expect(b.sent).toEqual([{ tick: 1 }]);
+  });
+
+  it('never hears its own post — the invariant every engine rests on', async () => {
+    const relay = startRelay({ onconnect: null });
+    const seen: unknown[] = [];
+    const seat = relay.connect();
+    seat.subscribe((data) => seen.push(data));
+
+    seat.post('mine');
+    await tick();
+    expect(seen).toEqual([]);
+  });
+
+  it('keeps two seats independent, each hearing the other and not itself', async () => {
+    const relay = startRelay({ onconnect: null });
+    const first: unknown[] = [];
+    const second: unknown[] = [];
+    const a = relay.connect();
+    const b = relay.connect();
+    a.subscribe((data) => first.push(data));
+    b.subscribe((data) => second.push(data));
+
+    a.post('from a');
+    await tick();
+    expect(first).toEqual([]);
+    expect(second).toEqual(['from a']);
+  });
+
+  it('stops delivering to an unsubscribed listener', async () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const tab = new FakePort();
+    connect(scope, tab);
+
+    const seen: unknown[] = [];
+    const off = relay.connect().subscribe((data) => seen.push(data));
+    off();
+
+    tab.deliver('ignored');
+    await tick();
+    expect(seen).toEqual([]);
+  });
+
+  it('leaves the bus on close, and goes quiet in both directions', async () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+    const tab = new FakePort();
+    connect(scope, tab);
+
+    const seen: unknown[] = [];
+    const seat = relay.connect();
+    seat.subscribe((data) => seen.push(data));
+
+    seat.close();
+    // Stores close transports on unmount, and an unmount can be re-entered.
+    expect(() => seat.close()).not.toThrow();
+
+    seat.post('after close');
+    expect(tab.sent).toEqual([]);
+
+    tab.deliver('after close');
+    await tick();
+    expect(seen).toEqual([]);
+  });
+});
+
+/**
+ * The reason `connect()` exists: a worker that owns the socket publishes
+ * through a real store, over the same relay its tabs are connected to. If this
+ * passes, worker-side code never has to know the wire format.
+ */
+describe('a worker store reaching a tab store, through the relay', () => {
+  /**
+   * An entangled port pair, the way the browser hands them out: what one end
+   * posts arrives at the other. `FakePort` is one-directional by design, so a
+   * two-sided test needs both halves wired together.
+   */
+  const portPair = () => {
+    const tabSide = new FakePort();
+    const relaySide = new FakePort();
+    const wire = (from: FakePort, to: FakePort) => {
+      const post = from.postMessage.bind(from);
+      from.postMessage = (data: unknown) => {
+        post(data);
+        // Async, as a real MessagePort is — synchronous delivery here would
+        // hide re-entrancy the browser would have exposed.
+        queueMicrotask(() => to.deliver(data));
+      };
+    };
+    wire(tabSide, relaySide);
+    wire(relaySide, tabSide);
+    return { tabSide, relaySide };
+  };
+
+  /**
+   * Drains microtasks *and* timers: patches ride a microtask, but the
+   * late-joiner snapshot reply is deliberately delayed so peers do not all
+   * answer at once.
+   */
+  const settle = async () => {
+    // Long enough to clear the default 40ms snapshot delay.
+    await new Promise((resolve) => setTimeout(resolve, 80));
+  };
+
+  it('delivers a worker write to the tab, and a tab write to the worker', async () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+
+    const { tabSide, relaySide } = portPair();
+    scope.onconnect?.({ ports: [relaySide] });
+
+    const tab = createSharedStore(
+      'feed',
+      { tick: 0 },
+      {
+        transport: () =>
+          new SharedWorkerTransport({ url: '/r.js', factory: () => ({ port: tabSide }) }),
+      },
+    );
+    const worker = createSharedStore('feed', { tick: 0 }, { transport: () => relay.connect() });
+
+    worker.set('tick', 7);
+    await settle();
+    expect(tab.getSnapshot().tick).toBe(7);
+
+    tab.set('tick', 9);
+    await settle();
+    expect(worker.getSnapshot().tick).toBe(9);
+
+    tab.close();
+    worker.close();
+  });
+
+  it('hydrates a late worker from the tab that was already there', async () => {
+    const scope: RelayScope = { onconnect: null };
+    const relay = startRelay(scope);
+
+    const { tabSide, relaySide } = portPair();
+    scope.onconnect?.({ ports: [relaySide] });
+
+    const tab = createSharedStore(
+      'feed',
+      { tick: 0 },
+      {
+        transport: () =>
+          new SharedWorkerTransport({ url: '/r.js', factory: () => ({ port: tabSide }) }),
+      },
+    );
+    tab.set('tick', 42);
+    await settle();
+
+    // The worker joins afterwards and asks; the handshake is the engines' job,
+    // and it works here only because the seat is a peer like any other.
+    const worker = createSharedStore('feed', { tick: 0 }, { transport: () => relay.connect() });
+    await settle();
+    expect(worker.getSnapshot().tick).toBe(42);
+
+    tab.close();
+    worker.close();
   });
 });

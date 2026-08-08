@@ -134,6 +134,23 @@ the tab that happened to be elected leader. With the relay in place, "the leader
 owns the socket" becomes "the worker owns the socket", and leadership stops
 being load-bearing for that job.
 
+A worker that owns the socket also has to publish what arrives on it, and it
+does that by joining its own relay as a peer — `relay.connect()` hands back a
+`Transport`, so the worker writes to a store like anything else:
+
+```js
+// socket-worker.js
+import { relay } from 'use-everywhere/shared-worker';
+import { createSharedStore } from 'use-everywhere';
+
+const store = createSharedStore('feed', { tick: null }, { transport: () => relay.connect() });
+new WebSocket('wss://example.com/feed').onmessage = (e) => store.set('tick', JSON.parse(e.data));
+```
+
+See [When the worker owns the
+socket](../core/transports.md#when-the-worker-owns-the-socket) for the tab side
+and the rest of the handle.
+
 It stays opt-in, and `BroadcastChannel` stays the default: the transport needs a
 script URL your app serves, does not exist inside a dedicated worker or on
 Chrome for Android, and buys nothing for plain fan-out between tabs.

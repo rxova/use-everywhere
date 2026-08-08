@@ -152,7 +152,7 @@
       "name": "SharedWorker relay (shared-worker subpath)",
       "path": "dist/shared-worker.js",
       "import": "*",
-      "limit": "280 B"
+      "limit": "410 B"
     },
     {
       "name": "MemoryHub (testing subpath)",
