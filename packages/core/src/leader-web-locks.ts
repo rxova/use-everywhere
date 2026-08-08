@@ -6,6 +6,30 @@ import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from './l
 const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: false });
 
 /**
+ * The lock this bus elects on, kept out of the application's own namespace.
+ *
+ * Bus names are used bare elsewhere — a `BroadcastChannel` is named after the
+ * bus, deliberately, because there a name *is* the identity. A lock is not like
+ * that, because the two collisions do not fail alike. A foreign
+ * `BroadcastChannel` of the same name is survivable: the bus drops anything that
+ * is not a wire of ours and carries on. A foreign *lock* of the same name cannot
+ * be filtered, inspected or reported — it is an opaque mutex, so an application
+ * holding `notifications` for its own reasons leaves every tab leaderless for as
+ * long as it holds, with `waitForLeadership()` simply never resolving and no
+ * diagnostic we could emit.
+ *
+ * Nor is that a far-fetched clash. Holding a lock for the lifetime of the tab is
+ * *the* Web Locks idiom — it is what this file does — and a hand-rolled election
+ * on `navigator.locks` is exactly what a caller adopting `createLeader` is
+ * migrating away from. Run both for one release under one name and they deadlock
+ * each other.
+ *
+ * Colons throughout, including any a namespace already put in `name`: the bus
+ * name is the identity, and this only keeps it out of a keyspace we do not own.
+ */
+const lockNameFor = (name: string) => `use-everywhere:leader:${name}`;
+
+/**
  * Leadership arbitrated by the browser's Web Locks queue.
  *
  * The heartbeat strategy has to *infer* that a leader is gone from silence,
@@ -35,6 +59,7 @@ export function createWebLocksLeader(
   };
   const bus = getBus(name, busOptions);
   const clientId = bus.clientId;
+  const lock = lockNameFor(name);
 
   let eligible = options.eligible ?? true;
   let leaderId: string | null = null;
@@ -101,7 +126,7 @@ export function createWebLocksLeader(
     // which is the whole mechanism: we keep it until we resign, close, or the
     // page goes away and the browser reclaims it for us.
     void locks
-      .request(name, { signal: controller.signal }, async () => {
+      .request(lock, { signal: controller.signal }, async () => {
         pending = null;
         if (closed || !eligible) return;
         // Only here, where the browser has actually granted the lock, does

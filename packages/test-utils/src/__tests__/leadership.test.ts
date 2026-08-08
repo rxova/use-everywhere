@@ -21,7 +21,10 @@ describe('leadership across a crash', () => {
     await tick();
     expect(first.getSnapshot().isLeader).toBe(true);
     expect(second.getSnapshot().isLeader).toBe(false);
-    expect(browser.locks.holder('app')).toBe('tab-1');
+    // `locks` is a general navigator.locks stand-in, so it is keyed by the lock
+    // the leader actually takes — the bus name inside the library's own
+    // namespace, not the bare bus name.
+    expect(browser.locks.holder('use-everywhere:leader:app')).toBe('tab-1');
 
     a.crash();
     await tick();

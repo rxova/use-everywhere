@@ -10,6 +10,11 @@ import { tick } from './helpers/tick.js';
  * to lose and nothing for a background timer to get wrong.
  */
 describe('leader election on Web Locks', () => {
+  // Spelled out rather than imported from the source: the point of naming the
+  // lock is that the name is a promise to everything else on the origin, and a
+  // test that computed it the same way the code does could not catch it moving.
+  const LOCK = 'use-everywhere:leader:wl';
+
   const setup = () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
@@ -71,8 +76,8 @@ describe('leader election on Web Locks', () => {
     await tick();
 
     expect([a, b, c].filter((l) => l.getSnapshot().isLeader)).toHaveLength(1);
-    expect(locks.isHeld('wl')).toBe(true);
-    expect(locks.queued('wl')).toBe(2); // the followers are waiting, not polling
+    expect(locks.isHeld(LOCK)).toBe(true);
+    expect(locks.queued(LOCK)).toBe(2); // the followers are waiting, not polling
 
     // And everyone agrees who it is — the lock grants, the bus announces.
     const ids = [a, b, c].map((l) => l.getSnapshot().leaderId);
@@ -169,7 +174,7 @@ describe('leader election on Web Locks', () => {
     await tick();
 
     expect(abstainer.getSnapshot().isLeader).toBe(false);
-    expect(locks.isHeld('wl')).toBe(false); // it did not even queue
+    expect(locks.isHeld(LOCK)).toBe(false); // it did not even queue
 
     abstainer.setEligible(true);
     await tick();
@@ -200,12 +205,12 @@ describe('leader election on Web Locks', () => {
     const holder = tab();
     const waiter = tab();
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued(LOCK)).toBe(1);
 
     waiter.setEligible(false);
     await tick();
 
-    expect(locks.queued('wl')).toBe(0);
+    expect(locks.queued(LOCK)).toBe(0);
     holder.close();
     waiter.close();
   });
@@ -220,15 +225,15 @@ describe('leader election on Web Locks', () => {
     const holder = tab();
     const waiter = tab();
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued(LOCK)).toBe(1);
 
     waiter.setEligible(false);
     await tick();
-    expect(locks.queued('wl')).toBe(0);
+    expect(locks.queued(LOCK)).toBe(0);
 
     waiter.setEligible(true);
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued(LOCK)).toBe(1);
 
     // And the queue it rejoined is a real one: the seat actually reaches it.
     holder.close();
@@ -258,13 +263,13 @@ describe('leader election on Web Locks', () => {
     const { locks, tab } = setup();
     const leader = tab();
     await tick();
-    expect(locks.isHeld('wl')).toBe(true);
+    expect(locks.isHeld(LOCK)).toBe(true);
 
     leader.close();
     expect(() => leader.close()).not.toThrow();
     await tick();
 
-    expect(locks.isHeld('wl')).toBe(false);
+    expect(locks.isHeld(LOCK)).toBe(false);
   });
 
   it('wakes subscribers when the seat moves, and stops after unsubscribing', async () => {
@@ -301,7 +306,7 @@ describe('leader election on Web Locks', () => {
     await tick();
 
     expect(leader.getSnapshot().isLeader).toBe(true);
-    expect(locks.isHeld('wl')).toBe(true);
+    expect(locks.isHeld(LOCK)).toBe(true);
     leader.close();
   });
 

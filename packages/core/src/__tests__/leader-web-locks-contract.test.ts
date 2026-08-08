@@ -18,6 +18,9 @@ const uniqueName = () => `wl-${++n}`;
 
 const settle = () => new Promise<void>((r) => setTimeout(r, 5));
 
+/** Written out, not imported: see the note in leader-web-locks.test.ts. */
+const lockNameFor = (name: string) => `use-everywhere:leader:${name}`;
+
 const recorder = (hub: MemoryHub) => {
   const seen: BusWire[] = [];
   const wire = hub.connect();
@@ -466,13 +469,55 @@ describe('joining the queue', () => {
     // grant never resolves.
     waiting.setEligible(true);
     await settle();
-    expect(locks.queued(name)).toBe(1);
+    expect(locks.queued(lockNameFor(name))).toBe(1);
 
     holder.close();
     await settle();
     expect(waiting.getSnapshot().isLeader).toBe(true);
 
     waiting.close();
+  });
+
+  it('elects on a namespaced lock, not on the bare bus name', async () => {
+    const hub = new MemoryHub();
+    const locks = new FakeLockManager();
+    const name = uniqueName();
+    const leader = build(hub, locks, name);
+    await settle();
+
+    expect(locks.isHeld(lockNameFor(name))).toBe(true);
+    // The bare name belongs to the application. Taking it would be a promise we
+    // never made, on an origin-wide keyspace we do not own.
+    expect(locks.isHeld(name)).toBe(false);
+
+    leader.close();
+  });
+
+  it('is not blocked by an application holding a lock of the bus name', async () => {
+    // The reason the name is namespaced at all. A lock cannot be filtered the
+    // way a foreign BroadcastChannel wire can, so an app holding `name` for its
+    // own purposes would leave every tab leaderless for as long as it held —
+    // silently, with waitForLeadership() simply never resolving.
+    const hub = new MemoryHub();
+    const locks = new FakeLockManager();
+    const name = uniqueName();
+
+    let releaseApp!: () => void;
+    const appHolds = new Promise<void>((resolve) => {
+      releaseApp = resolve;
+    });
+    void locks.request(name, {}, () => appHolds);
+    await settle();
+    expect(locks.isHeld(name)).toBe(true);
+
+    const leader = build(hub, locks, name);
+    await settle();
+
+    expect(leader.getSnapshot().isLeader).toBe(true);
+    await expect(leader.waitForLeadership()).resolves.toBeUndefined();
+
+    leader.close();
+    releaseApp();
   });
 
   it('does not queue at all when it is ineligible from the start', async () => {
@@ -483,7 +528,7 @@ describe('joining the queue', () => {
     await settle();
 
     expect(standby.getSnapshot().isLeader).toBe(false);
-    expect(locks.isHeld(name)).toBe(false);
+    expect(locks.isHeld(lockNameFor(name))).toBe(false);
 
     standby.close();
   });
