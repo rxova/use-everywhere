@@ -30,6 +30,14 @@ overrides:
   # pre-4.0 API, so a single `>=4.3.1` would break them rather than patch them.
   js-yaml@3: '>=3.15.1 <4'
   js-yaml@4: '>=4.3.1 <5'
+  # GHSA-2v37-7h3g-55p8: <3.3.17 loops forever when a custom generator is asked
+  # for size zero. High, and every one of the 100 paths reaches it through
+  # postcss — the docs and demo sites' Astro, and tsup, which is how the
+  # published packages are built. Dev-only (nanoid is in neither published
+  # package, and nothing here calls it with a custom generator), but
+  # `audit:check` gates on high and this is what has kept main red. Pinned to
+  # the 3.x line: the advisory does not touch the 6.x that lives beside it.
+  nanoid@3: '>=3.3.17 <4'
   # <=8.5.22. Moderate, so it does not trip the high-only gate on its own —
   # taken here because it is one line and the alternative is carrying a known
   # advisory until something else forces the issue.
