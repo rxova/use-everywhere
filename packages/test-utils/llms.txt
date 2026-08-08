@@ -1,0 +1,97 @@
+# @use-everywhere/test-utils
+
+> Test seams for `use-everywhere`: run several simulated tabs in one process,
+> with no browser, no globals and no Playwright. `createScenario` gives you tabs
+> that talk over an in-memory hub instead of a real BroadcastChannel, so
+> cross-tab behaviour becomes an ordinary unit test — including the two cases
+> that are otherwise painful to reach, a tab closing cleanly and a tab crashing.
+> Also ships fakes for the Web Locks API and for cross-origin windows.
+
+## Install
+
+    npm install -D @use-everywhere/test-utils
+
+Peer: `@use-everywhere/core`. Test-only — never ship it in app code.
+
+## Minimal working example
+
+```ts
+import { createScenario } from '@use-everywhere/test-utils';
+
+const scenario = createScenario();
+const a = scenario.tab();
+const b = scenario.tab();
+
+// Primitives are created THROUGH a tab, which is what puts them in it.
+const storeA = a.store('settings', { theme: 'light' });
+const storeB = b.store('settings', { theme: 'light' });
+
+storeA.set({ theme: 'dark' });
+await scenario.settle();
+
+expect(storeB.get()).toEqual({ theme: 'dark' }); // the write crossed the hub
+
+scenario.dispose();
+```
+
+## API
+
+| Export | Kind | What it does |
+| --- | --- | --- |
+| `createScenario` | factory | Several simulated tabs sharing one in-memory hub |
+| `MemoryHub` | class | The hub itself, if you need it directly |
+| `MemoryTransport` | class | One tab's end of it; pass as a `transport` option |
+| `FakeLockManager` | class | A stand-in for `navigator.locks`, for leader election |
+| `FakeWindow` | class | A stand-in for a `Window`, for the cross-origin channel |
+| `fakeWindowPair` | function | An opener/opened pair already wired together |
+| `tick` | function | Drain pending microtasks — the line between "wrote" and "seen" |
+| `snapshotWindow` | function | Wait out the late-joiner snapshot delay (default 80ms) |
+
+`MemoryHub` and `MemoryTransport` are re-exported from
+`@use-everywhere/core/testing` so a test needs one import rather than two. They
+are the same classes, not copies.
+
+### Scenario
+
+`hub`, `locks` and `tabs` are readonly properties. `tab(options?)` opens another
+tab, `settle(ms?)` lets the wire catch up, and `dispose()` closes every tab still
+open and is safe to call twice.
+
+`createScenario({ election })` takes `'web-locks'` (default, matching every
+browser that has the API) or `'heartbeat'` (what plain-http origins get). Test
+both if your app ships to one.
+
+### Tab
+
+Primitives are created through the tab, not imported and called inside it:
+`store(name, initial, options?)`, `reducer(name, reducer, initial, options?)`,
+`channel(name, options?)`, `presence(name, options?)` and `leader(name,
+options?)`. Each gets its own connection to the hub, exactly as a real tab does
+when it uses several bus names.
+
+`close()` ends the tab the way a user closes one — every primitive says goodbye,
+peers drop it at once, locks are released. `crash()` cuts the wire mid-sentence
+with no goodbye, so peers have to *notice*. That difference is the whole reason
+multi-tab code is hard, and testing only `close()` is testing the easy half.
+
+## Gotchas
+
+- **Delivery is asynchronous, as it is in a real browser.** Assert after
+  `await scenario.settle()`, never on the line after the write — a test that
+  passes synchronously is testing the wrong thing.
+- **Hydration is not one microtask away.** A late joiner is answered after a
+  jittered pause, so a newly-opened tab needs `await scenario.settle(80)` (or
+  `snapshotWindow()`), not a bare `tick()`. This is on purpose.
+- **One primitive per name per tab.** A presence and a store created on the same
+  name in one tab announce as two clients, matching a browser exactly.
+- **This does not test the transport, it replaces it.** Whether
+  `BroadcastChannel` itself behaves belongs in the e2e suite; your logic on top
+  of it belongs here.
+
+## Docs
+
+- Full documentation: https://rxova.org/packages/use-everywhere/
+- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Every page as raw markdown: add `.md` to any docs URL
+- Testing guide: https://rxova.org/packages/use-everywhere/guides/testing.md
+- Source: https://github.com/rxova/use-everywhere

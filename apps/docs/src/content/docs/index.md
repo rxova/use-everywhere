@@ -7,7 +7,7 @@ sidebar:
 **use-everywhere** is `useState`, except the value exists in every tab,
 window, and worker on your origin at once. It exists because the browser's
 cross-tab APIs are good but low-level, and there was no `useState`-shaped
-way to use them — the full reasoning is in [Why this exists](./why.md). The
+way to use them — the full reasoning is in [Why this exists](./learn/why.md). The
 pitch fits in one sentence:
 
 :::tip[The promise]
@@ -79,7 +79,7 @@ no Provider to wrap and no store to configure — the key `'count'` _is_ the
 identity, and any component in any tab that uses it shares the value. (Why no
 Provider? A BroadcastChannel is already global to the origin; a React context
 couldn't scope it any further. More in
-[the mental model](./mental-model.md).)
+[the mental model](./learn/mental-model.md).)
 
 ## Open a second tab
 
@@ -101,12 +101,12 @@ one charge and two.
 
 ## Which hook do I want?
 
-| You are asking…                                       | Reach for                                          | Because                                               |
-| ----------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------- |
-| "What is the current value?"                          | [`useSharedState`](../hooks/use-shared-state.md)   | Convergent, hydrates late joiners, survives tab churn |
-| "What just happened?"                                 | [`useMessage`](../hooks/use-message.md)            | Fire-and-forget events; no history, no cleanup        |
-| "Who else is here?"                                   | [`usePeers`](../hooks/use-peers.md)                | Live peer list via heartbeats                         |
-| "How do I hear back from a window on another domain?" | [`useOpenedWindow`](../hooks/use-opened-window.md) | Validated 1:1 postMessage channel with a result       |
+| You are asking…                                       | Reach for                                         | Because                                               |
+| ----------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| "What is the current value?"                          | [`useSharedState`](./hooks/use-shared-state.md)   | Convergent, hydrates late joiners, survives tab churn |
+| "What just happened?"                                 | [`useMessage`](./hooks/use-message.md)            | Fire-and-forget events; no history, no cleanup        |
+| "Who else is here?"                                   | [`usePeers`](./hooks/use-peers.md)                | Live peer list via heartbeats                         |
+| "How do I hear back from a window on another domain?" | [`useOpenedWindow`](./hooks/use-opened-window.md) | Validated 1:1 postMessage channel with a result       |
 
 When you're torn between the first two, use this test:
 
@@ -133,14 +133,14 @@ Open `http://localhost:5173` in two tabs and click around.
 
 ## Where to next
 
-- [Why this exists](./why.md) — the bug that keeps coming back, and what we
+- [Why this exists](./learn/why.md) — the bug that keeps coming back, and what we
   all hand-roll today instead of this library.
-- [The mental model](./mental-model.md) — two ideas that make the whole API
+- [The mental model](./learn/mental-model.md) — two ideas that make the whole API
   predictable. Read this one even if you skip the rest.
-- [Hooks](../hooks/overview.md) — every hook in plain English, with all the
+- [Hooks](./hooks/overview.md) — every hook in plain English, with all the
   options and examples.
-- [Guides](../guides/shared-state.md) — task-shaped walkthroughs: shared
+- [Guides](./guides/shared-state.md) — task-shaped walkthroughs: shared
   state, messages, payments, recipes, testing.
-- [Under the hood](../under-the-hood/how-sync-works.md) — version clocks,
+- [Under the hood](./under-the-hood/how-sync-works.md) — version clocks,
   handshakes, and the security model, for when you want to reason about edge
   cases.

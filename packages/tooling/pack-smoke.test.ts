@@ -46,8 +46,8 @@ const runScript = (cwd: string) => {
 
 /**
  * A minimal package that satisfies the contract: dual ESM/CJS entries, both
- * declaration flavours, a README and a LICENSE. Individual tests then remove or
- * corrupt exactly one piece.
+ * declaration flavours, a README, a LICENSE and an llms.txt. Individual tests
+ * then remove or corrupt exactly one piece.
  */
 const makePackage = async (options: {
   readonly omit?: readonly string[];
@@ -61,6 +61,7 @@ const makePackage = async (options: {
   const files: Record<string, string> = {
     'README.md': '# fixture\n',
     LICENSE: 'MIT\n',
+    'llms.txt': '# pack-smoke-fixture\n',
     'dist/index.js': `${options.clientDirective === false ? '' : "'use client'\n"}export const value = 1\n`,
     'dist/index.cjs': "'use strict'\nexports.value = 1\n",
     'dist/index.d.ts': 'export declare const value: number\n',
@@ -81,7 +82,7 @@ const makePackage = async (options: {
         name: 'pack-smoke-fixture',
         version: '0.0.0',
         type: 'module',
-        files: options.includeSrc ? ['dist', 'src'] : ['dist'],
+        files: options.includeSrc ? ['dist', 'src', 'llms.txt'] : ['dist', 'llms.txt'],
         exports: {
           '.': {
             import: { types: './dist/index.d.ts', default: './dist/index.js' },
@@ -127,6 +128,17 @@ describe('pack-smoke', () => {
 
     expect(result.code).toBe(1);
     expect(result.output).toContain('LICENSE');
+  }, 120_000);
+
+  it('fails when llms.txt is absent from the package directory', async () => {
+    // It is what a coding agent reads out of node_modules after an install.
+    // check-llms.ts keeps its contents honest, but only the real tarball can
+    // prove it shipped — a `files` array that dropped it looks fine everywhere else.
+    const root = await makePackage({ omit: ['llms.txt'] });
+    const result = runScript(root);
+
+    expect(result.code).toBe(1);
+    expect(result.output).toContain('llms.txt');
   }, 120_000);
 
   it('fails when a declaration flavour is missing', async () => {

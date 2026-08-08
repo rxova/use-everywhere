@@ -43,7 +43,7 @@ import { MemoryHub } from '@use-everywhere/core/testing';
 | **Persistence adapters** — `localStorageAdapter`, `webStorageAdapter`                          | [defineStore](../hooks/define-store.md)                                                   |
 
 Every signature is also generated from the source in the
-[API reference](../api/core/index.md). This section is the prose; that one is
+[API reference](../api/core/README.md). This section is the prose; that one is
 the exhaustive list.
 
 ## The one rule

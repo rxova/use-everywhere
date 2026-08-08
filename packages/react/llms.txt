@@ -1,0 +1,113 @@
+# use-everywhere
+
+> React hooks for state, messages, presence and leader election that exist in
+> every tab, window and worker on an origin. `useSharedState` is `useState` whose
+> value lives in every tab; writes converge in milliseconds and a tab opened
+> later hydrates to the current value rather than the initial one. There is no
+> Provider and no server. This package re-exports the whole of
+> `@use-everywhere/core`, so it is the only install a React app needs. React >=
+> 18. Ships ESM and CommonJS.
+
+## Install
+
+    npm install use-everywhere
+
+`react >= 18` is the only peer dependency.
+
+## Minimal working example
+
+```tsx
+import { useSharedState } from 'use-everywhere';
+
+export function Counter() {
+  // Same signature as useState. The value exists in every tab on the origin.
+  const [count, setCount] = useSharedState('count', 0);
+
+  return <button onClick={() => setCount((n) => n + 1)}>{count}</button>;
+}
+```
+
+Open it in two tabs. Clicking in one updates both.
+
+## The three mistakes to avoid
+
+**1. Calling `defineChannel` or `defineStore` inside a component.** They are
+module-scope factories. Called in a render they build a new bus on every
+render, and the page syncs nothing while looking completely correct. Install
+`eslint-plugin-use-everywhere` — this is the mistake its `define-at-module-scope`
+rule exists for.
+
+```tsx
+// WRONG — a new channel per render
+function Cart() {
+  const shop = defineChannel<ShopEvents>('shop');
+}
+
+// RIGHT — once, at module level
+const shop = defineChannel<ShopEvents>('shop');
+function Cart() {
+  const post = shop.useSend();
+}
+```
+
+**2. Expecting a Provider.** There isn't one, and there is nothing to wrap. A
+BroadcastChannel is already global to the origin, so identity is the name string
+and the hooks read module-level singletons keyed by it. Just call them.
+
+**3. Putting a value in shared state that structured clone cannot carry.** The
+wire is the structured clone algorithm, so functions, class instances, DOM nodes
+and symbols do not survive. Dates, Maps, Sets and typed arrays do. The
+`structured-clone-safe` lint rule catches the rest.
+
+## API
+
+| Export | Kind | What it answers |
+| --- | --- | --- |
+| `useSharedState` | hook | "What is the current value?" — `useState` across every tab |
+| `useSharedReducer` | hook | The same, dispatch-shaped |
+| `useSharedStore` | hook | Subscribe to a slice of a store with a selector |
+| `useChannel` | hook | The typed event channel for a name |
+| `useMessage` | hook | Run a handler when another tab posts an event |
+| `useSend` | hook | A stable, typed `post` for a channel |
+| `useAsk` | hook | Request/response across tabs |
+| `useAnswer` | hook | Serve the other half of `useAsk` |
+| `usePeers` | hook | A live list of open tabs, windows and workers |
+| `useClientId` | hook | This tab's stable id on a bus |
+| `usePresenceMetadata` | hook | Attach and read per-peer metadata |
+| `useLeader` | hook | Elect exactly one tab to own a job |
+| `useIsLeader` | hook | Whether this tab currently holds the lease |
+| `useLeaderEffect` | hook | Run an effect only in the leader tab |
+| `useOpenedWindow` | hook | The cross-origin window lifecycle as render state |
+| `useHydrated` | hook | Whether the first cross-tab sync has landed (SSR) |
+| `defineChannel` | factory | Bind a channel name + message map once, at module scope |
+| `defineStore` | factory | The same for a store, and where persistence is enabled |
+| `createNamespace` | factory | Prefix every bus name, for micro-frontends |
+| `Inspector` | component | Devtools panel; import from `use-everywhere/devtools` |
+
+`useSharedState` and the presence hooks are the two most people need. Everything
+in `@use-everywhere/core` is re-exported from here too — see that package's
+`llms.txt` for the framework-free engines.
+
+## Gotchas
+
+- **Shared state never crosses origins.** Two origins are two trust domains. For
+  that, open a window explicitly with `useOpenedWindow`, which is typed,
+  per-message and validated by origin.
+- **Last-writer-wins, per key.** Per-key `[counter, clientId]` clocks give a
+  deterministic tie-break, not a merge. Two tabs editing the same key
+  concurrently means one of them loses — use `useSharedReducer` when you need the
+  operations to compose instead.
+- **The name is the identity.** `useSharedState('count', 0)` in two different
+  components is one value. Namespace with `createNamespace` if that is not what
+  you want.
+- **SSR is safe.** Hooks render initial values on the server and converge after
+  hydration; nothing throws where `BroadcastChannel` is absent.
+
+## Docs
+
+- Full documentation: https://rxova.org/packages/use-everywhere/
+- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Every page as raw markdown: add `.md` to any docs URL
+- Hooks reference: https://rxova.org/packages/use-everywhere/hooks/overview.md
+- Error codes: https://rxova.org/packages/use-everywhere/errors.md
+- Source: https://github.com/rxova/use-everywhere

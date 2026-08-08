@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "node scripts/build-playground.mjs && astro dev",
-    "build": "node scripts/build-playground.mjs && astro build",
+    "build": "node scripts/build-playground.mjs && astro build && node ./scripts/check-md-routes.mjs",
     "preview": "astro preview",
     "typecheck": "astro check",
-    "playground": "node scripts/build-playground.mjs"
+    "playground": "node scripts/build-playground.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.41.4",
@@ -31,7 +32,8 @@
     "react-dom": "^19.2.8",
     "typescript": "^6.0.3",
     "use-everywhere": "workspace:*",
-    "vite": "^8.1.5"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": ">=20"

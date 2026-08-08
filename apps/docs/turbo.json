@@ -17,6 +17,14 @@
       // Declared here rather than on the root task so setting them does not also
       // invalidate the two library builds, which never read them.
       "env": ["DOCS_URL", "DOCS_BASE_URL"]
+    },
+    // These tests cover the agent-facing surfaces — the normalizer, the page
+    // helpers, the llms.txt builders and the twin gate. No coverage report, so
+    // the root task's `coverage/**` output would warn on every run; and no
+    // `^build`, because every module under test is plain JavaScript over plain
+    // objects. That is the whole reason they are split out from docs-md.mjs.
+    "test": {
+      "outputs": []
     }
   }
 }

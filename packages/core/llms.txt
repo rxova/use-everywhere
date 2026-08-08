@@ -1,0 +1,84 @@
+# @use-everywhere/core
+
+> The framework-free engine behind `use-everywhere`: shared state, typed
+> messages, presence, leader election and a cross-origin window channel, for any
+> tab, window or worker on an origin. No React, no framework, no server. If you
+> are using React, install `use-everywhere` instead — it re-exports all of this
+> plus the hooks, so importing both is redundant. Ships ESM and CommonJS.
+
+## Install
+
+    npm install @use-everywhere/core
+
+No runtime dependencies and no peers. Use this package directly only when you
+are NOT using React.
+
+## Minimal working example
+
+```ts
+import { createSharedStore } from '@use-everywhere/core';
+
+const store = createSharedStore({ name: 'settings' }, { theme: 'light' });
+
+// Fires whenever any tab on the origin writes.
+store.subscribe(() => console.log(store.get()));
+
+store.set({ theme: 'dark' });
+```
+
+## API
+
+| Export | Kind | What it does |
+| --- | --- | --- |
+| `createSharedStore` | factory | Shared state, last-writer-wins per key |
+| `createSharedReducer` | factory | The same, dispatch-shaped |
+| `createChannel` | factory | Typed fire-and-forget pub/sub between tabs |
+| `createPresence` | factory | Who else is open, with heartbeat and pruning |
+| `createLeader` | factory | Lease-and-claim election with a sticky incumbent |
+| `createNamespace` | factory | Prefix every bus name, for micro-frontends |
+| `openWindow` | function | Open a cross-origin window on a typed 1:1 channel |
+| `connectToOpener` | function | The other half, called by the opened page |
+| `newer` | function | The version clock every conflict is settled by |
+| `observeBus` | function | Every wire crossing a bus, in both directions |
+| `enableDebug` | function | Turn on development diagnostics |
+| `getBusNames` | function | Which buses exist right now |
+| `getTransportKind` | function | Which transport a bus resolved to |
+| `getWireSkew` | function | Version skew between this tab and its peers |
+| `BroadcastChannelTransport` | class | The same-origin default |
+| `StorageTransport` | class | `storage`-event fallback |
+| `SharedWorkerTransport` | class | One worker instead of N tabs |
+| `NoopTransport` | class | Does nothing; for SSR and tests |
+| `WindowClosedError` | class | The opened window went away mid-flow |
+| `HandshakeTimeoutError` | class | The cross-origin handshake never completed |
+| `webStorageAdapter` | function | Persist to `localStorage` / `sessionStorage` |
+| `indexedDbAdapter` | function | Persist to IndexedDB |
+| `jsonSerializer` | function | The default serializer for the text paths |
+
+## Gotchas
+
+- **Shared state never crosses origins.** That is deliberate — two origins are
+  two trust domains. Use `openWindow` / `connectToOpener` for that, which is
+  explicit, typed, per-message and validated by origin, envelope brand,
+  per-connection nonce and source window.
+- **The wire is structured clone.** Functions, class instances, DOM nodes and
+  symbols do not survive. Dates, Maps, Sets and typed arrays do. The text
+  transports (`StorageTransport`, persistence) go through a serializer instead,
+  which is narrower still — see the serialization guide.
+- **Last-writer-wins, per key**, with a `[counter, clientId]` tie-break. It is a
+  deterministic resolution, not a merge; use `createSharedReducer` when the
+  operations need to compose.
+- **The name is the identity.** A bus name is global to the origin. Two
+  independently-written features picking `'store'` are one store. Use
+  `createNamespace` to keep them apart.
+- **Call the factories once, at module scope.** They register singletons keyed by
+  name; calling one per render or per request builds a new bus each time.
+
+## Docs
+
+- Full documentation: https://rxova.org/packages/use-everywhere/
+- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Every page as raw markdown: add `.md` to any docs URL
+- Core section: https://rxova.org/packages/use-everywhere/core/overview.md
+- Generated reference: https://rxova.org/packages/use-everywhere/api/core/readme.md
+- Error codes: https://rxova.org/packages/use-everywhere/errors.md
+- Source: https://github.com/rxova/use-everywhere

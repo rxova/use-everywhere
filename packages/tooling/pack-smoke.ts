@@ -34,6 +34,10 @@ const REQUIRED = [
   // npm only auto-includes LICENSE from the package root, so a package moved
   // into packages/* without its own copy silently ships unlicensed.
   'package/LICENSE',
+  // What a coding agent reads out of node_modules after an install. It is listed
+  // in each manifest's `files`, and `check-llms.ts` keeps its contents honest —
+  // but only the real tarball can prove it actually shipped.
+  'package/llms.txt',
 ];
 
 // Shipping these would leak the whole source tree to every consumer.

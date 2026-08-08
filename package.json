@@ -21,6 +21,7 @@
     "check:exports": "turbo run check:exports --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils",
     "pack:smoke": "turbo run pack:smoke --concurrency=1 --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils",
     "verify": "node --import tsx ./packages/tooling/verify.ts",
+    "check:llms": "node --import tsx ./packages/tooling/check-llms.ts",
     "release": "pnpm run libs:build && changeset publish",
     "prepare": "husky",
     "libs:build": "turbo run build --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils",

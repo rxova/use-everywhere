@@ -150,6 +150,11 @@ jobs:
       # and its chromium requirement into this job.
       - name: Publint and Are The Types Wrong
         run: pnpm run check:exports
+      # Before the tarball, so a malformed or drifted llms.txt is reported as
+      # itself rather than as a missing file inside pack-smoke's output. Reads
+      # files only, so it needs no build.
+      - name: Check packaged llms.txt files
+        run: pnpm run check:llms
       - name: Pack smoke test
         run: pnpm run pack:smoke
 
