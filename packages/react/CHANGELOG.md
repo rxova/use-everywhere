@@ -1,5 +1,16 @@
 # use-everywhere
 
+## 0.11.0
+
+### Minor Changes
+
+- [#77](https://github.com/rxova/use-everywhere/pull/77) [`96a7e3f`](https://github.com/rxova/use-everywhere/commit/96a7e3fcad42d535d88274f8e51c7507d285156d) - Mirror the relay handle at `use-everywhere/shared-worker`: `relay` and the `Relay` type join the existing `startRelay` re-export, so a React app whose SharedWorker owns the WebSocket still needs only one dependency to publish from it.
+
+### Patch Changes
+
+- Updated dependencies [[`96a7e3f`](https://github.com/rxova/use-everywhere/commit/96a7e3fcad42d535d88274f8e51c7507d285156d)]:
+  - @use-everywhere/core@0.11.0
+
 ## 0.10.1
 
 ### Patch Changes
