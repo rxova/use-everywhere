@@ -1,6 +1,6 @@
 {
   "name": "@use-everywhere/test-utils",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Simulate several tabs in one process: a scenario DSL, an in-memory bus, fake windows and fake Web Locks",
   "license": "MIT",
   "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",
