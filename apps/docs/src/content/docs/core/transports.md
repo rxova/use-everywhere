@@ -106,6 +106,58 @@ that builds its own Blob gets its own URL — and therefore its own private
 "shared" worker, sharing nothing. Inlining would look like a convenience and
 behave like the bug this transport exists to prevent.
 
+### When the worker owns the socket
+
+The relay above only forwards. A worker that does its own work — holds the
+WebSocket, runs the poll loop — needs to _publish_, and the way it does that is
+to join its own relay as one more peer:
+
+```js
+// socket-worker.js — the file your app serves
+import { relay } from 'use-everywhere/shared-worker';
+import { createSharedStore } from 'use-everywhere';
+
+const store = createSharedStore('feed', { tick: null }, { transport: () => relay.connect() });
+
+const socket = new WebSocket('wss://example.com/feed');
+socket.onmessage = (event) => store.set('tick', JSON.parse(event.data));
+```
+
+Tabs point at that script and change nothing else:
+
+```ts
+createSharedStore(
+  'feed',
+  { tick: null },
+  {
+    transport: () =>
+      new SharedWorkerTransport({ url: new URL('./socket-worker.js', import.meta.url) }),
+  },
+);
+```
+
+That is the whole of "one socket for the origin, owned by something the user
+cannot close" — no leader election, and no separate handle to keep the worker
+alive, because the port each tab already holds does that.
+
+`relay.connect()` returns a `Transport`, so the worker uses `createSharedStore`
+exactly as a tab does — including the late-joiner handshake, which means a
+worker that starts after the tabs still hydrates from them. **Prefer it over
+assembling messages yourself**: the wire format is the engines' business and a
+documented promise, so a worker that hand-writes envelopes is a second
+implementation of a protocol it does not own. `relay.broadcast(data)` is there
+for a worker speaking some protocol of its own, and bypasses the engines
+entirely.
+
+`relay.size` counts the ports attached — a live count of the tabs that opened
+this worker, which is what you want in order to idle the socket while nobody is
+looking. The worker's own seats are not counted; it is not one of its own tabs.
+
+**Import `relay`, do not call `startRelay(self)`.** Importing the module
+installs the handler, so calling `startRelay` again installs a _second_ relay
+over the first and strands the ports the first one holds. `startRelay` stays
+exported for tests, which cannot install a global `onconnect`.
+
 **What it does not buy: durability.** The worker is torn down when the last port
 closes, exactly like a channel with no listeners. State still lives in the tabs.
 This moves the wire, not the source of truth.
