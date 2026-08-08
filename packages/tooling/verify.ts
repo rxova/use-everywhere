@@ -44,6 +44,11 @@ export const steps: readonly VerifyStep[] = [
   { name: 'Check dependency dedupe', turbo: ['//#dedupe:check'] },
   { name: 'Check formatting', script: 'format:check' },
   { name: 'Lint', script: 'lint' },
+  // Reads files only — no build, no browser — so it sits with the cheap checks
+  // rather than with the docs build, which this gate deliberately excludes. The
+  // twin/llms.txt gate for the SITE cannot run here for that reason; it runs in
+  // the Docs workflow, which installs chromium. See scripts/check-md-routes.mjs.
+  { name: 'Check packaged llms.txt files', script: 'check:llms' },
   // Turbo already knows ^build must precede typecheck and test, and that build
   // must precede size, so handing it whole sets lets it parallelise across the
   // five packages and pay the pnpm+turbo startup twice rather than four times.

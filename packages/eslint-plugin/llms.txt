@@ -1,0 +1,61 @@
+# eslint-plugin-use-everywhere
+
+> Four ESLint rules for the `use-everywhere` mistakes that are silent at runtime:
+> a bus factory called inside a component, a dynamic bus name, a value in shared
+> state that structured clone cannot carry, and a leader effect capturing render
+> state. Each produces code that looks correct and syncs nothing, which is why
+> the types cannot catch them and a linter has to. Flat config only.
+
+## Install
+
+    npm install -D eslint-plugin-use-everywhere
+
+Peer: `eslint >= 9`. This package is configured, not imported into app code.
+
+## Use
+
+Flat config, in `eslint.config.js`:
+
+```js
+import useEverywhere from 'eslint-plugin-use-everywhere';
+
+export default [useEverywhere.configs.recommended];
+```
+
+The recommended config carries no `files` key, so it applies wherever you place
+it — put it after a `files` block of your own if the project mixes languages.
+
+To pick rules individually instead:
+
+```js
+import useEverywhere from 'eslint-plugin-use-everywhere';
+
+export default [
+  {
+    plugins: { 'use-everywhere': useEverywhere },
+    rules: {
+      'use-everywhere/define-at-module-scope': 'error',
+      'use-everywhere/no-dynamic-name': 'error',
+      'use-everywhere/structured-clone-safe': 'error',
+      'use-everywhere/leader-effect-captures': 'warn',
+    },
+  },
+];
+```
+
+## Rules
+
+| Rule | Recommended | What it catches |
+| --- | --- | --- |
+| `define-at-module-scope` | error | `defineStore`, `defineChannel` or `createNamespace` called anywhere but the top level of a module. Inside a component it builds a new bus every render, and the page syncs nothing while looking fine. |
+| `no-dynamic-name` | error | A bus name that is not a string literal, a module-scope `const` string, or an imported binding. A computed name means two tabs can silently disagree about which bus they are on. |
+| `structured-clone-safe` | error | Values in shared state that the structured clone algorithm cannot carry — functions, class instances, DOM nodes, symbols. The write throws in the tab that made it and nowhere else. |
+| `leader-effect-captures` | warn | Values declared in a component that a `useLeaderEffect` callback reads. A warning rather than an error: a captured value that never changes is harmless, and the rule cannot tell the difference, so it argues rather than blocks. |
+
+## Docs
+
+- Full documentation: https://rxova.org/packages/use-everywhere/
+- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Every page as raw markdown: add `.md` to any docs URL
+- Plugin section: https://rxova.org/packages/use-everywhere/eslint/overview.md
+- Source: https://github.com/rxova/use-everywhere
