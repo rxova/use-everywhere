@@ -226,7 +226,7 @@ jobs:
       - name: Upload coverage
         if: matrix.node-version == 24
         continue-on-error: true
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # Every package writes its own lcov; naming them keeps a drop
