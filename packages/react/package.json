@@ -1,6 +1,6 @@
 {
   "name": "use-everywhere",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "React hooks for state and messages shared across tabs, windows, and workers",
   "license": "MIT",
   "author": "Jonatan Kruszewski <jonakrusze@gmail.com>",

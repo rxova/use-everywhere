@@ -1,5 +1,12 @@
 # @use-everywhere/test-utils
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`96a7e3f`](https://github.com/rxova/use-everywhere/commit/96a7e3fcad42d535d88274f8e51c7507d285156d)]:
+  - @use-everywhere/core@0.11.0
+
 ## 0.1.2
 
 ### Patch Changes
