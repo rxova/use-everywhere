@@ -11,6 +11,7 @@ export default defineConfig({
         payment: resolve(import.meta.dirname, 'payment.html'),
         skew: resolve(import.meta.dirname, 'skew.html'),
         degradation: resolve(import.meta.dirname, 'degradation.html'),
+        relay: resolve(import.meta.dirname, 'relay.html'),
       },
     },
   },
