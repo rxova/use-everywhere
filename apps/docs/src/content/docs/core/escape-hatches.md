@@ -1,5 +1,6 @@
 ---
 title: 'Escape hatches'
+description: 'Reach into what the hooks are doing from non-React code, and the errors you can catch when you do.'
 sidebar:
   order: 6
 ---

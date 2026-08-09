@@ -1,5 +1,6 @@
 ---
 title: 'defineChannel'
+description: "Bind a channel's name and message map once at module level, and get typed useSend and useMessage hooks back."
 sidebar:
   order: 6
 ---

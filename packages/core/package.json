@@ -9,15 +9,23 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "homepage": "https://rxova.org/packages/use-everywhere/core/overview/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "broadcastchannel",
+    "broadcast-channel",
     "cross-tab",
+    "multi-tab",
+    "tabs",
+    "tab-sync",
+    "sync",
     "shared-state",
+    "state-management",
     "postmessage",
     "cross-origin",
+    "cross-window",
     "presence",
+    "leader-election",
     "pubsub"
   ],
   "publishConfig": {

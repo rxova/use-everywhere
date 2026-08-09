@@ -1,5 +1,6 @@
 ---
 title: 'define-at-module-scope'
+description: 'Requires defineStore, defineChannel and createNamespace to be called at module scope, so a bus identity stays stable across renders.'
 sidebar:
   order: 2
 ---

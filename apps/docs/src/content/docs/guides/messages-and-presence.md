@@ -1,5 +1,6 @@
 ---
 title: 'Messages & presence'
+description: 'When to send a message instead of sharing state, and how to build live presence — who else is here, right now.'
 sidebar:
   order: 2
 ---

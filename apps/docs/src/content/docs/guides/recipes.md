@@ -1,5 +1,6 @@
 ---
 title: 'Recipes'
+description: 'Small, complete cross-tab patterns to lift straight into an app, each naming the primitive it leans on and why that one is right.'
 sidebar:
   order: 5
 ---

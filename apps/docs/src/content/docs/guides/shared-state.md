@@ -1,5 +1,6 @@
 ---
 title: 'Shared state'
+description: 'Shared state beyond the counter: choosing how far a value travels, namespacing keys so features cannot collide, and watching two tabs converge.'
 sidebar:
   order: 1
 ---

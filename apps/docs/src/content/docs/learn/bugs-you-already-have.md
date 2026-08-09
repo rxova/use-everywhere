@@ -1,5 +1,6 @@
 ---
 title: 'Bugs you already have'
+description: 'Five tabs, one expired token, five refresh calls. The multi-tab bugs already in your app, and which primitive fixes each one.'
 sidebar:
   order: 1
 ---

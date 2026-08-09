@@ -1,5 +1,6 @@
 ---
 title: 'ESLint plugin'
+description: 'eslint-plugin-use-everywhere catches the cross-tab mistakes types cannot: unstable bus names, non-cloneable values and captured leader effects.'
 sidebar:
   order: 1
 ---

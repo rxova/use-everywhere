@@ -1,5 +1,6 @@
 ---
 title: 'Playground'
+description: 'Real clients in frames on one origin sharing one BroadcastChannel. Change the cart in one and watch the others converge.'
 sidebar:
   order: 6
 ---

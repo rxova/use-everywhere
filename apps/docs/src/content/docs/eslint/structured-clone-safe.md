@@ -1,5 +1,6 @@
 ---
 title: 'structured-clone-safe'
+description: 'Flags values in shared state that the structured clone algorithm cannot carry, before they fail quietly on the wire.'
 sidebar:
   order: 4
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'no-dynamic-name'
+description: 'Requires a bus name to be a string literal or a module-scope constant, so a channel identity cannot change between renders.'
 sidebar:
   order: 3
 ---

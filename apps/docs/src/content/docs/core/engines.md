@@ -1,5 +1,6 @@
 ---
 title: 'Engines'
+description: 'The four factories behind the hooks — shared state, channels, presence and leader election — usable from any framework, or none.'
 sidebar:
   order: 2
 ---

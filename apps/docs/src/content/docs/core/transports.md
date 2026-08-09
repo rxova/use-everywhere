@@ -1,5 +1,6 @@
 ---
 title: 'Transports'
+description: 'A transport is the wire an engine talks over: a three-method interface you can swap to test without a browser, or to turn syncing off entirely.'
 sidebar:
   order: 4
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'Error codes'
+description: 'Every diagnostic use-everywhere prints, with its code, what triggers it, and how to fix it.'
 sidebar:
   order: 9
 ---

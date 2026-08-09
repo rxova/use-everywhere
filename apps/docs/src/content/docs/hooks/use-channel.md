@@ -1,5 +1,6 @@
 ---
 title: 'useChannel'
+description: 'Get the typed event channel for a name — how tabs tell each other that something just happened.'
 sidebar:
   order: 3
 ---

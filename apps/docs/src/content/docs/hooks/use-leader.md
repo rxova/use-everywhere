@@ -1,5 +1,6 @@
 ---
 title: 'useLeader'
+description: 'Elect exactly one tab to own the WebSocket, the polling loop or the token refresh — and hand the seat over when that tab closes.'
 sidebar:
   order: 10
 ---

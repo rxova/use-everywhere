@@ -1,5 +1,6 @@
 ---
 title: 'Counters and reducers'
+description: 'Shared state converges last-writer-wins per key, which is wrong for a counter. How to model increments and reducers so concurrent writes are not lost.'
 sidebar:
   order: 10
 ---

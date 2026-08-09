@@ -1,5 +1,6 @@
 ---
 title: 'Why this exists'
+description: 'Two tabs, one checkout, two charges. Why the browser needs multi-tab primitives that React and useState do not provide.'
 sidebar:
   order: 3
 ---

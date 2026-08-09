@@ -1,5 +1,6 @@
 ---
 title: 'Serialization: Dates, Maps, and the text paths'
+description: 'BroadcastChannel carries structured clone, so a Date arrives a Date and a Map arrives a Map. What does not survive, and where the text paths change that.'
 sidebar:
   order: 11
 ---

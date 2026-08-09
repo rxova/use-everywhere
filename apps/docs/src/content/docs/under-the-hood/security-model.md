@@ -1,5 +1,6 @@
 ---
 title: 'Security model'
+description: 'Two postures in one library: same-origin state on a shared bus, and cross-origin windows validated by origin, envelope brand and per-connection nonce.'
 sidebar:
   order: 2
 ---

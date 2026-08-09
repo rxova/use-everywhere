@@ -1,5 +1,6 @@
 ---
 title: 'The version clock'
+description: 'How use-everywhere settles conflicts: a four-line per-key counter and client id giving last-writer-wins with a deterministic tie-break.'
 sidebar:
   order: 3
 ---

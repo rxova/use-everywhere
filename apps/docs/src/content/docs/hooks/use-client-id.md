@@ -1,5 +1,6 @@
 ---
 title: 'useClientId'
+description: "This tab's identity on a bus: the id that stamps every state patch and event it sends."
 sidebar:
   order: 8
 ---

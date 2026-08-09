@@ -1,5 +1,6 @@
 ---
 title: 'Cross-origin payments'
+description: 'Build a checkout that opens a payment window on another domain, hands it typed data and awaits a receipt — validated by origin, brand and nonce.'
 sidebar:
   order: 3
 ---

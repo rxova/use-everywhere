@@ -1,5 +1,6 @@
 ---
 title: 'useSharedState'
+description: 'useState whose value lives in every tab, window and worker on your origin — converging everywhere without a server or a Provider.'
 sidebar:
   order: 2
 ---

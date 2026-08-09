@@ -1,5 +1,6 @@
 ---
 title: 'useSend'
+description: "A channel's post function with stable identity: the announce half of the typed cross-tab event system."
 sidebar:
   order: 5
 ---

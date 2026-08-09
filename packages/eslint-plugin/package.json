@@ -9,7 +9,7 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/eslint-plugin"
   },
-  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "homepage": "https://rxova.org/packages/use-everywhere/eslint/overview/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "eslint",
@@ -17,7 +17,9 @@
     "eslint-plugin",
     "use-everywhere",
     "cross-tab",
-    "shared-state"
+    "multi-tab",
+    "shared-state",
+    "broadcastchannel"
   ],
   "publishConfig": {
     "access": "public"
