@@ -488,6 +488,29 @@ describe('joining the queue', () => {
     standby.close();
   });
 
+  it('never asks the browser for the lock at all when it is ineligible', async () => {
+    const hub = new MemoryHub();
+    const locks = new FakeLockManager();
+    const request = vi.spyOn(locks, 'request');
+    const name = uniqueName();
+    const standby = build(hub, locks, name, { eligible: false });
+    await settle();
+
+    // Stronger than "does not hold it", and the difference is the whole guard:
+    // a tab that requests the lock and then declines it inside the callback
+    // holds it for a turn, takes a place in the queue ahead of tabs that want
+    // it, and looks identical afterwards to one that never asked.
+    expect(request).not.toHaveBeenCalled();
+
+    // And it is a guard, not an inability: opting in queues exactly one request.
+    standby.setEligible(true);
+    await settle();
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(standby.getSnapshot().isLeader).toBe(true);
+
+    standby.close();
+  });
+
   it('stops caring about the seat once closed, even mid-queue', async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();

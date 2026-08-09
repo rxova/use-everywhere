@@ -64,20 +64,28 @@ Raise the floor as survivors die. Never lower it.
 | --------------------- | --------- | --------- |
 | `clock.ts`            | 97.14     | 1         |
 | `channel.ts`          | 94.03     | 4         |
-| `schema.ts`           | 94.00     | 3         |
-| `bus.ts`              | 93.59     | 10        |
+| `leader-web-locks.ts` | 93.33     | 8         |
+| `bus.ts`              | 92.41     | 12        |
+| `shared-store.ts`     | 92.26     | 23        |
+| `schema.ts`           | 92.16     | 4         |
 | `serializer.ts`       | 91.84     | 3         |
-| `wire.ts`             | 91.67     | 6         |
-| `leader-web-locks.ts` | 90.83     | 11        |
 | `presence.ts`         | 90.74     | 8         |
-| `shared-store.ts`     | 90.17     | 29        |
+| `wire.ts`             | 90.41     | 7         |
 | `leader.ts`           | 90.00     | 16        |
 | `shared-reducer.ts`   | 90.00     | 12        |
-| **total**             | **91.40** | **103**   |
+| **total**             | **91.84** | **98**    |
 
 Started at 84.63 with 195 survivors. `leader.ts` and `shared-reducer.ts` sit
 exactly on 90, so they are the two to watch: the next change to either is the one
 that drops below.
+
+Two modules have already been below and come back. `leader-web-locks.ts` (88.33)
+and `shared-store.ts` (89.90) both failed the gate the run after 0.11.0 landed —
+new branches in `joinQueue` and in the store's `close`, each with a test that ran
+them and asserted something that could not fail. Findings 6 and 7 below are those
+two. Worth knowing what the shape of this failure looks like: the overall score
+stayed above the break threshold both times, and only the per-module check
+noticed.
 
 ## What the runs found
 
@@ -117,6 +125,24 @@ production build.
 closing must not announce a resign — that would tell every peer the leader had
 gone while it sat there holding the lock.
 
+**6. An ineligible tab was checked for the wrong thing.** Two tests asserted
+that a tab created with `eligible: false` does not _hold_ the lock — which is
+also true of a tab that asks for it, is granted it, and declines inside the
+callback. Six mutants of the `joinQueue` guard survived on that gap, including
+deleting the guard outright. The distinction is not academic: asking takes a
+place in the queue ahead of tabs that want the seat, and holds it for a turn.
+The test now watches `locks.request` itself.
+
+**7. The live-store count could not be observed going down.** `devWarn`
+deduplicates per message, and the duplicate-store message is fixed by the store
+name — so the old test's closing move (close both, open a third, expect
+silence) could not fail: the third store's warning was suppressed as a repeat
+whatever the count said. Every mutant of the decrement survived it, including
+`- 1` becoming `+ 1`. The bookkeeping is now checked on a name that has not
+warned yet, where silence is a real assertion, and a store on a custom
+transport — never counted on the way in — is checked not to discount on the way
+out.
+
 ## Mutants deliberately left alive
 
 Two categories, marked in the source with `// Stryker disable next-line` and a
@@ -126,9 +152,10 @@ reason rather than left as unexplained survivors:
 addEventListener === 'function'` is true in every browser-like test environment
   and false in every Node one, so no mutant of it is distinguishable by anything
   we run.
-- **Message text.** Warning and error strings are not asserted on. Pinning them
-  makes every reworded warning a failing test, which is a real cost for no real
-  safety.
+- **Message text.** Warning and error prose is not asserted on. Pinning it makes
+  every reworded warning a failing test, which is a real cost for no real
+  safety. The `UE` code is the exception, and is asserted: it is the part that
+  is promised to be permanent, and the part somebody pastes into a search box.
 
 ## Triaging the rest
 

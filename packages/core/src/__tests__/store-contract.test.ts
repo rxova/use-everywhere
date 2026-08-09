@@ -167,6 +167,45 @@ describe('close', () => {
     warn.mockRestore();
   });
 
+  it('gives the name back when the last store on it closes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = uniqueName();
+
+    const first = createSharedStore<Shape>(name, { a: 0 });
+    first.close();
+    const second = createSharedStore<Shape>(name, { a: 0 });
+
+    // Sequential stores on one name are not duplicates. This is the only place
+    // the decrement itself is observable — the warning is deduplicated per
+    // message, so once a name has warned it never warns again — and a close
+    // that skipped it, or moved the count the wrong way, would leave every
+    // later store on this name looking like a second live one.
+    expect(warn).not.toHaveBeenCalled();
+
+    second.close();
+    warn.mockRestore();
+  });
+
+  it('leaves the count alone for a store on its own transport', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const hub = new MemoryHub();
+    const name = uniqueName();
+
+    const shared = createSharedStore<Shape>(name, { a: 0 });
+    // Not counted when it was created — a custom transport is a simulated tab,
+    // not a second store on this page — so it must not discount on the way out
+    // either, or a test double would cancel the warning for a page that really
+    // is paying for two.
+    build(hub, name).close();
+    const second = createSharedStore<Shape>(name, { a: 0 });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    shared.close();
+    second.close();
+    warn.mockRestore();
+  });
+
   it('stops answering lifecycle events', async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
@@ -209,6 +248,40 @@ describe('close', () => {
 
     store.close();
     wire.close();
+  });
+});
+
+describe('a restore it refuses', () => {
+  it('says which schema it found and which one it wanted', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const hub = new MemoryHub();
+    const store = build(
+      hub,
+      uniqueName(),
+      { a: 0 },
+      {
+        persist: {
+          adapter: {
+            read: () =>
+              ({ v: 1, schema: 9, state: { a: 1 }, versions: { a: [1, 'x'] } }) as Persisted,
+            write: () => {},
+          },
+          version: 2,
+        },
+      },
+    );
+
+    // The code is what somebody pastes into a search box; the two versions are
+    // the whole diagnosis — disk was written by a build ahead of this one, so
+    // the store stayed on its initial values rather than guess at the shape.
+    const line = String(warn.mock.calls[0]?.[0]);
+    expect(line).toContain('UE1002');
+    expect(line).toContain('v9');
+    expect(line).toContain('expected v2');
+    expect(store.getSnapshot().a).toBe(0);
+
+    store.close();
+    warn.mockRestore();
   });
 });
 
