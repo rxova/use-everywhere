@@ -1,5 +1,6 @@
 ---
 title: 'Persistence: versions, migrations, hydration'
+description: 'Persist shared state across reloads, and handle the version skew that comes with it: schema versions, migrations and hydration.'
 sidebar:
   order: 9
 ---

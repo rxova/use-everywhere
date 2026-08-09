@@ -1,5 +1,6 @@
 ---
 title: 'Version skew & the wire contract'
+description: 'Every deploy puts two versions of your app on one origin at once. The wire contract that keeps them talking to each other.'
 sidebar:
   order: 3
 ---

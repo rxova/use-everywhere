@@ -1,5 +1,6 @@
 ---
 title: 'Core without React'
+description: '@use-everywhere/core is the framework-agnostic engine behind the hooks — everything callable from a worker, a plain script or another framework.'
 sidebar:
   order: 1
 ---

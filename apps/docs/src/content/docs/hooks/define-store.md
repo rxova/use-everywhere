@@ -1,5 +1,6 @@
 ---
 title: 'defineStore'
+description: 'Give a shared store a persisted, typed identity — schema, version and migration path — defined once at module scope.'
 sidebar:
   order: 11
 ---

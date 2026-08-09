@@ -146,6 +146,13 @@ The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/paymen
 - A backgrounded tab has its timers throttled, so a healthy leader can still lose its lease.
 - Server rendering is inert: hooks render their defaults, open no transports, and start no election. Real values arrive after hydration.
 
+## Getting help
+
+- [Report a bug](https://github.com/rxova/use-everywhere/issues/new?template=bug_report.yml) — say how many contexts were involved and of what kind; a cross-tab bug that reproduces in one tab is a different bug.
+- [Request a feature](https://github.com/rxova/use-everywhere/issues/new?template=feature_request.yml)
+- [Limitations & FAQ](https://rxova.org/packages/use-everywhere/under-the-hood/limitations) and [error codes](https://rxova.org/packages/use-everywhere/errors/) answer most of what gets filed.
+- [Support](SUPPORT.md) · [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
+
 ## Contributing & releases
 
 `main` always represents the latest version published to npm — branch off it, PR back into it. Once CI passes on a merge, the release automation applies pending [changesets](https://github.com/changesets/changesets), publishes to npm with provenance, and tags the release. See [CONTRIBUTING.md](CONTRIBUTING.md).

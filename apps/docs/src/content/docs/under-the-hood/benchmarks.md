@@ -1,5 +1,6 @@
 ---
 title: 'Benchmarks'
+description: 'What use-everywhere costs over a raw BroadcastChannel, measured rather than asserted.'
 sidebar:
   order: 6
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'How sync works'
+description: 'Under the hood of cross-tab convergence: the hello and snapshot handshake, the per-key clock, and what happens when two tabs write at once.'
 sidebar:
   order: 1
 ---

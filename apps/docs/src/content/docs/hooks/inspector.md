@@ -1,5 +1,6 @@
 ---
 title: 'Inspector'
+description: "A floating panel showing what this tab is saying and hearing on the bus, so you don't debug five tabs with five console.logs."
 sidebar:
   order: 12
 ---

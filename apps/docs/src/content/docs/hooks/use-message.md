@@ -1,5 +1,6 @@
 ---
 title: 'useMessage'
+description: 'Run a handler whenever another tab posts a given event — the listen half of the typed cross-tab event system.'
 sidebar:
   order: 4
 ---

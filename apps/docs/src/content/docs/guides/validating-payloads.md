@@ -1,5 +1,6 @@
 ---
 title: 'Validating payloads'
+description: "Validate what arrives on the bus: the sender may be running last week's bundle, so types alone do not protect you."
 sidebar:
   order: 7
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'Limitations & FAQ'
+description: 'What use-everywhere deliberately does not do, and the questions that come up most — including why leader election is advisory rather than a lock.'
 sidebar:
   order: 4
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'usePeers'
+description: 'A live list of the other tabs, windows and workers open on your origin — the basis for presence UI.'
 sidebar:
   order: 7
 ---

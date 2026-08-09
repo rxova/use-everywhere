@@ -1,5 +1,6 @@
 ---
 title: 'Testing'
+description: 'Test cross-tab behaviour in one process — a scenario DSL, an in-memory bus, fake windows and fake Web Locks. No Playwright required.'
 sidebar:
   order: 6
 ---

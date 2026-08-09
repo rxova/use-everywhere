@@ -1,5 +1,6 @@
 ---
 title: 'Compared to the alternatives'
+description: 'use-everywhere compared to hand-rolled BroadcastChannel, localStorage events, Zustand, Jotai and Redux — what you would write instead, and what it would cost.'
 sidebar:
   order: 5
 ---

@@ -1,5 +1,6 @@
 ---
 title: 'Workers'
+description: 'A Web Worker is another peer on the same bus. How to share state and messages with workers and SharedWorkers.'
 sidebar:
   order: 4
 ---

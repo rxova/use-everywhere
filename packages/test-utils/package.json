@@ -9,14 +9,19 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/test-utils"
   },
-  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "homepage": "https://rxova.org/packages/use-everywhere/guides/testing/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "testing",
+    "test-utils",
     "cross-tab",
+    "multi-tab",
+    "tabs",
     "broadcastchannel",
     "shared-state",
-    "use-everywhere"
+    "use-everywhere",
+    "mock",
+    "fake-timers"
   ],
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,6 @@
 ---
 title: 'Debugging'
+description: 'Watch every message crossing the bus in both directions with observeBus and enableDebug — no React involved.'
 sidebar:
   order: 5
 ---

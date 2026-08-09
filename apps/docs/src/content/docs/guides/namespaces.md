@@ -1,5 +1,6 @@
 ---
 title: 'Namespaces for micro-frontends'
+description: 'A BroadcastChannel is global to the origin, so a bus name is an identity. How to namespace keys so independently deployed micro-frontends cannot collide.'
 sidebar:
   order: 8
 ---

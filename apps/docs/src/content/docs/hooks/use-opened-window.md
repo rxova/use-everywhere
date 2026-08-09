@@ -1,5 +1,6 @@
 ---
 title: 'useOpenedWindow'
+description: 'Open a window on another domain, hand it typed data and await its result, as plain render state.'
 sidebar:
   order: 9
 ---

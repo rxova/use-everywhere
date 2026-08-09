@@ -1,5 +1,6 @@
 ---
 title: 'Hooks overview'
+description: 'The ten React hooks in use-everywhere, what question each one answers, and which to reach for.'
 sidebar:
   order: 1
 ---

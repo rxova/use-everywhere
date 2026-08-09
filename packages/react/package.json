@@ -9,17 +9,26 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/rxova/use-everywhere#readme",
+  "homepage": "https://rxova.org/packages/use-everywhere/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "react",
     "hooks",
+    "react-hooks",
     "broadcastchannel",
+    "broadcast-channel",
     "cross-tab",
+    "multi-tab",
+    "tabs",
+    "tab-sync",
+    "sync",
     "shared-state",
+    "state-management",
     "postmessage",
     "cross-origin",
-    "presence"
+    "cross-window",
+    "presence",
+    "leader-election"
   ],
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,6 @@
 ---
 title: 'leader-effect-captures'
+description: 'Flags component values captured by a useLeaderEffect callback, where a stale closure survives the effect moving to another tab.'
 sidebar:
   order: 5
 ---

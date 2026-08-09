@@ -1,5 +1,6 @@
 ---
 title: 'Migrating to 1.0'
+description: 'What changes between the 0.x line and 1.0 of use-everywhere, and how to move across without a rewrite.'
 sidebar:
   order: 12
 ---

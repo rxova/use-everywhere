@@ -1,5 +1,6 @@
 ---
 title: 'The mental model'
+description: 'The two ideas the whole API follows from: one bus per name, and two worlds with two different trust levels.'
 sidebar:
   order: 4
 ---

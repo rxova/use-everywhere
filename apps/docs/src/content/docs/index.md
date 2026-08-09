@@ -1,5 +1,6 @@
 ---
 title: 'Getting started'
+description: 'use-everywhere is useState whose value exists in every tab, window and worker on your origin. Install it and share your first value in a few lines.'
 sidebar:
   order: 1
 ---
