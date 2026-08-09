@@ -64,6 +64,9 @@ describe('two stores, one name, one tab', () => {
 
     const second = createSharedStore('ws-duplicate', { n: 0 });
     expect(warn).toHaveBeenCalledTimes(1);
+    // The code as well as the prose: the prose can be reworded, and the code is
+    // what somebody searches for.
+    expect(String(warn.mock.calls[0]?.[0])).toContain('UE1001');
     expect(String(warn.mock.calls[0]?.[0])).toContain('second shared store');
 
     // Closing one then the other keeps the live-count bookkeeping honest
