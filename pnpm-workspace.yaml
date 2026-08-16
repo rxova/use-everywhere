@@ -34,10 +34,17 @@ overrides:
   # has nothing to consume and never terminates. High, and every path is the demo
   # app's Astro reaching postcss — dev-only, and nanoid ships in neither published
   # package, but `audit:check` gates on high and turns main red. Scoped to the 3.x
-  # line and closed at the top: postcss requires nanoid, and an open `>=3.3.17`
+  # line and closed at the top: postcss requires nanoid, and an open `>=3.3.18`
   # resolves to the ESM-only 6.x line that a require() cannot load. Drop once
-  # postcss depends on >=3.3.17 itself.
-  nanoid@3: '>=3.3.17 <4'
+  # postcss depends on >=3.3.18 itself.
+  #
+  # The floor was `>=3.3.17` and 3.3.17 is what the lockfile held. It is the
+  # advisory that moved, not this repository: the patched range was widened to
+  # >=3.3.18 after 3.3.17 shipped, so a pin that was green on 9 Aug turned red on
+  # 16 Aug against an unchanged tree. This is the case `audit:check` is kept out
+  # of Turbo's cache for, and it is why the floor is worth re-reading rather than
+  # trusting whenever this advisory resurfaces.
+  nanoid@3: '>=3.3.18 <4'
   # <=8.5.22. Moderate, so it does not trip the high-only gate on its own —
   # taken here because it is one line and the alternative is carrying a known
   # advisory until something else forces the issue.
