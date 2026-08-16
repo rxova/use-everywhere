@@ -10,6 +10,10 @@ on:
     #
     # `edited`: retitling a PR must re-check it, because the title becomes the
     # squash-merge commit message and nothing else validates it.
+    #
+    # All three are metadata-only, and since none of them moves HEAD they now
+    # run the two gates that read metadata and skip everything that reads the
+    # tree — see the concurrency group and `commitlint`'s `code-changed` output.
     types: [opened, synchronize, reopened, edited, labeled, unlabeled]
     # No paths-ignore, on either trigger. It used to skip apps/docs/** and
     # **/*.md on pull requests, which had two consequences once commitlint
@@ -25,8 +29,20 @@ on:
 permissions:
   contents: read
 
+# Two lanes per ref, not one. `edited`, `labeled` and `unlabeled` move no file,
+# so they only need the PR-metadata gates below — but while this was a single
+# group they also *cancelled* whatever full run was in flight for the same
+# commit, and the replacement run started the whole graph again from zero. Over
+# a representative week that was 9 of 32 runs on a SHA that had already been
+# built, roughly a fifth of everything this repository spends on Actions.
+#
+# Splitting the group is the half that stops the cancelling; the `code-changed`
+# output below is the half that stops the re-running.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+    contains(fromJSON('["edited", "labeled", "unlabeled"]'), github.event.action)
+    && 'metadata' || 'code' }}
   cancel-in-progress: true
 
 jobs:
@@ -42,7 +58,36 @@ jobs:
   commitlint:
     name: commit messages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # For reading the PR title back off the API — see "Lint the PR title".
+      pull-requests: read
+    outputs:
+      # Every job below that reads the tree is gated on this. The three PR
+      # actions that set it to `false` — a title or body edit, and the two label
+      # events behind the changeset escape hatch — leave HEAD exactly where it
+      # was, so re-running lint, types, unit tests and three browser engines
+      # recomputes a verdict this commit already carries.
+      #
+      # Skipping is safe for branch protection in a way that filtering the
+      # trigger would not be: the earlier run's checks stay attached to the SHA,
+      # and GitHub counts a job skipped by `if:` as satisfying a required check.
+      # A `paths`/`types` filter on the workflow itself reports nothing at all,
+      # which is the failure mode the `on:` block above is written to avoid.
+      code-changed: ${{ steps.scope.outputs.code-changed }}
     steps:
+      # Before the checkout: this is a property of the event, not of the tree,
+      # and the whole graph waits on this job to produce it.
+      - name: Decide whether this event touched the tree
+        id: scope
+        env:
+          ACTION: ${{ github.event.action }}
+        run: |
+          case "$ACTION" in
+            edited | labeled | unlabeled) echo 'code-changed=false' >> "$GITHUB_OUTPUT" ;;
+            *) echo 'code-changed=true' >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -58,13 +103,28 @@ jobs:
 
       # The squash-merge subject is the PR *title*, which no commit in the
       # branch contains and which `edited` lets someone change after CI already
-      # went green. Passed through the environment, never interpolated into the
-      # shell — a title is attacker-controlled text.
+      # went green.
+      #
+      # Read live from the API rather than out of `github.event`, because an
+      # edit no longer cancels the full run in flight for this SHA — see the
+      # concurrency group. Two runs can therefore be in the graph at once, both
+      # publishing a check named `commit messages`, and the one that finishes
+      # last is the one branch protection reads. From the payload, that could be
+      # the older run affirming a title the edit has since broken; from the API,
+      # either run lints the title as it stands and they agree.
+      #
+      # Piped, never interpolated into the shell — a title is attacker-controlled
+      # text — and `set -o pipefail` so a failed lookup fails the step instead of
+      # feeding commitlint an empty subject it would reject for the wrong reason.
       - name: Lint the PR title
         if: github.event_name == 'pull_request'
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: echo "$PR_TITLE" | pnpm exec commitlint --verbose
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -o pipefail
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json title --jq .title \
+            | pnpm exec commitlint --verbose
 
       # On main this is the squashed subject already linted above, plus the
       # changesets `chore: version packages` commit. Cheap, and it is what keeps
@@ -76,6 +136,7 @@ jobs:
   checks:
     name: lint · format · types · build
     needs: [commitlint]
+    if: needs.commitlint.outputs.code-changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -111,7 +172,7 @@ jobs:
   supply-chain:
     name: audit · dedupe
     needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
+    if: needs.commitlint.outputs.code-changed == 'true' && github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -133,7 +194,7 @@ jobs:
   pack-smoke:
     name: package contract
     needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
+    if: needs.commitlint.outputs.code-changed == 'true' && github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -161,7 +222,7 @@ jobs:
   e2e:
     name: e2e (${{ matrix.browser }})
     needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
+    if: needs.commitlint.outputs.code-changed == 'true' && github.head_ref != 'changeset-release/main'
     # The assertions unit tests cannot make: a real BroadcastChannel, real tabs,
     # real localStorage. One browser context — separate contexts are separate
     # storage partitions and would not see each other's broadcasts.
@@ -184,8 +245,27 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Only the engine this leg needs: installing all three per job would
       # download two browsers it never launches.
+      #
+      # The download is the cacheable half. The other half — `--with-deps`, an
+      # apt-get of the engine's shared libraries — is not: the runner is new
+      # every time, and apt state does not survive in a way worth restoring.
+      # So the cache holds the browser build, and a hit downgrades the step to
+      # `install-deps`, which is what the browser still needs from the system.
+      #
+      # Keyed on the lockfile because that is what pins the Playwright version,
+      # and the browser build is chosen by that version.
+      - name: Restore the ${{ matrix.browser }} build
+        id: browser-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install ${{ matrix.browser }}
+        if: steps.browser-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - name: Install the ${{ matrix.browser }} system libraries
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
       # `libs:build` first through Turbo — the demo app Playwright's webServer
       # serves imports the runtime libraries — then the suite for this engine.
       - name: End-to-end
@@ -200,7 +280,7 @@ jobs:
   test:
     name: unit (node ${{ matrix.node-version }})
     needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
+    if: needs.commitlint.outputs.code-changed == 'true' && github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -211,11 +291,19 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ matrix.node-version }}
-      # Deliberately no turbo-cache here. Turbo hashes files and env, not the
-      # Node binary, and the cache action keys on `github.job` — which is the
-      # same string for every leg of a matrix. Both legs would share one cache,
-      # so node 24 could replay a result computed under node 22, which is
-      # exactly what this matrix exists to prevent.
+      # Turbo hashes files and env, not the Node binary, and the cache action
+      # keys on `github.job` by default — which is one string for every leg of a
+      # matrix. Sharing that would let node 24 replay a result computed under
+      # node 22, which is exactly what this matrix exists to prevent, and is why
+      # this job carried no Turbo cache at all until the action grew a `key`.
+      #
+      # Naming the partition after the leg makes the cache correct rather than
+      # absent: each Node version accumulates its own results, and `test`'s
+      # `^build` — four library builds this job otherwise recomputes from
+      # scratch on every run — replays within the leg that produced it.
+      - uses: ./.github/actions/turbo-cache
+        with:
+          key: unit-node${{ matrix.node-version }}
       - run: pnpm install --frozen-lockfile
       # `test` depends on `^build`, so Turbo builds the libraries first.
       - name: Test with coverage thresholds
@@ -254,7 +342,7 @@ jobs:
   react18:
     name: unit (react 18)
     needs: [commitlint]
-    if: github.head_ref != 'changeset-release/main'
+    if: needs.commitlint.outputs.code-changed == 'true' && github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
