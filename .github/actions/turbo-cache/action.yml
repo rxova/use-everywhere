@@ -5,11 +5,23 @@ description: Restore and save Turborepo's local .turbo cache across CI runs.
 # clean runner can replay unchanged tasks instead of recomputing them. Keyed
 # per job (each job runs a different task subset) with a restore-keys prefix
 # for cross-run reuse on the same branch.
+
+inputs:
+  key:
+    description: >-
+      Cache partition to use. Defaults to the job name, which is the right
+      granularity when a job runs one task subset on one toolchain. A matrix
+      whose legs differ in something Turbo does not hash — the Node binary,
+      most obviously — must pass a distinct value per leg, or one leg replays
+      a result the other computed under a different runtime.
+    required: false
+    default: ''
+
 runs:
   using: composite
   steps:
     - uses: actions/cache@v6
       with:
         path: .turbo
-        key: turbo-${{ github.job }}-${{ runner.os }}-${{ github.sha }}
-        restore-keys: turbo-${{ github.job }}-${{ runner.os }}-
+        key: turbo-${{ inputs.key || github.job }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: turbo-${{ inputs.key || github.job }}-${{ runner.os }}-

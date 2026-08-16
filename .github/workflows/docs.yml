@@ -26,6 +26,17 @@ on:
 permissions:
   contents: read
 
+# `cancel-in-progress` on pull requests only, and the distinction is
+# load-bearing. Superseding a docs build for a branch still under review just
+# saves a build nobody will read. On main the same run is also the publish —
+# `notify-website` below hands rxova.org this run's artifact — so cancelling one
+# mid-flight risks the site keeping stale docs if the run that replaced it then
+# fails. Queueing is the right behaviour there; a few duplicated builds a week
+# is a cheaper trade than a missed publish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,7 +51,21 @@ jobs:
       # The two mermaid diagrams are rendered to static SVG at build time by
       # rehype-mermaid, which drives headless chromium. Without this the build
       # fails rather than silently degrading.
-      - run: pnpm --filter @use-everywhere/docs exec playwright install --with-deps chromium
+      #
+      # Cached the same way CI's e2e legs cache theirs: the browser build keys
+      # on the lockfile that pins Playwright, and a hit leaves only
+      # `install-deps` — the shared libraries, which belong to the runner rather
+      # than to the repository and so have to be installed every time.
+      - name: Restore the chromium build
+        id: browser-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+      - if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @use-everywhere/docs exec playwright install --with-deps chromium
+      - if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @use-everywhere/docs exec playwright install-deps chromium
 
       # Build at the path the aggregator actually serves these docs from.
       # Absolute references that only work at the domain root are invisible in a

@@ -14,6 +14,18 @@ permissions:
   contents: read
   security-events: write
 
+# This workflow had no concurrency group, so a branch pushed three times in a
+# minute ran three full analyses and kept the last one. An analysis is a
+# property of a commit, and only the newest commit on a ref can still be
+# merged — superseding the older runs costs nothing and is what every other
+# workflow here already does.
+#
+# Grouped per ref rather than per workflow so two branches under review do not
+# take turns cancelling each other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze
