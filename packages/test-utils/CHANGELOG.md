@@ -1,5 +1,18 @@
 # @use-everywhere/test-utils
 
+## 0.1.5
+
+### Patch Changes
+
+- [#92](https://github.com/rxova/use-everywhere/pull/92) [`5138646`](https://github.com/rxova/use-everywhere/commit/513864649d7f190f2a3679f8b4f6ac0d3ce9123c) - Broaden the npm keywords
+
+  Adds `multi-tab-testing`, `vitest`, `jest`, `web-locks`, `presence` and
+  `leader-election` — the runners this is used from and the behaviours it exists to
+  let you assert on. No code changes.
+
+- Updated dependencies [[`5138646`](https://github.com/rxova/use-everywhere/commit/513864649d7f190f2a3679f8b4f6ac0d3ce9123c)]:
+  - @use-everywhere/core@0.11.2
+
 ## 0.1.4
 
 ### Patch Changes

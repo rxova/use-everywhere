@@ -1,5 +1,16 @@
 # @use-everywhere/core
 
+## 0.11.2
+
+### Patch Changes
+
+- [#92](https://github.com/rxova/use-everywhere/pull/92) [`5138646`](https://github.com/rxova/use-everywhere/commit/513864649d7f190f2a3679f8b4f6ac0d3ce9123c) - Broaden the npm keywords
+
+  Adds the APIs the engine actually builds on (`web-locks`, `shared-worker`) and
+  the names the problem goes by (`cross-tab-state`, `tab-synchronization`), plus
+  `vanilla-js` and `zero-dependency` — the two properties that make this the right
+  package to reach for without React. No code changes.
+
 ## 0.11.1
 
 ### Patch Changes

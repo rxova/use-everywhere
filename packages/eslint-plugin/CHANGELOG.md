@@ -1,5 +1,16 @@
 # eslint-plugin-use-everywhere
 
+## 0.1.2
+
+### Patch Changes
+
+- [#92](https://github.com/rxova/use-everywhere/pull/92) [`bb8a16f`](https://github.com/rxova/use-everywhere/commit/bb8a16f7af9b29f94e3318c4dde1becb7879718c) - Broaden the npm keywords
+
+  Adds `eslint-rules`, `lint`, `react-hooks`, `structured-clone` and
+  `cross-tab-state`. The rules exist for mistakes that fail silently, so being
+  findable by someone who has not yet hit one is most of the point. No code
+  changes.
+
 ## 0.1.1
 
 ### Patch Changes
