@@ -21,7 +21,15 @@
     "shared-state",
     "use-everywhere",
     "mock",
-    "fake-timers"
+    "fake-timers",
+    "cross-tab-state",
+    "tab-synchronization",
+    "multi-tab-testing",
+    "vitest",
+    "jest",
+    "web-locks",
+    "presence",
+    "leader-election"
   ],
   "publishConfig": {
     "access": "public"
