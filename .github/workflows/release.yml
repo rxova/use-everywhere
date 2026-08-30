@@ -66,15 +66,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Create version PR or publish
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
+          # v2 renamed every input this step passes (`version` ->
+          # `version-script`, `publish` -> `publish-script`, `commit` ->
+          # `commit-message`, `title` -> `pr-title`) and stopped reading the
+          # token from the `GITHUB_TOKEN` env var. An unknown input is not an
+          # error to Actions, so keeping the v1 names would not fail the job —
+          # the action would just fall back to its defaults and open a
+          # `Version Packages` PR that runs `changeset version` without our
+          # build step. Nothing in PR CI exercises this file, so that would
+          # have surfaced as a bad release, not a red check.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           # `pnpm run release` builds the published packages through Turbo before
           # publishing — the demo and docs are not published, so a full
           # `turbo run build` would be wasted work here.
-          version: pnpm exec changeset version
-          publish: pnpm run release
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+          version-script: pnpm exec changeset version
+          publish-script: pnpm run release
+          commit-message: 'chore: version packages'
+          pr-title: 'chore: version packages'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
