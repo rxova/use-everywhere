@@ -29,6 +29,23 @@ on:
 permissions:
   contents: read
 
+# Node 26 defines `localStorage` on `globalThis` as an accessor that returns
+# `undefined` unless `--localstorage-file` is passed. happy-dom only installs
+# its own Storage when the global is *absent*, which it no longer is, so the
+# files carrying `@vitest-environment happy-dom` get Node's placeholder instead
+# of a working one: `StorageTransport` then throws UE1011 and `defaultTransport`
+# reports `none` where it should report `storage`. Eight tests across
+# storage-transport and transport-chain fail on Node 26 and pass on 22 and 24.
+#
+# Turning the experimental global back off restores the shape happy-dom expects.
+# It is set for the whole workflow rather than the one matrix leg because the
+# `setup-pnpm` default is now 26, so every job — `unit (react 18)` included —
+# runs the happy-dom suites on it. Drop this once happy-dom overrides a
+# present-but-unusable `localStorage`; the packages themselves are unaffected,
+# since a real browser has real storage.
+env:
+  NODE_OPTIONS: --no-experimental-webstorage
+
 # Two lanes per ref, not one. `edited`, `labeled` and `unlabeled` move no file,
 # so they only need the PR-metadata gates below — but while this was a single
 # group they also *cancelled* whatever full run was in flight for the same
@@ -285,7 +302,7 @@ jobs:
     strategy:
       matrix:
         # pnpm 11 needs Node >= 22.13, so 20 can't be exercised in CI.
-        node-version: [22, 24]
+        node-version: [22, 24, 26]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
@@ -309,15 +326,17 @@ jobs:
       - name: Test with coverage thresholds
         run: pnpm test
 
-      # One leg uploads, not both: two reports for the same commit differing
-      # only by Node version would make Codecov's patch gate a coin flip on
-      # whichever arrived last. 24 is the version the release runs on.
+      # One leg uploads, not all three: several reports for the same commit
+      # differing only by Node version would make Codecov's patch gate a coin
+      # flip on whichever arrived last. 26 is the version the release runs on
+      # (the `setup-pnpm` default) — keep these two in step, or coverage starts
+      # being reported from a Node the release never uses.
       #
       # `continue-on-error` because coverage reporting must never be the reason
       # a correct branch cannot merge — the thresholds that actually gate are
       # vitest's, and they ran above.
       - name: Upload coverage
-        if: matrix.node-version == 24
+        if: matrix.node-version == 26
         continue-on-error: true
         uses: codecov/codecov-action@v7
         with:
