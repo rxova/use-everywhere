@@ -31,6 +31,13 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
+# Stryker reruns the core suite, which includes the happy-dom files. See the
+# matching block in ci.yml for why Node 26 needs this: happy-dom does not
+# install its Storage over the placeholder `localStorage` that Node 26 now
+# defines, so those specs fail without it.
+env:
+  NODE_OPTIONS: --no-experimental-webstorage
+
 jobs:
   mutation:
     name: mutation score

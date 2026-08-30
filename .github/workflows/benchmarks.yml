@@ -31,6 +31,12 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
+# Matches ci.yml: the benchmark gate builds and imports the same packages, and
+# this workflow now runs on the Node 26 `setup-pnpm` default. Kept in step so a
+# scheduled run does not diverge from the one that gates pull requests.
+env:
+  NODE_OPTIONS: --no-experimental-webstorage
+
 jobs:
   benchmarks:
     name: performance budgets
