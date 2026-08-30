@@ -9,7 +9,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { checkLlms, declaredExports, documentedExports, entryPoints } from './check-llms.js';
+import {
+  checkLlms,
+  checkRootIndex,
+  declaredExports,
+  documentedExports,
+  entryPoints,
+} from './check-llms.js';
 
 const made: string[] = [];
 afterEach(() => {
@@ -25,7 +31,7 @@ type PackageSpec = {
 };
 
 /** A throwaway repo root containing `packages/<dir>` for each spec. */
-function repo(specs: Readonly<Record<string, PackageSpec>>): string {
+function repo(specs: Readonly<Record<string, PackageSpec>>, rootIndex?: string): string {
   const root = mkdtempSync(join(tmpdir(), 'check-llms-'));
   made.push(root);
 
@@ -46,6 +52,7 @@ function repo(specs: Readonly<Record<string, PackageSpec>>): string {
       writeFileSync(join(pkgDir, 'src', path), contents);
     }
   }
+  if (rootIndex !== undefined) writeFileSync(join(root, 'llms.txt'), rootIndex);
   return root;
 }
 
@@ -221,5 +228,34 @@ describe('checkLlms', () => {
     });
 
     expect(checkLlms(root)).toEqual([]);
+  });
+});
+
+describe('checkRootIndex', () => {
+  const two = { core: { name: '@u/core' }, react: { name: 'u' } };
+
+  it('passes when the index links every published package', () => {
+    const index = '- [u](packages/react/llms.txt)\n- [@u/core](packages/core/llms.txt)\n';
+    expect(checkRootIndex(repo(two, index))).toEqual([]);
+  });
+
+  it('fails when a published package is missing from the index', () => {
+    const failures = checkRootIndex(repo(two, '- [u](packages/react/llms.txt)\n'));
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.reason).toContain('packages/core/llms.txt');
+    expect(failures[0]?.reason).toContain('@u/core');
+  });
+
+  it('ignores a private package, which ships no tarball to link', () => {
+    const specs = { react: { name: 'u' }, tooling: { name: '@u/tooling', private: true } };
+
+    expect(checkRootIndex(repo(specs, '- [u](packages/react/llms.txt)\n'))).toEqual([]);
+  });
+
+  // The root index is a repo-level convenience rather than part of any tarball,
+  // so its absence is a choice, not drift.
+  it('passes when there is no root index at all', () => {
+    expect(checkRootIndex(repo(two))).toEqual([]);
   });
 });

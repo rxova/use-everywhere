@@ -1,0 +1,56 @@
+# use-everywhere
+
+> State, messages, presence and leader election that exist in every tab, window
+> and worker on an origin, with a React API. `useSharedState` is `useState` whose
+> value lives in every tab; per-key [counter, clientId] clocks give last-writer-
+> wins with a deterministic tie-break, and a hello/snapshot handshake hydrates
+> tabs opened later. There is no Provider and no server. Two transports behind
+> one library — BroadcastChannel for same-origin, postMessage for an explicit,
+> typed, 1:1 cross-origin window channel; shared state deliberately never crosses
+> origins. React >= 18. MIT. Ships ESM and CommonJS.
+
+This file is the map, not the manual. It exists because an agent that reaches
+this project through the repository tree — rather than through an install or the
+docs site — lands on `AGENTS.md`, which is written for someone editing the
+library and answers almost nothing about using it.
+
+Deliberately pointer-only. Every fact about an API belongs to exactly one of the
+files below, all of which are checked against the source; restating any of it
+here would create a copy that nothing verifies and that drifts on the first
+rename.
+
+## Packages
+
+Each ships its `llms.txt` inside its npm tarball, so after an install it is
+readable straight out of `node_modules` with no network. That is the file to
+read when you are writing calling code.
+
+- [use-everywhere](packages/react/llms.txt): the React hooks, and the only
+  install a React app needs — it re-exports the whole of core.
+- [@use-everywhere/core](packages/core/llms.txt): the same engine with no
+  framework attached. Use it directly only when you are not using React.
+- [eslint-plugin-use-everywhere](packages/eslint-plugin/llms.txt): the rules for
+  the three mistakes that fail silently — module-scope definitions, stable
+  names, cloneable values, leader-effect captures.
+- [@use-everywhere/test-utils](packages/test-utils/llms.txt): several tabs in one
+  process, for testing. jsdom cannot do this; see `AGENTS.md`.
+
+## Docs
+
+- [Documentation](https://rxova.org/packages/use-everywhere/): every page also
+  exists as raw markdown — add `.md` to any URL.
+- [llms.txt](https://rxova.org/packages/use-everywhere/llms.txt): the docs index,
+  under 24 kB by budget.
+- [llms-full.txt](https://rxova.org/packages/use-everywhere/llms-full.txt): every
+  page inlined, when one fetch should be the whole thing.
+- [Compared to the alternatives](https://rxova.org/packages/use-everywhere/learn/comparison.md):
+  hand-rolled BroadcastChannel, localStorage events, Zustand, Jotai, Redux — and
+  where this library is the wrong answer.
+- [Error codes](https://rxova.org/packages/use-everywhere/errors.md): every
+  `UEnnnn` a dev build can emit.
+
+## Contributing
+
+- [AGENTS.md](AGENTS.md): what an agent editing this repo gets wrong.
+- [CONTRIBUTING.md](CONTRIBUTING.md): architecture, setup, quality gates,
+  releases.
