@@ -26,7 +26,15 @@
     "cross-window",
     "presence",
     "leader-election",
-    "pubsub"
+    "pubsub",
+    "cross-tab-state",
+    "tab-synchronization",
+    "broadcast",
+    "web-locks",
+    "sharedworker",
+    "shared-worker",
+    "vanilla-js",
+    "zero-dependency"
   ],
   "publishConfig": {
     "access": "public"

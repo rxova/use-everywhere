@@ -19,7 +19,12 @@
     "cross-tab",
     "multi-tab",
     "shared-state",
-    "broadcastchannel"
+    "broadcastchannel",
+    "eslint-rules",
+    "react-hooks",
+    "cross-tab-state",
+    "structured-clone",
+    "lint"
   ],
   "publishConfig": {
     "access": "public"
