@@ -120,11 +120,13 @@ conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay
 
 ## Packages
 
-| Package                                 | Purpose                                                   |
-| --------------------------------------- | --------------------------------------------------------- |
-| [`use-everywhere`](packages/react)      | React hooks; re-exports the full core surface             |
-| [`@use-everywhere/core`](packages/core) | Framework-agnostic engine — no React dependency           |
-| `@use-everywhere/demo` (`apps/demo`)    | Vite demo app, including a real cross-origin payment flow |
+| Package                                                  | Purpose                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------- |
+| [`use-everywhere`](packages/react)                       | React hooks; re-exports the full core surface             |
+| [`@use-everywhere/core`](packages/core)                  | Framework-agnostic engine — no React dependency           |
+| [`eslint-plugin-use-everywhere`](packages/eslint-plugin) | The rules for the mistakes that fail silently             |
+| [`@use-everywhere/test-utils`](packages/test-utils)      | Several tabs in one process, for testing                  |
+| `@use-everywhere/demo` (`apps/demo`)                     | Vite demo app, including a real cross-origin payment flow |
 
 Everything is tree-shakeable and measured: the whole core surface is under 4 kB brotlied, and importing one primitive costs roughly one primitive.
 
@@ -145,6 +147,23 @@ The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/paymen
 - Client-side locks are **UX, not security**. The payment lock prevents _accidental_ double payment; server-side idempotency keys are still required for real safety.
 - A backgrounded tab has its timers throttled, so a healthy leader can still lose its lease.
 - Server rendering is inert: hooks render their defaults, open no transports, and start no election. Real values arrive after hydration.
+
+## Reading this with a coding agent
+
+Every published package ships an `llms.txt` **inside its npm tarball**, so after
+an install it is readable straight out of `node_modules` with no network — the
+API surface, a working example, and the three mistakes that fail silently. A
+build gate checks each one against the package's real entry points, so a renamed
+export cannot leave the file describing an API that no longer exists.
+
+- [`llms.txt`](llms.txt) — the repository index: which package is which, and what
+  to read next.
+- [`AGENTS.md`](AGENTS.md) — for an agent _editing_ this repo, not using it.
+- [Every docs page as raw markdown](https://rxova.org/packages/use-everywhere/) —
+  add `.md` to any URL.
+- [`llms.txt`](https://rxova.org/packages/use-everywhere/llms.txt) ·
+  [`llms-full.txt`](https://rxova.org/packages/use-everywhere/llms-full.txt) — the
+  docs index, and every page inlined.
 
 ## Getting help
 
