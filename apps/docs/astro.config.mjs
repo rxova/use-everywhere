@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import starlightLinksValidator from 'starlight-links-validator';
+import sitemap from '@astrojs/sitemap';
 import rehypeMermaid from 'rehype-mermaid';
 import { sharedStarlightConfig } from '@rxova/brand';
 
@@ -43,6 +44,31 @@ export default defineConfig({
     rehypePlugins: [[rehypeMermaid, { strategy: 'inline-svg' }]],
   },
   integrations: [
+    // Nothing here enumerated these pages for a crawler. The docs are prose that
+    // answers the questions people actually ask a search engine — "cross-tab
+    // state in React", "BroadcastChannel hook" — and `learn/comparison` is the
+    // page most likely to be cited by anything that reads the web. None of that
+    // is reachable if the only way in is following links from a site with no
+    // inbound ones.
+    //
+    // Emitted at the mount, not the domain root: under the aggregator this build
+    // lives at /packages/use-everywhere/, so the file lands at
+    // <base>sitemap-index.xml and lists only URLs beneath that prefix — which is
+    // exactly the scope a sitemap at a subpath is allowed to claim. rxova.org's
+    // root robots.txt is what points at it; this repo cannot serve a robots.txt
+    // that any crawler would honour, because robots.txt is only read from the
+    // origin root and this build never owns one.
+    sitemap({
+      // The canonical HTML pages only. Every one of them also has a `.md` twin
+      // and the two llms.txt endpoints are built from the same enumeration, so
+      // listing those here would offer a search engine three URLs per page and
+      // ask it to work out which is the real one. Agents construct the twin URL
+      // from the page URL — they do not need it advertised.
+      filter: (page) =>
+        !page.endsWith('.md') &&
+        !/\/llms(?:-full)?\.txt$/.test(page) &&
+        !page.includes('/playground/'),
+    }),
     starlight({
       ...sharedStarlightConfig({
         project: 'use-everywhere',
