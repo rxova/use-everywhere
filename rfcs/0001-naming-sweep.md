@@ -2,16 +2,24 @@
 title: 'Naming sweep before 1.0'
 status: open
 opened: 2026-08-05
+amended: 2026-08-31
 target: '1.0'
 ---
 
+:::caution[The comment period runs from the amendment]
+A fifth rename and three companion type renames were added on 2026-08-31, after
+the original period had run. Adding a name to a sweep after people have read it
+means they read a different document, so **the two-week minimum restarts from
+that date** rather than from `opened`.
+:::
+
 ## Summary
 
-Four names are wrong in ways that are cheap to fix now and expensive to fix
+Five names are wrong in ways that are cheap to fix now and expensive to fix
 after 1.0, when the [stability
 policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/)
 makes each one a major version. This RFC proposes the renames, the deprecation
-path, and — for two of the four — the argument for leaving them alone.
+path, and — for the names it leaves alone — the argument for doing so.
 
 Nothing here changes behaviour. Every rename ships as an addition first, with
 the old name kept and warning through the rest of `0.x`.
@@ -45,14 +53,36 @@ Vue adapter (M3) makes the collision literal: two `defineStore`s in one file.
 (internal), `StoreHooks.get` (public, on the facade) all mean "the store for this
 name". Any two of them in one file is a puzzle.
 
+**5. `useSharedStore` does not return a store.** It is the selector hook: it
+takes a selector and a comparator and subscribes to a slice. `getSharedStore`,
+three lines above it in the same export list, _does_ return the store. Two names
+one character apart for a value and a subscription is the item 4 problem again,
+and the tree already knows the right answer — the module is
+`use-shared-selector.ts` and the options type is `UseSharedSelectorOptions`. The
+internal name has been correct all along; only the export is wrong.
+
 ## Proposal
 
-| Today             | Proposed           | Why                                                         |
-| ----------------- | ------------------ | ----------------------------------------------------------- |
-| `useMessage`      | `useOnMessage`     | Names the subscription, not a return value it does not have |
-| `useOpenedWindow` | `useWindowResult`  | Names what it gives you: the result of an opened window     |
-| `defineStore`     | `createStoreHooks` | Says what it returns, and stops colliding with Pinia        |
-| `StoreHooks.get`  | `StoreHooks.store` | A property-shaped name for a getter-shaped thing            |
+| Today             | Proposed            | Why                                                                 |
+| ----------------- | ------------------- | ------------------------------------------------------------------- |
+| `useMessage`      | `useOnMessage`      | Names the subscription, not a return value it does not have         |
+| `useOpenedWindow` | `useWindowResult`   | Names what it gives you: the result of an opened window             |
+| `defineStore`     | `createStoreHooks`  | Says what it returns, and stops colliding with Pinia                |
+| `StoreHooks.get`  | `StoreHooks.store`  | A property-shaped name for a getter-shaped thing                    |
+| `useSharedStore`  | `useSharedSelector` | Subscribes to a slice; it is not the store, and `getSharedStore` is |
+
+Three exported types are renamed with the functions they describe. They are
+named exports of `index.ts`, which the stability policy makes public API, so
+leaving them behind would mean renaming them later at the cost of a major:
+
+| Today                | 1.0                       |
+| -------------------- | ------------------------- |
+| `UseMessageOptions`  | `UseOnMessageOptions`     |
+| `DefineStoreOptions` | `CreateStoreHooksOptions` |
+| `UseOpenedWindow`    | `UseWindowResult`         |
+
+`OpenedWindowStatus`, `OpenedWindowState` and `OpenedWindowControls` stay. They
+describe the window rather than the hook, and `openWindow` keeps its name.
 
 `getSharedStore` stays. It is the public spelling, `getStore` is internal and
 invisible, and renaming the public one to resolve an internal collision is
@@ -81,15 +111,17 @@ carrying a graveyard, and the stability promise starts the day it ships.
 
 ### Codemod
 
-All four are mechanical: an identifier rename with no signature change. A
-`jscodeshift` transform ships in `packages/tooling` and is documented in the
-migration guide. `StoreHooks.get` → `.store` is a member-expression rename on a
-value whose type is known, so it is safe to automate too.
+All five are mechanical: an identifier rename with no signature change. A
+`jscodeshift` transform ships as its own published package,
+`use-everywhere-codemod`, and is documented in the migration guide.
+`StoreHooks.get` → `.store` is a member-expression rename on a value whose type
+is known, so it is safe to automate too.
 
 ## What breaks
 
-Nothing, until 1.0. Then: any import of `useMessage`, `useOpenedWindow`, or
-`defineStore`, and any call to `StoreHooks.get()`.
+Nothing, until 1.0. Then: any import of `useMessage`, `useOpenedWindow`,
+`defineStore` or `useSharedStore`, any call to `StoreHooks.get()`, and any
+reference to the three renamed option types.
 
 How someone finds out, in this order:
 
@@ -126,10 +158,23 @@ mentions this library. Renaming a name that is merely long, at the same time as
 renaming three that are wrong, would make the migration look twice as expensive
 as it is.
 
-## Unresolved questions
+## Resolved questions
 
-- `createStoreHooks` is accurate and dull. `defineStoreHooks` keeps the shape of
-  the old name for people migrating. Preference not settled.
-- Whether the codemod ships as its own package or as a script in
-  `packages/tooling` — a decision about how discoverable it needs to be, which
-  the migration guide's audience size answers better than this RFC can.
+Both questions this RFC opened with are now settled.
+
+**`createStoreHooks`, not `defineStoreHooks`.** It matches `createChannel`,
+`createLeader`, `createPresence` and `createNamespace` — the verb this codebase
+already uses for "build me the thing and hand it back". `defineStoreHooks` would
+keep the shape of the name being moved away from, which is the wrong half to
+preserve when the objection is that the shape is what collides with Pinia.
+
+**The codemod ships as its own published package**, `use-everywhere-codemod`,
+unscoped. The migration guide and this RFC both already print
+`npx use-everywhere-codemod rename-1.0 src/`, and `npx` resolves a package name
+from the registry — a script inside `packages/tooling` is not published, so that
+command would have to become a git URL. The documented invocation is the
+requirement; the package layout follows from it.
+
+Because the codemod is a migration tool with a finite life rather than a surface
+the stability policy promises anything about, it stays on a `0.x` line of its own
+when the libraries go to 1.0.
