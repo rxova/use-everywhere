@@ -10,7 +10,7 @@ import { createSharedStore } from '../shared-store.js';
 
 /**
  * Two micro-frontends on one page, each having bundled its own copy of this
- * library, is the case M3 exists for. `vi.resetModules()` reproduces it
+ * library, is the case the rendezvous exists for. `vi.resetModules()` reproduces it
  * honestly: a second module registry, evaluated fresh, sharing one `globalThis`
  * — which is exactly what two bundles are.
  *
