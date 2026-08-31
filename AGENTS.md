@@ -53,13 +53,18 @@ see" — several are enforced late, so breaking one is cheap to do and expensive
 | **A changeset for anything user-facing.**                                                                                                                                | `check-changeset.ts` in CI                      |
 | **Conventional Commits.**                                                                                                                                                | commitlint, on both the commit and the PR title |
 
-### jsdom is never the layer for real cross-tab behaviour
+### The DOM environment is never the layer for real cross-tab behaviour
 
-jsdom has no `BroadcastChannel` worth the name and no second tab. An assertion there about
-convergence, presence pruning or leader handover only re-reads the object the test just wrote — it
-passes whether or not the library works. Use `@use-everywhere/test-utils` (`createScenario`) for
-multi-tab logic in-process, and the Playwright suite in `e2e/` for anything that needs a real browser.
-This is the single most common way to add a test that proves nothing.
+The unit suites run under **happy-dom**, which does implement `BroadcastChannel` — so the trap here
+is not that the API is missing. It is that there is only ever **one** of everything: one realm, one
+module registry, one storage partition, one timer policy. A second tab is none of those things.
+
+So an assertion about convergence, presence pruning or leader handover written at that layer is
+usually reading back the object the test just wrote, one module-level singleton away from itself —
+it passes whether or not the library works. Use `@use-everywhere/test-utils` (`createScenario`) for
+multi-tab logic in-process, and the Playwright suite in `e2e/` for anything that depends on a second
+realm, real storage partitioning or real timer throttling. This is the single most common way to add
+a test that proves nothing.
 
 **Delivery is asynchronous, in the scenario harness as in a browser.** Assert after
 `await scenario.settle()`, never on the line after the write. Hydrating a late joiner costs up to the
@@ -100,7 +105,7 @@ update the table in the same commit.**
 
 A behaviour change touches several surfaces, and shipping fewer than all of them ships an invisible fix:
 
-- the code, plus tests at the right layer (see the jsdom note above)
+- the code, plus tests at the right layer (see the DOM-environment note above)
 - the TSDoc — it **is** the published API reference, via TypeDoc
 - the prose page under `apps/docs/src/content/docs/`
 - `packages/<pkg>/llms.txt`, if the change is to the public surface

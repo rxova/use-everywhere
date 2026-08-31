@@ -96,8 +96,9 @@ reported as broken.
 It also guards **what comes back from disk**. Persisted state is the version-skew
 problem with a longer fuse: a value written by last month's deploy outlives every
 tab that knew what it meant, and restores with a winning clock. A schema is
-currently the way to stop that. (Dedicated `version`/`migrate` hooks are M4, and
-will ride this same seam.)
+one way to stop that. Persisted state also has its own answer, on this same
+seam: the `version` and `migrate` options in
+[Persistence](./persistence.md).
 
 ## Schemas must be synchronous
 

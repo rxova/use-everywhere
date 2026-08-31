@@ -128,14 +128,14 @@ conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay
 | [`@use-everywhere/test-utils`](packages/test-utils)      | Several tabs in one process, for testing                  |
 | `@use-everywhere/demo` (`apps/demo`)                     | Vite demo app, including a real cross-origin payment flow |
 
-Everything is tree-shakeable and measured: the whole core surface is under 4 kB brotlied, and importing one primitive costs roughly one primitive.
+Everything is tree-shakeable and measured: importing one primitive costs roughly one primitive, and every export has its own budget in CI. The whole of core, imported at once, is about 8.5 kB brotlied; `useSharedState` on its own is nearer 4 kB.
 
 ## Running it locally
 
 ```bash
 pnpm install
 pnpm dev        # demo at http://localhost:5173
-pnpm test       # 100% coverage, enforced per file
+pnpm test       # 95% coverage, enforced per file
 ```
 
 The demo's **"Pay in secure window"** button opens `http://127.0.0.1:5173/payment.html` — the same Vite server, but `localhost` and `127.0.0.1` are **different origins**, so the payment page genuinely cannot reach the shop over BroadcastChannel. Complete the fake card form and the opener resolves with a receipt; close the window mid-payment and the checkout unlocks with a "window closed" notice. Open the shop in a second tab first to also see the cross-tab lock: paying in one tab locks the button in all of them.

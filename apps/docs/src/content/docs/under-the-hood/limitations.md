@@ -203,7 +203,9 @@ from every peer.
 One asymmetry to know about: the wire uses structured clone, but the built-in
 persistence adapters use `JSON.stringify`. A `Date` therefore syncs between
 tabs as a `Date` and comes back from disk as a string, and `Map`/`Set` persist
-as `{}`. Keep persisted values JSON-shaped until pluggable serializers land.
+as `{}`. The fix is a [serializer](../guides/serialization.md): every built-in
+adapter takes one, so handing it `devalue` or a pair of your own makes disk carry
+what the wire carries. Left alone, persisted values should stay JSON-shaped.
 
 ## Same device, same browser only
 

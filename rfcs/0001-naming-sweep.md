@@ -47,7 +47,8 @@ composable that _creates and owns_ a store, with state, getters, and actions
 inside it. This `defineStore` registers options for a name and returns hooks
 bound to it — no state lives in the call. Vue developers are the second-largest
 audience for a cross-tab library, and they will arrive with the wrong model. The
-Vue adapter (M3) makes the collision literal: two `defineStore`s in one file.
+Vue adapter, if it is ever built, makes the collision literal: two
+`defineStore`s in one file.
 
 **4. Three names for one concept.** `getSharedStore` (public), `getStore`
 (internal), `StoreHooks.get` (public, on the facade) all mean "the store for this
@@ -89,7 +90,7 @@ invisible, and renaming the public one to resolve an internal collision is
 paying a user's cost for a maintainer's problem.
 
 `useChannel` / `useSend` — flagged in the API review as `use*`-named non-hooks —
-**stay as they are**. They were changed in M1 to be real hooks (they hold a
+**stay as they are**. They were changed to be real hooks (they hold a
 subscription and a stable callback), so the name is now accurate. Nothing to fix.
 
 ### Deprecation path
