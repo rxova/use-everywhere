@@ -91,6 +91,11 @@ export type {
   LeaderOptions,
   LeaderSnapshot,
   LeaderStrategy,
+  // `UseLeaderOptions extends LeaderOptions`, so `useLeader({ locks })` is a
+  // valid React call, and that option's TSDoc points at test-utils'
+  // `FakeLockManager` — a path users are invited down. Re-exporting the option
+  // without its type left them able to pass the value but not name it.
+  LockManagerLike,
   StorageLike,
   WebStorageAdapterOptions,
   IndexedDbAdapterOptions,
@@ -106,6 +111,12 @@ export type {
   WindowLike,
   WindowEventTarget,
   SharedWorkerTransportOptions,
+  // `SharedWorkerTransportOptions.factory` returns a `SharedWorkerLike`, whose
+  // ports are `MessagePortLike`. A React app that writes that factory — the
+  // reason the option exists — needs to name both, and re-exporting the option
+  // without them left it able to pass the value but not type it.
+  SharedWorkerLike,
+  MessagePortLike,
   MessageEventLike,
   BusEvent,
   BusObserver,
