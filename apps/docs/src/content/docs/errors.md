@@ -26,6 +26,9 @@ is enforced by a test that bundles the library and looks. The two exceptions are
 marked.
 
 `UE1xxx` comes from `@use-everywhere/core`, `UE2xxx` from the React package.
+`UE9xxx` is reserved for test fixtures — the suites invent codes in that band to
+exercise the warning plumbing itself, and the library never emits one. If you
+see a `UE9xxx` in an application, it did not come from here.
 
 ---
 
