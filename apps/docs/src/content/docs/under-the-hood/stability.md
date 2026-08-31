@@ -103,7 +103,7 @@ against React 18 and 19.
 | Safari private browsing             | Degrades loudly. No usable storage means no transport; `getTransportKind()` returns `'none'` and [`UE1010`](../errors.md) warns                |
 | Plain-http origins                  | Supported. No secure context means no Web Locks, so leadership falls back to the heartbeat election — not a legacy path, it is what runs there |
 | Web Workers, SharedWorker           | Supported; a worker announces itself with `kind: 'worker'`                                                                                     |
-| Server (SSR)                        | Renders inert. No bus, no heartbeat, no election, and `useClientId` has a `null` server snapshot                                               |
+| Server (SSR)                        | Renders inert. No bus, no heartbeat, no election, and `useClientId` has an empty-string server snapshot — treat `''` as "not known yet"        |
 
 Support for an engine is dropped only in a **major**, and only for a version
 that is out of its vendor's own support window.
