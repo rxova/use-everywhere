@@ -99,7 +99,29 @@ test.describe('leader election, in real tabs', () => {
     expect(delta).toBeLessThanOrEqual(4);
 
     // Both tabs show the same number — the follower reads what the leader wrote.
-    expect(await follower.getByTestId('ticks').textContent()).toBe(String(after));
+    //
+    // Polled, and both tabs read inside one iteration, because the ticker is a
+    // live 1s interval that nothing here stops. Reading the leader on one line
+    // and the follower on another samples two different instants: a tick landing
+    // between them leaves the follower legitimately *ahead*, and a working
+    // library fails the assertion. That is what turned firefox red on main.
+    //
+    // Retrying until one iteration lands between ticks makes this a statement
+    // about convergence rather than about scheduling luck. The string is for the
+    // failure message — a bare boolean would report "expected true, received
+    // false" and name neither value.
+    await expect
+      .poll(
+        async () => {
+          const [onLeader, onFollower] = await Promise.all([
+            leader.getByTestId('ticks').textContent(),
+            follower.getByTestId('ticks').textContent(),
+          ]);
+          return onLeader === onFollower ? 'equal' : `leader=${onLeader} follower=${onFollower}`;
+        },
+        { timeout: 10_000 },
+      )
+      .toBe('equal');
 
     for (const tab of [leader, follower]) await tab.close();
   });
