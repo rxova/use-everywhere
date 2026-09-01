@@ -187,7 +187,7 @@
     "esbuild": "^0.28.1",
     "fake-indexeddb": "^6.2.5",
     "fast-check": "^4.9.0",
-    "happy-dom": "^20.11.1",
+    "happy-dom": "^20.11.15",
     "publint": "^0.3.21",
     "size-limit": "^13.0.1",
     "tsup": "^8.5.1",
