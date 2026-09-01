@@ -18,7 +18,7 @@
     "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^4.1.10",
     "broadcast-channel": "^7.4.0",
-    "tsx": "^4.23.1",
+    "tsx": "^4.23.12",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   }
