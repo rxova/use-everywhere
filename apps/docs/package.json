@@ -33,7 +33,7 @@
     "react-dom": "^19.2.8",
     "typescript": "^6.0.3",
     "use-everywhere": "workspace:*",
-    "vite": "^8.1.5",
+    "vite": "^8.2.2",
     "vitest": "^4.1.10"
   },
   "engines": {
