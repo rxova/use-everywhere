@@ -14,7 +14,7 @@ overrides:
   # bypasses the earlier CVE-2026-14257 mitigation. Reached through eslint's
   # minimatch, so dev-only, but `audit:check` gates on high and turns main red.
   brace-expansion: ^5.0.9
-  esbuild: ^0.28.1
+  esbuild: ^0.28.2
   # GHSA-7p8r-x3mc-p8w7: <3.1.5 parses a backslash as an authority introducer, so
   # a URL's host can be read one way by the parser and another by whatever acts on
   # it. High, and all five paths are ajv inside commitlint and the docs site's
