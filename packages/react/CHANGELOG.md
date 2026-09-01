@@ -1,5 +1,18 @@
 # use-everywhere
 
+## 0.12.0
+
+### Minor Changes
+
+- [#99](https://github.com/rxova/use-everywhere/pull/99) [`c3a29f7`](https://github.com/rxova/use-everywhere/commit/c3a29f7541ac7485d27502da858d394796af82a9) - Re-export the core types a React caller needs to name
+
+  `useLeader({ locks })` is a valid call because `UseLeaderOptions extends
+LeaderOptions`, and `SharedWorkerTransportOptions` was already re-exported — but
+  `LockManagerLike`, `SharedWorkerLike` and `MessagePortLike` were not, so a
+  React-only app could pass those values and type neither. Writing a SharedWorker
+  factory or a fake lock manager meant importing from `@use-everywhere/core`, a
+  package a React app is told it does not need to install.
+
 ## 0.11.2
 
 ### Patch Changes
