@@ -15,11 +15,19 @@ overrides:
   # minimatch, so dev-only, but `audit:check` gates on high and turns main red.
   brace-expansion: ^5.0.9
   esbuild: ^0.28.2
-  # GHSA-7p8r-x3mc-p8w7: <3.1.5 parses a backslash as an authority introducer, so
-  # a URL's host can be read one way by the parser and another by whatever acts on
-  # it. High, and all five paths are ajv inside commitlint and the docs site's
-  # language server — dev-only, but `audit:check` gates on high.
-  fast-uri: '>=3.1.5'
+  # Four advisories against the same parser, all host confusion: a backslash
+  # parsed as an authority introducer, a percent-encoded scheme that normalises
+  # into a different one, a skipped IDN conversion, and two SSRF paths out of
+  # the same parse. High, and all the paths are ajv inside commitlint and the
+  # docs site's language server — dev-only, but `audit:check` gates on high.
+  #
+  # The floor was '>=3.1.5', open at the top and written against the 3.x
+  # advisory. Open let it resolve to 4.1.2, where a fresh set of advisories
+  # applies, so the pin stopped covering the thing it was added for without any
+  # file here changing. 4.1.3 is the patched floor for the 4.x line ajv now
+  # asks for; left open at the top to match the entries around it, so a 5.x
+  # would need this raised again.
+  fast-uri: '>=4.1.3'
   # GHSA-5p4m-2wfm-xmqj: `!!omap` resolution is quadratic in the number of keys,
   # so a hostile YAML document costs CPU out of proportion to its size. High, and
   # it lands on both live majors — the 3.x line through @manypkg's read-yaml-file
