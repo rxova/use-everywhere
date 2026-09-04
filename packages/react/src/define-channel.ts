@@ -2,7 +2,6 @@ import type { ChannelOptions, MessageMap, MessageMeta } from '@use-everywhere/co
 import { configureChannel, getChannel } from './registry.js';
 import { useChannel, useOnMessage, useSend } from './use-on-message.js';
 import type { ChannelHooks } from './define-channel.types.js';
-import { warnRenamed } from './dev.js';
 
 /**
  * Bind a channel name and message map once, at module level, and get fully
@@ -28,10 +27,5 @@ export function defineChannel<M extends MessageMap>(
     get: () => getChannel<M>(name),
     useSend: useBoundSend,
     useOnMessage: useBoundMessage,
-    // Removed in 1.0 along with the standalone renames; see deprecated.ts.
-    useMessage: (type, handler) => {
-      warnRenamed('ChannelHooks.useMessage', 'ChannelHooks.useOnMessage');
-      return useBoundMessage(type, handler);
-    },
   };
 }

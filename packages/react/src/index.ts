@@ -30,12 +30,6 @@ export type {
   OpenedWindowControls,
 } from './use-window-result.types.js';
 
-// The 0.x names RFC 0001 renamed. Kept working for the rest of 0.x, warning
-// once per name in development, and removed in 1.0. Enumerated here rather than
-// `export *` so the 1.0 change is deleting this block and its module.
-export { useMessage, useOpenedWindow, useSharedStore, defineStore } from './deprecated.js';
-export type { UseMessageOptions, DefineStoreOptions, UseOpenedWindow } from './deprecated.js';
-
 // The core surface, enumerated rather than re-exported with `export *`, so a
 // React app still needs one dependency without this package's public API
 // silently becoming whatever core happens to export. Anything added to core
