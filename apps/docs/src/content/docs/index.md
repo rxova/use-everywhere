@@ -105,9 +105,9 @@ one charge and two.
 | You are asking…                                       | Reach for                                         | Because                                               |
 | ----------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
 | "What is the current value?"                          | [`useSharedState`](./hooks/use-shared-state.md)   | Convergent, hydrates late joiners, survives tab churn |
-| "What just happened?"                                 | [`useMessage`](./hooks/use-message.md)            | Fire-and-forget events; no history, no cleanup        |
+| "What just happened?"                                 | [`useOnMessage`](./hooks/use-on-message.md)       | Fire-and-forget events; no history, no cleanup        |
 | "Who else is here?"                                   | [`usePeers`](./hooks/use-peers.md)                | Live peer list via heartbeats                         |
-| "How do I hear back from a window on another domain?" | [`useOpenedWindow`](./hooks/use-opened-window.md) | Validated 1:1 postMessage channel with a result       |
+| "How do I hear back from a window on another domain?" | [`useWindowResult`](./hooks/use-window-result.md) | Validated 1:1 postMessage channel with a result       |
 
 When you're torn between the first two, use this test:
 

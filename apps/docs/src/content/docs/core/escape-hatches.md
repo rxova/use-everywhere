@@ -33,10 +33,10 @@ getSharedStore('session').set('loggedIn', false);
 `DEFAULT_NAME` is the string the hooks default to (`'use-everywhere'`), exported
 so you can target the same bus without hard-coding it.
 
-:::caution[`defineStore` must come first]
-If a store needs [persistence](../hooks/define-store.md), `defineStore` has to
+:::caution[`createStoreHooks` must come first]
+If a store needs [persistence](../hooks/create-store-hooks.md), `createStoreHooks` has to
 run before anything creates it — and `getSharedStore(name)` **creates it**. Call
-`defineStore` at module scope. If it runs too late it throws, rather than
+`createStoreHooks` at module scope. If it runs too late it throws, rather than
 quietly handing you back a store that isn't persisted.
 :::
 
@@ -59,7 +59,7 @@ try {
 }
 ```
 
-`useOpenedWindow` catches these for you and turns them into render state
+`useWindowResult` catches these for you and turns them into render state
 (`status: 'closed-early'`), so you only need them if you're driving `openWindow`
 by hand.
 
@@ -83,12 +83,12 @@ the [security model](../under-the-hood/security-model.md).
 
 ## Types worth knowing
 
-|                  |                                                                         |
-| ---------------- | ----------------------------------------------------------------------- |
-| `Version`        | `[counter, clientId]` — see [the clock](./clock.md)                     |
-| `MessageMeta`    | `{ clientId, kind, self }` — who sent it, and whether it was you        |
-| `Peer`           | `{ id, kind, lastSeen }`                                                |
-| `PeerKind`       | `'tab' \| 'worker' \| (string & {})` — open, so you can invent your own |
-| `MessageMap`     | The shape you parameterise channels with                                |
-| `BusWire`        | The discriminated union of everything on the bus                        |
-| `PersistAdapter` | Bring your own storage — see [defineStore](../hooks/define-store.md)    |
+|                  |                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `Version`        | `[counter, clientId]` — see [the clock](./clock.md)                             |
+| `MessageMeta`    | `{ clientId, kind, self }` — who sent it, and whether it was you                |
+| `Peer`           | `{ id, kind, lastSeen }`                                                        |
+| `PeerKind`       | `'tab' \| 'worker' \| (string & {})` — open, so you can invent your own         |
+| `MessageMap`     | The shape you parameterise channels with                                        |
+| `BusWire`        | The discriminated union of everything on the bus                                |
+| `PersistAdapter` | Bring your own storage — see [createStoreHooks](../hooks/create-store-hooks.md) |

@@ -5,7 +5,7 @@ import {
   useChannel,
   useClientId,
   useIsLeader,
-  useMessage,
+  useOnMessage,
   usePeers,
   useSend,
 } from 'use-everywhere';
@@ -47,7 +47,7 @@ export function MessagesPage() {
   const [answer, setAnswer] = useState<string>('');
   const [draft, setDraft] = useState('Table 4 is ready');
 
-  useMessage(channel, 'toast', (payload, meta) => {
+  useOnMessage(channel, 'toast', (payload, meta) => {
     setReceived((prev) =>
       [
         { seq: prev.length, text: payload.text, who: meta.self ? 'you' : meta.clientId },
@@ -56,7 +56,7 @@ export function MessagesPage() {
     );
   });
 
-  useMessage(channel, 'sign-out', (payload) => setSignedOut(payload.reason));
+  useOnMessage(channel, 'sign-out', (payload) => setSignedOut(payload.reason));
 
   // Only the leader answers. Without that gate the first reply to arrive wins,
   // which is fine for "any tab will do" and wrong for "the tab that owns this".
@@ -80,7 +80,7 @@ export function MessagesPage() {
 
   return (
     <Page
-      kicker="useChannel · useMessage · useAsk"
+      kicker="useChannel · useOnMessage · useAsk"
       title="Messages & ask"
       lede={
         <>
@@ -186,7 +186,7 @@ type Replies = { 'who-has-focus': { clientId: string } };
 
 const channel = useChannel<Messages, Replies>('events');
 
-useMessage(channel, 'toast', ({ text }) => show(text));
+useOnMessage(channel, 'toast', ({ text }) => show(text));
 useSend(channel)('toast', { text: 'Saved' });
 
 useAnswer(channel, 'who-has-focus', () => ({ clientId }), { enabled: isLeader });

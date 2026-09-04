@@ -52,7 +52,7 @@ Pass a `Serializer`. Two methods, no dependency:
 ```ts
 import * as devalue from 'devalue';
 
-const settings = defineStore('settings', {
+const settings = createStoreHooks('settings', {
   persist: localStorageAdapter('app:settings', {
     serializer: { stringify: devalue.stringify, parse: devalue.parse },
   }),

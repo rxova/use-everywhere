@@ -34,14 +34,14 @@ import { MemoryHub } from '@use-everywhere/core/testing';
 |                                                                                                |                                                                                           |
 | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | **Hooks** — `useSharedState`, `useLeader`, …                                                   | [Hooks](../hooks/overview.md)                                                             |
-| **Factories** — `defineChannel`, `defineStore`                                                 | [Hooks](../hooks/overview.md) — they _return_ hooks, so they're documented alongside them |
+| **Factories** — `defineChannel`, `createStoreHooks`                                            | [Hooks](../hooks/overview.md) — they _return_ hooks, so they're documented alongside them |
 | **Engines** — `createSharedStore`, `createChannel`, `createPresence`, `createLeader`           | [Engines](./engines.md)                                                                   |
 | **Version clock** — `newer`, `Version`                                                         | [The version clock](./clock.md)                                                           |
 | **Transports** — `NoopTransport`, `BroadcastChannelTransport` (plus `MemoryHub` on `/testing`) | [Transports](./transports.md)                                                             |
 | **Debug seam** — `observeBus`, `enableDebug`, `getBusNames`                                    | [Debugging](./debugging.md)                                                               |
 | **Escape hatches** — `getSharedStore`, `getLeader`, `DEFAULT_NAME`, the error classes          | [Escape hatches](./escape-hatches.md)                                                     |
-| **Cross-origin windows** — `openWindow`, `connectToOpener`                                     | [useOpenedWindow](../hooks/use-opened-window.md)                                          |
-| **Persistence adapters** — `localStorageAdapter`, `webStorageAdapter`                          | [defineStore](../hooks/define-store.md)                                                   |
+| **Cross-origin windows** — `openWindow`, `connectToOpener`                                     | [useWindowResult](../hooks/use-window-result.md)                                          |
+| **Persistence adapters** — `localStorageAdapter`, `webStorageAdapter`                          | [createStoreHooks](../hooks/create-store-hooks.md)                                        |
 
 Every signature is also generated from the source in the
 [API reference](../api/core/README.md). This section is the prose; that one is

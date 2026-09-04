@@ -125,7 +125,7 @@ Honesty about the boundary, because trusting a tool means knowing its edges:
 
 - [Cross-origin payments](../guides/cross-origin-payments.md) — the flow
   these gates protect, end to end.
-- [`useOpenedWindow`](../hooks/use-opened-window.md) — the hook-level view
+- [`useWindowResult`](../hooks/use-window-result.md) — the hook-level view
   of the same machinery.
 - [How sync works](./how-sync-works.md) — the cross-origin handshake in
   sequence-diagram form.

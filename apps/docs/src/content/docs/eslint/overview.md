@@ -34,12 +34,12 @@ own if the project mixes languages.
 
 ## The rules
 
-| Rule                                                    | Recommended | What it catches                                                       |
-| ------------------------------------------------------- | ----------- | --------------------------------------------------------------------- |
-| [`define-at-module-scope`](./define-at-module-scope.md) | error       | `defineStore` / `defineChannel` / `createNamespace` inside a function |
-| [`no-dynamic-name`](./no-dynamic-name.md)               | error       | A bus name computed at runtime                                        |
-| [`structured-clone-safe`](./structured-clone-safe.md)   | error       | Functions, symbols and class instances in shared state                |
-| [`leader-effect-captures`](./leader-effect-captures.md) | warn        | A `useLeaderEffect` closing over a value that changes between renders |
+| Rule                                                    | Recommended | What it catches                                                            |
+| ------------------------------------------------------- | ----------- | -------------------------------------------------------------------------- |
+| [`define-at-module-scope`](./define-at-module-scope.md) | error       | `createStoreHooks` / `defineChannel` / `createNamespace` inside a function |
+| [`no-dynamic-name`](./no-dynamic-name.md)               | error       | A bus name computed at runtime                                             |
+| [`structured-clone-safe`](./structured-clone-safe.md)   | error       | Functions, symbols and class instances in shared state                     |
+| [`leader-effect-captures`](./leader-effect-captures.md) | warn        | A `useLeaderEffect` closing over a value that changes between renders      |
 
 Three are errors: each produces a page that renders, syncs nothing, and says
 nothing. The fourth is a warning, because a captured value that never actually
@@ -57,7 +57,7 @@ useSharedState('cart', initialFromProps); // not judged — nothing to read
 ```
 
 They match on call names, including through a namespace
-(`checkout.defineStore(…)`), so any object with a `defineStore` method is
+(`checkout.createStoreHooks(…)`), so any object with a `createStoreHooks` method is
 treated as ours. The names are distinctive enough that the trade is worth it.
 
 They also do not replace `eslint-plugin-react-hooks`. Every hook here is a real

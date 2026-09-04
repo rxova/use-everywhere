@@ -21,10 +21,10 @@ body:
       label: Which surface is affected?
       options:
         - Shared state (useSharedState / createSharedStore)
-        - Messages (useMessage / createChannel)
+        - Messages (useOnMessage / createChannel)
         - Presence (usePeers / createPresence)
         - Leader election (useLeader / createLeader)
-        - Persistence (defineStore / persist adapters)
+        - Persistence (createStoreHooks / persist adapters)
         - Cross-origin window channel (openWindow / connectToOpener)
         - Devtools (Inspector)
         - Other

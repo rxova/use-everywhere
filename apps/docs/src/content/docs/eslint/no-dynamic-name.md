@@ -8,7 +8,7 @@ sidebar:
 **Recommended: error.** Requires the name passed to a bus factory to be a string
 literal, a module-scope `const` string, or an imported binding.
 
-Covers `defineStore`, `defineChannel`, `createNamespace`, `createSharedStore`,
+Covers `createStoreHooks`, `defineChannel`, `createNamespace`, `createSharedStore`,
 `createSharedReducer`, `createChannel`, `createPresence`, `createLeader`,
 `getSharedStore` and `getLeader`.
 
@@ -21,7 +21,7 @@ separate, perfectly healthy buses, each convinced it is alone.
 
 ```tsx
 // ✗ One bus per host, per build, per whatever this evaluates to.
-const cart = defineStore(`cart-${window.location.host}`);
+const cart = createStoreHooks(`cart-${window.location.host}`);
 ```
 
 The failure is invisible in every environment where you would notice it. In
@@ -37,7 +37,7 @@ moment the call ran.
 ## Correct
 
 ```ts
-defineStore('cart');
+createStoreHooks('cart');
 
 const CART = 'cart';
 createSharedStore(CART, {});
@@ -52,7 +52,7 @@ export const CART = 'cart';
 
 // anywhere.ts
 import { CART } from './names';
-const cart = defineStore(CART);
+const cart = createStoreHooks(CART);
 ```
 
 ## Keys are not names

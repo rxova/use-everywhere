@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { defineStore, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -12,7 +12,7 @@ export const THEME_KEY = 'use-everywhere:demo-theme';
  * and binding their store to disk would quietly change what they demonstrate.
  * Chrome state is the exception — a theme is expected to survive a reload.
  */
-const ui = defineStore<{ theme: Theme }>('ui', {
+const ui = createStoreHooks<{ theme: Theme }>('ui', {
   persist: localStorageAdapter(THEME_KEY),
 });
 

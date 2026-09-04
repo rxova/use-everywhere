@@ -40,7 +40,7 @@ Two live `createSharedStore` calls for one name in one tab. They stay in sync �
 they share a bus — but you are paying twice for the same state, the same
 subscriptions and the same persistence writes.
 
-**Fix:** create one store per name and pass it around, or use `defineStore` and
+**Fix:** create one store per name and pass it around, or use `createStoreHooks` and
 the hooks, which memoize on the name for you.
 
 ## UE1002
@@ -180,16 +180,16 @@ Two call sites registered one key with different defaults. The first
 registration wins and the second is discarded — which surfaces much later as
 "why is this value not what I set".
 
-**Fix:** define the default once. `defineStore`, or a shared constant.
+**Fix:** define the default once. `createStoreHooks`, or a shared constant.
 
 ## UE2002
 
-**`defineStore` ran after that store was created.**
+**`createStoreHooks` ran after that store was created.**
 
 The live store keeps the configuration it was built with, so the persistence (or
 scope, or options) you just declared is not applied.
 
-**Fix:** move `defineStore` to module scope, before any component reads the
+**Fix:** move `createStoreHooks` to module scope, before any component reads the
 store. The [`define-at-module-scope`](./eslint/define-at-module-scope.md) lint rule
 catches this before it runs.
 

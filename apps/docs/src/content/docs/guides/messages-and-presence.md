@@ -40,7 +40,7 @@ function CartBadge() {
   const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated' — never for our own posts.
-  shop.useMessage('cart-updated', (payload) => setItems(payload.items));
+  shop.useOnMessage('cart-updated', (payload) => setItems(payload.items));
 
   const addToCart = () => {
     setItems(items + 1); // 1. update this tab ourselves…
@@ -63,9 +63,9 @@ collapses them into one. And if the ceremony feels wrong at all, that is often
 the signal the value should be [shared state](../hooks/use-shared-state.md)
 instead, where one setter updates every tab including yours.
 
-**The handler closes over `items` safely.** `shop.useMessage` keeps your
+**The handler closes over `items` safely.** `shop.useOnMessage` keeps your
 handler fresh across renders without resubscribing — no stale-closure bugs,
-no effect churn. Details in [`useMessage`](../hooks/use-message.md), which
+no effect churn. Details in [`useOnMessage`](../hooks/use-on-message.md), which
 it delegates to.
 
 :::tip[Still the litmus test]
@@ -75,7 +75,7 @@ late joiner _must_ know, it's state, not a message.
 :::
 
 Prefer not to bind at module level? The standalone
-[`useChannel`](../hooks/use-channel.md) / [`useMessage`](../hooks/use-message.md) /
+[`useChannel`](../hooks/use-channel.md) / [`useOnMessage`](../hooks/use-on-message.md) /
 [`useSend`](../hooks/use-send.md) hooks are the same machinery —
 `defineChannel` is sugar over them.
 
@@ -135,7 +135,7 @@ Every message handler receives a `meta` argument with the sender's
 across features, and it lets you write UI like this:
 
 ```tsx
-shop.useMessage('logged-out', (_payload, meta) => {
+shop.useOnMessage('logged-out', (_payload, meta) => {
   toast(`Signed out by tab ${meta.clientId.slice(0, 6)}`);
   window.location.assign('/login');
 });
@@ -152,7 +152,7 @@ the same effect twice — and the two copies drift.
 ```tsx
 send('item:added', item, { echo: true });
 
-shop.useMessage('item:added', (item, meta) => {
+shop.useOnMessage('item:added', (item, meta) => {
   addToBadge(item); // runs here too, meta.self === true
 });
 ```
@@ -186,7 +186,7 @@ on [`useIsLeader`](../hooks/use-leader.md) when it has to be a particular one.
 
 - [`defineChannel`](../hooks/define-channel.md) — the bound hooks used on
   this page.
-- [`useChannel`](../hooks/use-channel.md), [`useMessage`](../hooks/use-message.md),
+- [`useChannel`](../hooks/use-channel.md), [`useOnMessage`](../hooks/use-on-message.md),
   [`useSend`](../hooks/use-send.md) — the standalone trio underneath.
 - [`usePeers`](../hooks/use-peers.md) / [`useClientId`](../hooks/use-client-id.md)
   — everything presence.

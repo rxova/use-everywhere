@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { openWindow, useClientId, useOpenedWindow, useSharedState } from 'use-everywhere';
+import { openWindow, useClientId, useWindowResult, useSharedState } from 'use-everywhere';
 import { otherOrigin } from '../origins.js';
 import type { FromPayment, Receipt, ToPayment } from '../payment-types.js';
 
@@ -14,7 +14,7 @@ export function CheckoutDemo() {
   const [payingTab, setPayingTab] = useSharedState<string | null>('payingTab', null);
   const [receipt, setReceipt] = useSharedState<Receipt | null>('receipt', null);
 
-  const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+  const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
     openWindow(`${otherOrigin()}/payment.html`, {
       peerOrigin: otherOrigin(),
       features: 'popup,width=440,height=640',

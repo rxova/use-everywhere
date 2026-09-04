@@ -52,7 +52,7 @@ function CartBadge() {
   const channel = useChannel<ShopEvents>('shop');
   const send = useSend(channel);
 
-  useMessage(channel, 'cart-updated', (p) => setItems(p.items)); // other tabs
+  useOnMessage(channel, 'cart-updated', (p) => setItems(p.items)); // other tabs
 
   const addToCart = () => {
     setItems(items + 1); // 1. this tab, explicitly
@@ -78,7 +78,7 @@ instead — one `setCount` and every tab (including yours) updates.
 
 ## Where to next
 
-- [`useMessage`](./use-message.md) — the listening half, and the meta
+- [`useOnMessage`](./use-on-message.md) — the listening half, and the meta
   argument.
 - [`useChannel`](./use-channel.md) — where the typing comes from.
 - [`defineChannel`](./define-channel.md) — bind name and types once and skip

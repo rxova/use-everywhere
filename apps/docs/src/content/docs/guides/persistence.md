@@ -18,7 +18,7 @@ invisible.
 ## Versioning your state's shape
 
 ```ts
-const settings = defineStore('settings', {
+const settings = createStoreHooks('settings', {
   persist: localStorageAdapter('app:settings'),
   persistVersion: 2,
   migrate: (state, from) => {
@@ -70,7 +70,7 @@ outranks a migration of stale disk.
 ### Handling failure
 
 ```ts
-defineStore('settings', {
+createStoreHooks('settings', {
   persist: localStorageAdapter('app:settings'),
   persistVersion: 2,
   migrate,
@@ -136,8 +136,8 @@ IndexedDB for everything large or not JSON-shaped.** Using both is normal —
 they are separate adapters on separate stores.
 
 ```ts
-defineStore('settings', { persist: localStorageAdapter('app:settings') });
-defineStore('workspace', { persist: indexedDbAdapter('workspace') });
+createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
+createStoreHooks('workspace', { persist: indexedDbAdapter('workspace') });
 ```
 
 Note that `indexedDbAdapter` takes **no serializer**, on purpose. IndexedDB

@@ -34,11 +34,11 @@ result the whole flow produces.
 
 ```tsx title="Checkout.tsx (on shop.example.com)"
 import { useEffect } from 'react';
-import { openWindow, useOpenedWindow } from 'use-everywhere';
+import { openWindow, useWindowResult } from 'use-everywhere';
 import type { ToPayment, FromPayment, Receipt } from './payment-contract';
 
 function Checkout({ order }: { order: ToPayment['order'] }) {
-  const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+  const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
     openWindow('https://pay.example.com/checkout', {
       peerOrigin: 'https://pay.example.com', // required — '*' throws
       features: 'popup,width=440,height=640',
@@ -65,7 +65,7 @@ function Checkout({ order }: { order: ToPayment['order'] }) {
 `pay.open` must be called from the click handler — popup blockers require a
 user gesture. From there, `status` walks `idle → opening → connected → done`,
 and your UI is just a render of it. The full status table is in
-[`useOpenedWindow`](../hooks/use-opened-window.md#return-value).
+[`useWindowResult`](../hooks/use-window-result.md#return-value).
 
 ## The child side (the payment page)
 
@@ -150,7 +150,7 @@ and click "Pay in secure window".
 
 ## Where to next
 
-- [`useOpenedWindow`](../hooks/use-opened-window.md) — every option, the
+- [`useWindowResult`](../hooks/use-window-result.md) — every option, the
   full status machine, and the gotchas.
 - [Security model](../under-the-hood/security-model.md) — the four gates,
   one by one.
