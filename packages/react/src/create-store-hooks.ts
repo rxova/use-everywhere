@@ -1,5 +1,5 @@
 import { configureStore, getStore } from './registry.js';
-import type { DefineStoreOptions, StoreHooks } from './define-store.types.js';
+import type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
 import { useSharedState } from './use-shared-state.js';
 
 /**
@@ -8,7 +8,7 @@ import { useSharedState } from './use-shared-state.js';
  * Like defineChannel, this does not construct anything: it registers the
  * options the registry will use when the store is first needed, so importing
  * the module has no side effect. The store stays a singleton per name, so
- * `defineStore('settings', { persist })` and a bare
+ * `createStoreHooks('settings', { persist })` and a bare
  * `useSharedState('theme', 'dark', { store: 'settings' })` elsewhere resolve to
  * the same store, and both get persistence.
  *
@@ -16,9 +16,9 @@ import { useSharedState } from './use-shared-state.js';
  * so intended usage is automatic; if it does run late it throws rather than
  * quietly handing back a store with no persistence.
  */
-export function defineStore<S extends Record<string, unknown> = Record<string, unknown>>(
+export function createStoreHooks<S extends Record<string, unknown> = Record<string, unknown>>(
   name: string,
-  options: DefineStoreOptions = {},
+  options: CreateStoreHooksOptions = {},
 ): StoreHooks<S> {
   const scope = options.scope ?? 'everywhere';
 
@@ -38,7 +38,7 @@ export function defineStore<S extends Record<string, unknown> = Record<string, u
   }
 
   return {
-    get: () => getStore(name, scope),
+    store: () => getStore(name, scope),
     useSharedState: <K extends keyof S & string>(key: K, initial: S[K]) =>
       useSharedState<S[K]>(key, initial, { store: name, scope }),
   };

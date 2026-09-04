@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WindowClosedError, type MessageMap, type OpenedWindow } from '@use-everywhere/core';
-import type { OpenedWindowState, UseOpenedWindow } from './use-opened-window.types.js';
+import type { OpenedWindowState, UseWindowResult } from './use-window-result.types.js';
 
 const IDLE = Object.freeze({
   status: 'idle',
@@ -17,9 +17,9 @@ const IDLE = Object.freeze({
  * because a route changed would lose the user's in-flight transaction. Call
  * close() if the component owns the window's lifetime.
  */
-export function useOpenedWindow<Out extends MessageMap, In extends MessageMap, R = unknown>(
+export function useWindowResult<Out extends MessageMap, In extends MessageMap, R = unknown>(
   factory: () => OpenedWindow<Out, In, R>,
-): UseOpenedWindow<Out, In, R> {
+): UseWindowResult<Out, In, R> {
   // One state object, not three: status/result/error move together, and
   // separate setters let a render observe 'done' before the result landed.
   const [state, setState] = useState<OpenedWindowState<R>>(IDLE as OpenedWindowState<R>);

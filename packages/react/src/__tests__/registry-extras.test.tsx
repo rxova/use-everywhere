@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import { DEFAULT_NAME, getSharedStore } from '../registry.js';
-import { useChannel, useSend } from '../use-message.js';
+import { useChannel, useSend } from '../use-on-message.js';
 import { useClientId } from '../use-peers.js';
 import { usePeers } from '../use-peers.js';
 

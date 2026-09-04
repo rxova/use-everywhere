@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { WindowClosedError, type OpenedWindow } from '@use-everywhere/core';
-import { useOpenedWindow } from '../use-opened-window.js';
+import { useWindowResult } from '../use-window-result.js';
 
 type Out = { order: { id: string } };
 type In = { progress: { step: string } };
@@ -29,7 +29,7 @@ function fakeOpened() {
 }
 
 function Harness({ factory }: { factory: () => OpenedWindow<Out, In, Receipt> }) {
-  const flow = useOpenedWindow<Out, In, Receipt>(factory);
+  const flow = useWindowResult<Out, In, Receipt>(factory);
   return (
     <>
       <span data-testid="status">{flow.status}</span>
@@ -45,7 +45,7 @@ function Harness({ factory }: { factory: () => OpenedWindow<Out, In, Receipt> })
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 const status = () => screen.getByTestId('status').textContent;
 
-describe('useOpenedWindow', () => {
+describe('useWindowResult', () => {
   it('walks idle → opening → connected → done and exposes the result', async () => {
     const fake = fakeOpened();
     render(<Harness factory={() => fake.opened} />);

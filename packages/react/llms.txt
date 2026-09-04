@@ -31,7 +31,7 @@ Open it in two tabs. Clicking in one updates both.
 
 ## The three mistakes to avoid
 
-**1. Calling `defineChannel` or `defineStore` inside a component.** They are
+**1. Calling `defineChannel` or `createStoreHooks` inside a component.** They are
 module-scope factories. Called in a render they build a new bus on every
 render, and the page syncs nothing while looking completely correct. Install
 `eslint-plugin-use-everywhere` — this is the mistake its `define-at-module-scope`
@@ -65,9 +65,9 @@ and symbols do not survive. Dates, Maps, Sets and typed arrays do. The
 | --- | --- | --- |
 | `useSharedState` | hook | "What is the current value?" — `useState` across every tab |
 | `useSharedReducer` | hook | The same, dispatch-shaped |
-| `useSharedStore` | hook | Subscribe to a slice of a store with a selector |
+| `useSharedSelector` | hook | Subscribe to a slice of a store with a selector |
 | `useChannel` | hook | The typed event channel for a name |
-| `useMessage` | hook | Run a handler when another tab posts an event |
+| `useOnMessage` | hook | Run a handler when another tab posts an event |
 | `useSend` | hook | A stable, typed `post` for a channel |
 | `useAsk` | hook | Request/response across tabs |
 | `useAnswer` | hook | Serve the other half of `useAsk` |
@@ -77,10 +77,10 @@ and symbols do not survive. Dates, Maps, Sets and typed arrays do. The
 | `useLeader` | hook | Elect exactly one tab to own a job |
 | `useIsLeader` | hook | Whether this tab currently holds the lease |
 | `useLeaderEffect` | hook | Run an effect only in the leader tab |
-| `useOpenedWindow` | hook | The cross-origin window lifecycle as render state |
+| `useWindowResult` | hook | The cross-origin window lifecycle as render state |
 | `useHydrated` | hook | Whether the first cross-tab sync has landed (SSR) |
 | `defineChannel` | factory | Bind a channel name + message map once, at module scope |
-| `defineStore` | factory | The same for a store, and where persistence is enabled |
+| `createStoreHooks` | factory | The same for a store, and where persistence is enabled |
 | `createNamespace` | factory | Prefix every bus name, for micro-frontends |
 | `Inspector` | component | Devtools panel; import from `use-everywhere/devtools` |
 
@@ -91,7 +91,7 @@ in `@use-everywhere/core` is re-exported from here too — see that package's
 ## Gotchas
 
 - **Shared state never crosses origins.** Two origins are two trust domains. For
-  that, open a window explicitly with `useOpenedWindow`, which is typed,
+  that, open a window explicitly with `useWindowResult`, which is typed,
   per-message and validated by origin.
 - **Last-writer-wins, per key.** Per-key `[counter, clientId]` clocks give a
   deterministic tie-break, not a merge. Two tabs editing the same key

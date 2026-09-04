@@ -65,7 +65,7 @@ export function getSharedStore(
 
 /**
  * Options to build a store with when it is first needed. Registered by
- * defineStore at module scope and consumed by getStore on creation — which is
+ * createStoreHooks at module scope and consumed by getStore on creation — which is
  * what lets persistence be declared in one place without constructing anything
  * on import.
  */
@@ -97,8 +97,8 @@ export function configureStore(name: string, scope: ShareScope, options: SharedS
     if (process.env.NODE_ENV !== 'production') {
       devWarn(
         'UE2002',
-        `defineStore('${name}') ran after that store was already created, with different options. ` +
-          'The live store keeps the configuration it was built with. Move defineStore to module scope, ' +
+        `createStoreHooks('${name}') ran after that store was already created, with different options. ` +
+          'The live store keeps the configuration it was built with. Move createStoreHooks to module scope, ' +
           'before any component reads the store.',
       );
     }
@@ -175,7 +175,7 @@ function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void 
 /**
  * Options to build a channel with when it is first needed. Registered by
  * defineChannel at module scope and consumed by getChannel on creation — the
- * same deferral defineStore uses, so declaring a schema constructs nothing on
+ * same deferral createStoreHooks uses, so declaring a schema constructs nothing on
  * import.
  */
 const channelConfig = new Map<string, ChannelOptions<MessageMap>>();

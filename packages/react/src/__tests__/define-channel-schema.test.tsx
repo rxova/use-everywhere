@@ -45,7 +45,7 @@ describe('defineChannel with a schema', () => {
     });
     function Listener() {
       const [last, setLast] = useState<string>('none');
-      bound.useMessage('ping', ({ n }) => {
+      bound.useOnMessage('ping', ({ n }) => {
         seen.push(n);
         setLast(String(n));
       });

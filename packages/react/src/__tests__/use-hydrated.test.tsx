@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Persisted, PersistAdapter } from '@use-everywhere/core';
-import { defineStore } from '../define-store.js';
+import { createStoreHooks } from '../create-store-hooks.js';
 import { useHydrated } from '../use-hydrated.js';
 import { useSharedState } from '../use-shared-state.js';
 
@@ -27,7 +27,7 @@ const asyncAdapter = (data: Persisted): PersistAdapter => ({
 describe('useHydrated', () => {
   it('is false on the first render and true once the restore lands', async () => {
     const name = uniqueName();
-    defineStore(name, { persist: asyncAdapter(saved({ draft: 'from disk' })) });
+    createStoreHooks(name, { persist: asyncAdapter(saved({ draft: 'from disk' })) });
 
     function App() {
       const ready = useHydrated({ store: name });
@@ -53,7 +53,7 @@ describe('useHydrated', () => {
 
   it('does not set state on a component that unmounted while waiting', async () => {
     const name = uniqueName();
-    defineStore(name, { persist: asyncAdapter(saved({ draft: 'from disk' })) });
+    createStoreHooks(name, { persist: asyncAdapter(saved({ draft: 'from disk' })) });
 
     function App() {
       const ready = useHydrated({ store: name });
@@ -110,7 +110,7 @@ describe('useHydrated', () => {
 
   it('starts false even for a synchronous adapter that has already finished', async () => {
     const name = uniqueName();
-    defineStore(name, {
+    createStoreHooks(name, {
       persist: { read: () => saved({ theme: 'dark' }), write: () => {} },
     });
 
@@ -137,10 +137,10 @@ describe('useHydrated', () => {
   });
 });
 
-describe('defineStore with a schema version', () => {
+describe('createStoreHooks with a schema version', () => {
   it('migrates older persisted state', async () => {
     const name = uniqueName();
-    const store = defineStore<{ first: string; fullName: string }>(name, {
+    const store = createStoreHooks<{ first: string; fullName: string }>(name, {
       persist: { read: () => ({ ...saved({ first: 'ada' }), schema: 1 }), write: () => {} },
       persistVersion: 2,
       migrate: (state) => ({ ...state, fullName: `${String(state.first)} lovelace` }),
@@ -159,7 +159,7 @@ describe('defineStore with a schema version', () => {
   it('refuses state from a newer build and reports it', async () => {
     const name = uniqueName();
     const errors: string[] = [];
-    const store = defineStore<{ theme: string }>(name, {
+    const store = createStoreHooks<{ theme: string }>(name, {
       persist: { read: () => ({ ...saved({ theme: 'dark' }), schema: 9 }), write: () => {} },
       persistVersion: 1,
       onRestoreError: (error) => errors.push(error.reason),

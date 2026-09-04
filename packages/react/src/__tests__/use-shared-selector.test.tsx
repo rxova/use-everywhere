@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { getSharedStore } from '../registry.js';
-import { shallowEqual, useSharedStore } from '../use-shared-selector.js';
+import { shallowEqual, useSharedSelector } from '../use-shared-selector.js';
 import { useSharedState } from '../use-shared-state.js';
 
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
@@ -11,7 +11,7 @@ const uniqueName = () => `sel-${++n}`;
 
 type Shape = Record<string, unknown>;
 
-describe('useSharedStore', () => {
+describe('useSharedSelector', () => {
   it('re-renders only when the selected value changes', async () => {
     const name = uniqueName();
     const store = getSharedStore(name);
@@ -19,7 +19,7 @@ describe('useSharedStore', () => {
 
     function Total() {
       renders++;
-      const total = useSharedStore<Shape, number>((s) => Number(s.a ?? 0) + Number(s.b ?? 0), {
+      const total = useSharedSelector<Shape, number>((s) => Number(s.a ?? 0) + Number(s.b ?? 0), {
         store: name,
       });
       return <span data-testid="total">{total}</span>;
@@ -48,7 +48,7 @@ describe('useSharedStore', () => {
 
     function Count() {
       renders++;
-      const count = useSharedStore<Shape, number>(
+      const count = useSharedSelector<Shape, number>(
         (s) => (s.items as string[] | undefined)?.length ?? 0,
         {
           store: name,
@@ -77,7 +77,7 @@ describe('useSharedStore', () => {
 
     function Name() {
       renders++;
-      const who = useSharedStore<Shape, { first: unknown; last: unknown }>(
+      const who = useSharedSelector<Shape, { first: unknown; last: unknown }>(
         (s) => ({ first: s.first, last: s.last }),
         { store: name, equal: shallowEqual },
       );
@@ -106,7 +106,7 @@ describe('useSharedStore', () => {
       const [key, setKey] = useSharedState<'a' | 'b'>('which', 'a', { store: `${name}-ctl` });
       // A different function each render, and a different answer — caching on
       // the store snapshot alone would keep returning the old key's value.
-      const value = useSharedStore<Shape, unknown>((s) => s[key], { store: name });
+      const value = useSharedSelector<Shape, unknown>((s) => s[key], { store: name });
       return <button onClick={() => setKey('b')}>{String(value)}</button>;
     }
     render(<Switcher />);
@@ -123,7 +123,7 @@ describe('useSharedStore', () => {
     const name = uniqueName();
 
     function Missing() {
-      const value = useSharedStore<Shape, unknown>((s) => s.neverWritten, { store: name });
+      const value = useSharedSelector<Shape, unknown>((s) => s.neverWritten, { store: name });
       return <span data-testid="v">{value === undefined ? 'undefined' : 'something'}</span>;
     }
     render(<Missing />);

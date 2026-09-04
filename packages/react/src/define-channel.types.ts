@@ -8,9 +8,9 @@ export interface ChannelHooks<M extends MessageMap> {
   useSend: () => Channel<M>['post'];
   /**
    * Subscribe to one message type. Same contract as the standalone
-   * `useMessage`: the handler is kept fresh without resubscribing.
+   * `useOnMessage`: the handler is kept fresh without resubscribing.
    */
-  useMessage: <K extends keyof M & string>(
+  useOnMessage: <K extends keyof M & string>(
     type: K,
     handler: (payload: M[K], meta: MessageMeta) => void,
   ) => void;

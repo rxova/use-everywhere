@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { StandardSchemaV1 } from '@use-everywhere/core';
 import { defineChannel } from '../define-channel.js';
-import { defineStore } from '../define-store.js';
+import { createStoreHooks } from '../create-store-hooks.js';
 import { getLeader } from '../registry.js';
 import { useSharedState } from '../use-shared-state.js';
 
@@ -34,12 +34,12 @@ describe('the development guard at runtime', () => {
 
   it('is silent when a store is redefined with different options', () => {
     const name = uniqueName();
-    defineStore(name, { persist: { read: () => undefined, write: () => {} } }).get();
+    createStoreHooks(name, { persist: { read: () => undefined, write: () => {} } }).store();
 
     vi.stubEnv('NODE_ENV', 'production');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    defineStore(name, {
+    createStoreHooks(name, {
       persist: { read: () => undefined, write: () => {} },
       persistVersion: 7,
     });

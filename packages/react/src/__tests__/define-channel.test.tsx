@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BroadcastChannelTransport, createChannel } from '@use-everywhere/core';
 import { useState } from 'react';
 import { defineChannel } from '../define-channel.js';
-import { useChannel } from '../use-message.js';
+import { useChannel } from '../use-on-message.js';
 
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
@@ -16,11 +16,11 @@ function otherTab(name: string) {
 }
 
 describe('defineChannel', () => {
-  it('receives typed messages through the bound useMessage', async () => {
+  it('receives typed messages through the bound useOnMessage', async () => {
     const bound = defineChannel<Messages>('dc1');
     function Listener() {
       const [last, setLast] = useState<number | null>(null);
-      bound.useMessage('ping', ({ n }) => setLast(n));
+      bound.useOnMessage('ping', ({ n }) => setLast(n));
       return <span data-testid="last">{String(last)}</span>;
     }
     render(<Listener />);
@@ -76,7 +76,7 @@ describe('defineChannel', () => {
     function Accumulator() {
       const [sum, setSum] = useState(0);
       // Closes over `sum`: a stale handler would keep adding to 0.
-      bound.useMessage('ping', ({ n }) => setSum(sum + n));
+      bound.useOnMessage('ping', ({ n }) => setSum(sum + n));
       return <span data-testid="sum">{sum}</span>;
     }
     render(<Accumulator />);

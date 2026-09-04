@@ -117,9 +117,9 @@
       "limit": "4.24 kB"
     },
     {
-      "name": "useSharedStore (selector)",
+      "name": "useSharedSelector",
       "path": "dist/index.js",
-      "import": "{ useSharedStore, shallowEqual }",
+      "import": "{ useSharedSelector, shallowEqual }",
       "limit": "4.40 kB"
     },
     {
@@ -129,9 +129,9 @@
       "limit": "4.21 kB"
     },
     {
-      "name": "useChannel + useMessage + useSend",
+      "name": "useChannel + useOnMessage + useSend",
       "path": "dist/index.js",
-      "import": "{ useChannel, useMessage, useSend }",
+      "import": "{ useChannel, useOnMessage, useSend }",
       "limit": "3.07 kB"
     },
     {
@@ -141,9 +141,9 @@
       "limit": "2.77 kB"
     },
     {
-      "name": "useOpenedWindow + openWindow",
+      "name": "useWindowResult + openWindow",
       "path": "dist/index.js",
-      "import": "{ useOpenedWindow, openWindow }",
+      "import": "{ useWindowResult, openWindow }",
       "limit": "1.47 kB"
     },
     {
@@ -153,9 +153,9 @@
       "limit": "3.65 kB"
     },
     {
-      "name": "defineStore (persisted)",
+      "name": "createStoreHooks (persisted)",
       "path": "dist/index.js",
-      "import": "{ defineStore, localStorageAdapter }",
+      "import": "{ createStoreHooks, localStorageAdapter }",
       "limit": "4.67 kB"
     },
     {

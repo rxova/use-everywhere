@@ -58,7 +58,7 @@ export function warnOnInitialMismatch(storeName: string, key: string, initial: u
     devWarn(
       'UE2001',
       `useSharedState('${key}') was called with different initial values (${String(first)} and ${String(initial)}). ` +
-        'The first registration wins, so the second is ignored. Define the default once — defineStore, or a shared constant.',
+        'The first registration wins, so the second is ignored. Define the default once — createStoreHooks, or a shared constant.',
     );
   }
 }
