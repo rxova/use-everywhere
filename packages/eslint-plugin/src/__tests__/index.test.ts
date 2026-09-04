@@ -26,7 +26,7 @@ describe('the plugin', () => {
   // The end-to-end check the unit tests cannot make: that the plugin object,
   // the rule ids and the config all agree well enough for ESLint itself to run.
   it('reports through a real Linter run', () => {
-    const messages = new Linter().verify(`function Cart() { return defineStore('cart'); }`, [
+    const messages = new Linter().verify(`function Cart() { return createStoreHooks('cart'); }`, [
       recommended,
     ]);
 

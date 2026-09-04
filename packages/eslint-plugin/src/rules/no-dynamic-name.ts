@@ -9,7 +9,7 @@ import { argumentAt, calleeName, docsUrl } from '../shared.js';
  * the bus itself.
  */
 const NAME_FIRST = new Set([
-  'defineStore',
+  'createStoreHooks',
   'defineChannel',
   'createNamespace',
   'createSharedStore',

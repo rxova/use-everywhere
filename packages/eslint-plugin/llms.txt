@@ -47,7 +47,7 @@ export default [
 
 | Rule | Recommended | What it catches |
 | --- | --- | --- |
-| `define-at-module-scope` | error | `defineStore`, `defineChannel` or `createNamespace` called anywhere but the top level of a module. Inside a component it builds a new bus every render, and the page syncs nothing while looking fine. |
+| `define-at-module-scope` | error | `createStoreHooks`, `defineChannel` or `createNamespace` called anywhere but the top level of a module. Inside a component it builds a new bus every render, and the page syncs nothing while looking fine. |
 | `no-dynamic-name` | error | A bus name that is not a string literal, a module-scope `const` string, or an imported binding. A computed name means two tabs can silently disagree about which bus they are on. |
 | `structured-clone-safe` | error | Values in shared state that the structured clone algorithm cannot carry — functions, class instances, DOM nodes, symbols. The write throws in the tab that made it and nowhere else. |
 | `leader-effect-captures` | warn | Values declared in a component that a `useLeaderEffect` callback reads. A warning rather than an error: a captured value that never changes is harmless, and the rule cannot tell the difference, so it argues rather than blocks. |
