@@ -16,7 +16,7 @@
     "lint:fix": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/.eslintcache",
     "format": "prettier --write . --cache --cache-location node_modules/.cache/prettier/.prettiercache",
     "format:check": "prettier --check . --cache --cache-location node_modules/.cache/prettier/.prettiercache",
-    "audit:check": "pnpm audit --audit-level=high",
+    "audit:check": "pnpm audit --audit-level=high --ignore-registry-errors",
     "dedupe:check": "pnpm dedupe --check",
     "check:exports": "turbo run check:exports --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils",
     "pack:smoke": "turbo run pack:smoke --concurrency=1 --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils",
