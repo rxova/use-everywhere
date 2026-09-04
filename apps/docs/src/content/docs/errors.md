@@ -213,33 +213,3 @@ built with.
 
 **Fix:** move `defineChannel` to module scope, before any component sends or
 receives on it.
-
-## UE2005
-
-**A name that was renamed for 1.0 is still being used.**
-
-[RFC 0001](https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md)
-renamed five exports and three types. The old spellings still work for the rest
-of the `0.x` line and are **removed in 1.0**, so this is a compile error waiting
-to happen rather than a runtime problem — nothing behaves differently today.
-
-| 0.x                       | 1.0                         |
-| ------------------------- | --------------------------- |
-| `useMessage`              | `useOnMessage`              |
-| `useOpenedWindow`         | `useWindowResult`           |
-| `defineStore`             | `createStoreHooks`          |
-| `useSharedStore`          | `useSharedSelector`         |
-| `StoreHooks.get()`        | `StoreHooks.store()`        |
-| `ChannelHooks.useMessage` | `ChannelHooks.useOnMessage` |
-| `UseMessageOptions`       | `UseOnMessageOptions`       |
-| `DefineStoreOptions`      | `CreateStoreHooksOptions`   |
-| `UseOpenedWindow`         | `UseWindowResult`           |
-
-**Fix:** run the codemod, which handles all of them:
-
-```sh
-npx use-everywhere-codemod rename-1.0 src/
-```
-
-Or rename by hand — every one is an identifier swap with no signature change.
-The warning fires once per name per session, in development only.

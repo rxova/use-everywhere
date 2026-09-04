@@ -1,5 +1,4 @@
 import { configureStore, getStore } from './registry.js';
-import { warnRenamed } from './dev.js';
 import type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
 import { useSharedState } from './use-shared-state.js';
 
@@ -40,11 +39,6 @@ export function createStoreHooks<S extends Record<string, unknown> = Record<stri
 
   return {
     store: () => getStore(name, scope),
-    // Removed in 1.0 along with the standalone renames; see deprecated.ts.
-    get: () => {
-      warnRenamed('StoreHooks.get()', 'StoreHooks.store()');
-      return getStore(name, scope);
-    },
     useSharedState: <K extends keyof S & string>(key: K, initial: S[K]) =>
       useSharedState<S[K]>(key, initial, { store: name, scope }),
   };

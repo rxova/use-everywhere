@@ -16,7 +16,6 @@ import type { UsePeersOptions } from './use-peers.js';
 import { useIsLeader, useLeader, useLeaderEffect } from './use-leader.js';
 import type { UseLeaderOptions } from './use-leader.types.js';
 import { useSharedSelector } from './use-shared-selector.js';
-import { warnRenamed } from './dev.js';
 import type { UseSharedSelectorOptions } from './use-shared-selector.js';
 import { useSharedState } from './use-shared-state.js';
 import type { UseSharedStateOptions } from './use-shared-state.types.js';
@@ -42,16 +41,6 @@ export interface ReactNamespace extends CoreNamespace {
     options?: UseSharedStateOptions,
   ): [T, (next: T | ((prev: T) => T)) => void];
   useSharedSelector<S extends Record<string, unknown>, T>(
-    selector: (state: S) => T,
-    options?: UseSharedSelectorOptions,
-  ): T;
-  /** @deprecated Renamed to `createStoreHooks`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
-  defineStore<S extends Record<string, unknown> = Record<string, unknown>>(
-    name: string,
-    options?: CreateStoreHooksOptions,
-  ): StoreHooks<S>;
-  /** @deprecated Renamed to `useSharedSelector`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
-  useSharedStore<S extends Record<string, unknown>, T>(
     selector: (state: S) => T,
     options?: UseSharedSelectorOptions,
   ): T;
@@ -98,15 +87,6 @@ export function createNamespace(namespace: string): ReactNamespace {
       useSharedState(key, initial, { ...options, store: busName(options?.store) }),
     useSharedSelector: (selector, options) =>
       useSharedSelector(selector, { ...options, store: busName(options?.store) }),
-    // Removed in 1.0 along with the standalone renames; see deprecated.ts.
-    defineStore: (name, options) => {
-      warnRenamed('Namespace.defineStore', 'Namespace.createStoreHooks');
-      return createStoreHooks(busName(name), options);
-    },
-    useSharedStore: (selector, options) => {
-      warnRenamed('Namespace.useSharedStore', 'Namespace.useSharedSelector');
-      return useSharedSelector(selector, { ...options, store: busName(options?.store) });
-    },
     usePeers: (options) => usePeers({ ...options, name: busName(options?.name) }),
     usePresenceMetadata: (metadata, options) =>
       usePresenceMetadata(metadata, { ...options, name: busName(options?.name) }),
