@@ -15,7 +15,13 @@ import process from 'node:process';
  */
 
 /** Directory prefixes of packages that are published to npm. */
-const publishedPackageDirs = ['packages/core/', 'packages/react/'];
+const publishedPackageDirs = [
+  'packages/core/',
+  'packages/react/',
+  'packages/eslint-plugin/',
+  'packages/test-utils/',
+  'packages/codemod/',
+];
 
 /**
  * Files that never require a changeset when they are the whole diff.

@@ -354,7 +354,8 @@ jobs:
             packages/core/coverage/lcov.info,
             packages/react/coverage/lcov.info,
             packages/eslint-plugin/coverage/lcov.info,
-            packages/test-utils/coverage/lcov.info
+            packages/test-utils/coverage/lcov.info,
+            packages/codemod/coverage/lcov.info
           fail_ci_if_error: false
 
   # The peer range is `react >=18`, and until this job existed nothing checked

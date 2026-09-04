@@ -1,0 +1,56 @@
+# use-everywhere-codemod
+
+> The migration tool for the `use-everywhere` 1.0 renames. Run it once over a
+> `0.x` codebase and every renamed export — `useMessage`, `useOpenedWindow`,
+> `defineStore`, `useSharedStore`, `StoreHooks.get()` and three option types —
+> is rewritten to its 1.0 spelling. Identifiers only: nothing about how the
+> library behaves changed, so the transform never touches an argument list, and
+> every byte it does not rename comes back exactly as it was.
+
+## Use
+
+    npx use-everywhere-codemod rename-1.0 src/
+
+Pass files or directories. `--dry-run` lists what would change and writes
+nothing. Not a dependency of anything: run it, commit the diff, and forget it.
+
+## The renames it applies
+
+| `0.x`                | 1.0                       |
+| -------------------- | ------------------------- |
+| `useMessage`         | `useOnMessage`            |
+| `useOpenedWindow`    | `useWindowResult`         |
+| `defineStore`        | `createStoreHooks`        |
+| `useSharedStore`     | `useSharedSelector`       |
+| `StoreHooks.get()`   | `StoreHooks.store()`      |
+| `UseMessageOptions`  | `UseOnMessageOptions`     |
+| `DefineStoreOptions` | `CreateStoreHooksOptions` |
+| `UseOpenedWindow`    | `UseWindowResult`         |
+
+`defineChannel`'s bound hook follows the standalone one: `shop.useMessage(...)`
+becomes `shop.useOnMessage(...)`.
+
+## The one thing it cannot do
+
+It has no type information. `StoreHooks.get()` and `ChannelHooks.useMessage()`
+are renamed only where the receiver was built from `defineStore` /
+`defineChannel` in the same file; a `.useMessage(...)` call on a channel
+imported from elsewhere is printed as a warning with its file and line, for a
+human to rename by hand. `.get()` on an unknown receiver is left silently — it
+is every `Map` in the codebase — so a channel-hooks or store-hooks object that
+crosses a module boundary is worth a grep after the run.
+
+## API
+
+| Export | Kind | What it does |
+| --- | --- | --- |
+| `transform` | function | `(source, filename) => { source, changed, warnings }` — one file, in memory |
+| `run` | function | `({ paths, dryRun, cwd })` — the walk the command line performs |
+| `RENAMES` | constant | The export rename table, old spelling → new |
+
+## Docs
+
+- Migration guide: https://rxova.org/packages/use-everywhere/guides/migration.md
+- RFC 0001, the reasoning: https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md
+- Full documentation: https://rxova.org/packages/use-everywhere/
+- Source: https://github.com/rxova/use-everywhere
