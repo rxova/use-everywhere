@@ -11,11 +11,7 @@ import { atModuleScope, calleeName, docsUrl } from '../shared.js';
  * They construct nothing at module scope — that is the whole point of the
  * register-now-build-later design — so there is never a reason to defer them.
  */
-// `defineStore` is the 0.x spelling of `createStoreHooks`, kept here for as long
-// as the library still exports it: the rule is most useful to the codebases that
-// have not migrated yet, and dropping the old name would silently stop checking
-// them. Both go when the export does, in 1.0.
-const DEFINERS = new Set(['createStoreHooks', 'defineStore', 'defineChannel', 'createNamespace']);
+const DEFINERS = new Set(['createStoreHooks', 'defineChannel', 'createNamespace']);
 
 export const defineAtModuleScope: Rule.RuleModule = {
   meta: {
