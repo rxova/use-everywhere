@@ -14,9 +14,4 @@ export interface ChannelHooks<M extends MessageMap> {
     type: K,
     handler: (payload: M[K], meta: MessageMeta) => void,
   ) => void;
-  /** @deprecated Renamed to `useOnMessage`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
-  useMessage: <K extends keyof M & string>(
-    type: K,
-    handler: (payload: M[K], meta: MessageMeta) => void,
-  ) => void;
 }
