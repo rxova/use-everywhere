@@ -1,16 +1,18 @@
 ---
 title: 'Naming sweep before 1.0'
-status: open
+status: implemented
 opened: 2026-08-05
 amended: 2026-08-31
+decided: 2026-09-04
+shipped: '1.0.0'
 target: '1.0'
 ---
 
-:::caution[The comment period runs from the amendment]
-A fifth rename and three companion type renames were added on 2026-08-31, after
-the original period had run. Adding a name to a sweep after people have read it
-means they read a different document, so **the two-week minimum restarts from
-that date** rather than from `opened`.
+:::note[Decision]
+Accepted as amended; shipped in 1.0.0. The old names are removed in 1.0 with no
+`0.x` deprecation release, so `UE2005` was never emitted and stays unassigned.
+`ChannelHooks.useMessage` and the `ReactNamespace` members `defineStore` and
+`useSharedStore` are renamed with the exports they wrap; the codemod covers them.
 :::
 
 ## Summary
