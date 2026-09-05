@@ -33,10 +33,10 @@ failing case travels as a test rather than as instructions.
 
 ## Version support
 
-While the library is on `0.x`, a breaking public-API change increments the minor version and ships
-with migration guidance — see [Migrating to 1.0](https://rxova.org/packages/use-everywhere/guides/migration/)
-for what is already planned. Fixes target the latest minor; older minors are not maintained in
-parallel.
+From 1.0, a breaking public-API change is a major version, arrives with a deprecation period first,
+and ships with migration guidance — see [Migrating to 1.0](https://rxova.org/packages/use-everywhere/guides/migration/)
+for the one that came with 1.0 itself. Fixes target the latest minor; older minors are not maintained
+in parallel.
 
 What the library promises not to break, and what it reserves the right to change, is written down
 in the [stability policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/).
