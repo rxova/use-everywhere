@@ -1,6 +1,6 @@
 ---
 title: 'Stability policy'
-description: 'What use-everywhere promises not to break, and what it reserves the right to change — written before 1.0 rather than after.'
+description: 'What use-everywhere promises not to break, and what it reserves the right to change — written before 1.0, in effect since it.'
 sidebar:
   order: 7
 ---
@@ -9,10 +9,9 @@ What this library promises not to break, and what it reserves the right to
 change. Written before 1.0 rather than after, because a promise made in a
 changelog after the fact is not one.
 
-:::caution[Pre-1.0]
-The library is on the `0.x` line. Breaking changes are still landing, and this
-page describes the contract that **takes effect at 1.0** — plus what already
-holds today. Where the two differ, it says so.
+:::note[In effect since 1.0]
+Every release from 1.0.0 on is held to this contract. The renames that landed
+with 1.0 itself are listed in [Migrating to 1.0](../guides/migration.md).
 :::
 
 ## What "public API" means
@@ -118,7 +117,7 @@ a major: it is a build-time requirement, not a runtime API.
 
 ## Deprecation
 
-Nothing is removed without warning first. Concretely, from 1.0:
+Nothing is removed without warning first. Concretely:
 
 1. A deprecation lands in a **minor**: the old name keeps working, forwards to
    the new one, and warns once in development with a code and this page's
