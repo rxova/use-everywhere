@@ -13,17 +13,26 @@ the bill before it arrives.
 1.0 has not shipped. This page tracks accepted and proposed changes; anything
 marked **proposed** can still be argued with, in the
 [RFC](https://github.com/rxova/use-everywhere/tree/main/rfcs) that owns it.
+
+The renames below are past that point: they are **accepted, and shipped in
+0.13** as additions. Nothing is removed until 1.0, so you can migrate today, on
+your own schedule, against a release that still accepts both spellings.
 :::
 
 ## The short version
 
-If you are on `0.11` and you use the hooks by their documented names, the
+If you are on `0.13` and you use the hooks by their documented names, the
 migration is **five renames, all mechanical, all with a codemod**. Nothing about
 how the library behaves changes.
 
-## Renames — proposed
+Do it on 0.13, not at 1.0. Both spellings work in 0.13, so the codemod is a
+green-to-green change you can land and ship on its own. Leave it until 1.0 and
+the same rename arrives as a wall of compile errors on top of a version bump.
+
+## Renames — shipped in 0.13, removed in 1.0
 
 From [RFC 0001](https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md).
+Both columns work in 0.13. Only the right one exists in 1.0.
 
 | `0.x`             | `1.0`               | Reason                                                  |
 | ----------------- | ------------------- | ------------------------------------------------------- |
@@ -39,12 +48,18 @@ Three option types are renamed with the functions they describe:
 covers these too.
 
 Every old name keeps working for the rest of `0.x`, with a deprecation warning
-(`UE2005`) that fires once per name per session. They are removed **in 1.0**, so
-the failure is a compile error rather than a surprise at runtime.
+([`UE2005`](../errors.md#ue2005)) that fires once per name per session, in
+development only. They are removed **in 1.0**, so the failure is a compile error
+rather than a surprise at runtime.
 
 ```sh
 npx use-everywhere-codemod rename-1.0 src/
 ```
+
+`--dry-run` lists what would change without writing anything. The codemod covers
+the member renames too — `StoreHooks.get()`, `ChannelHooks.useMessage`, and the
+`createNamespace` equivalents — so a clean run leaves nothing behind for 1.0 to
+break.
 
 Names that are **not** changing, in case you were bracing for them:
 `useSharedState`, `useSharedReducer`, `usePeers`, `useClientId`, `useLeader`,
@@ -77,5 +92,5 @@ with a two-week comment period rather than a maintainer's judgement call.
 
 ## If you are starting today
 
-Use the current names. The codemod exists precisely so that starting on `0.11`
-does not mean starting behind.
+Use the 1.0 names. They are the ones this site documents, and every one of them
+exists in 0.13 — so starting today does not mean starting behind.

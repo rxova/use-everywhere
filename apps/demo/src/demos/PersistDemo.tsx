@@ -1,11 +1,11 @@
-import { defineStore, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
 /**
- * Module scope, before anything renders — which is the point: defineStore
+ * Module scope, before anything renders — which is the point: createStoreHooks
  * registers how the store is built, so the value is restored before the first
  * paint rather than flashing the initial and then correcting itself.
  */
-const drafts = defineStore<{ body: string }>('drafts', {
+const drafts = createStoreHooks<{ body: string }>('drafts', {
   persist: localStorageAdapter('ue-demo:drafts'),
   persistDebounceMs: 150,
 });

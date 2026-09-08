@@ -9,7 +9,7 @@ sidebar:
 tabs tell each other that something _happened_ — "user logged out", "cart
 changed, go refetch" — as opposed to shared state, which is about what
 something _is_. You'll almost always use it together with
-[`useMessage`](./use-message.md) (listen) and [`useSend`](./use-send.md)
+[`useOnMessage`](./use-on-message.md) (listen) and [`useSend`](./use-send.md)
 (announce).
 
 ```tsx
@@ -22,7 +22,7 @@ type AuthEvents = {
 
 function Session() {
   const channel = useChannel<AuthEvents>('auth');
-  // …pass it to useMessage / useSend
+  // …pass it to useOnMessage / useSend
 }
 ```
 
@@ -82,7 +82,7 @@ arrays and to pass down as a prop without memoizing.
 
 ## Where to next
 
-- [`useMessage`](./use-message.md) — subscribe to one event type from this
+- [`useOnMessage`](./use-on-message.md) — subscribe to one event type from this
   channel.
 - [`useSend`](./use-send.md) — a stable send function for it.
 - [Messages & presence guide](../guides/messages-and-presence.md) — the trio

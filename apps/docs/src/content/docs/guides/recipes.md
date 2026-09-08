@@ -24,7 +24,7 @@ function useLogoutEverywhere() {
   const send = auth.useSend();
 
   // Every tab listens…
-  auth.useMessage('logged-out', () => {
+  auth.useOnMessage('logged-out', () => {
     window.location.assign('/login');
   });
 
@@ -146,7 +146,7 @@ The full walkthrough lives in
 [Cross-origin payments](./cross-origin-payments.md); the skeleton is:
 
 ```tsx
-const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
   openWindow('https://pay.example.com/checkout', {
     peerOrigin: 'https://pay.example.com',
   }),
@@ -220,9 +220,9 @@ idempotent.
 one. Give the store a disk and it comes back:
 
 ```tsx
-import { defineStore, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
-const drafts = defineStore<{ body: string }>('drafts', {
+const drafts = createStoreHooks<{ body: string }>('drafts', {
   persist: localStorageAdapter('app:drafts'),
   persistDebounceMs: 250,
 });
@@ -236,7 +236,7 @@ function Composer() {
 Type in one tab, watch it appear in the other, close both, reopen — the text is
 there on the first paint. The stored value carries its version clock, so if a
 live tab has moved on since you last closed, the live tab still wins. See
-[defineStore](../hooks/define-store.md).
+[createStoreHooks](../hooks/create-store-hooks.md).
 
 ## See what the tabs are saying
 

@@ -41,7 +41,7 @@ type Session = { 'signed-out': { reason: string } };
 
 const channel = useChannel<Session>('session');
 
-useMessage(channel, 'signed-out', ({ reason }) => {
+useOnMessage(channel, 'signed-out', ({ reason }) => {
   queryClient.clear();
   navigate(`/login?reason=${reason}`);
 });
@@ -110,7 +110,7 @@ useLeaderEffect(() => {
   return () => socket.close();
 });
 
-useMessage(channel, 'event', applyServerEvent);
+useOnMessage(channel, 'event', applyServerEvent);
 ```
 
 Six connections become one. When the owning tab goes away the socket moves —
@@ -136,7 +136,7 @@ mutation. Every other tab has its own cache and no idea anything changed.
 const channel = useChannel<{ invalidate: { key: string } }>('cache');
 const post = useSend(channel);
 
-useMessage(channel, 'invalidate', ({ key }) => {
+useOnMessage(channel, 'invalidate', ({ key }) => {
   queryClient.invalidateQueries({ queryKey: [key] });
 });
 
@@ -166,7 +166,7 @@ way [Why this exists](./why.md) walks through. For the cross-origin half, a
 handshake that already does the checks:
 
 ```tsx
-const payment = useOpenedWindow(() =>
+const payment = useWindowResult(() =>
   openWindow('https://pay.example.com/checkout', {
     peerOrigin: 'https://pay.example.com',
   }),

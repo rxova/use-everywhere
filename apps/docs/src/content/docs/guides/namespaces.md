@@ -42,7 +42,7 @@ function Cart() {
 ```
 
 It carries the full surface, not a reduced one — `useSharedState`, `usePeers`,
-`useClientId`, `useLeader`, `useIsLeader`, `useLeaderEffect`, `defineStore`,
+`useClientId`, `useLeader`, `useIsLeader`, `useLeaderEffect`, `createStoreHooks`,
 `defineChannel`, `getSharedStore`, plus the core factories (`createSharedStore`,
 `createChannel`, `createPresence`, `createLeader`) for code outside React.
 

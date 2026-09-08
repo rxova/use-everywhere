@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { defineStore, localStorageAdapter, useHydrated } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter, useHydrated } from 'use-everywhere';
 import { Card, Page } from '../shell/Page.js';
 import { Code } from '../shell/Code.js';
 
@@ -10,7 +10,7 @@ const KEY = 'use-everywhere:showcase-settings';
  * lint plugin has a rule about it. Registering after the store exists would
  * hand back a store with no persistence and warn (UE2002).
  */
-const settings = defineStore<{ nickname: string; density: 'cosy' | 'compact' }>(
+const settings = createStoreHooks<{ nickname: string; density: 'cosy' | 'compact' }>(
   'showcase-settings',
   { persist: localStorageAdapter(KEY), persistDebounceMs: 150 },
 );
@@ -91,7 +91,7 @@ export function PersistencePage() {
         </p>
       </Card>
 
-      <Code>{`const settings = defineStore('settings', {
+      <Code>{`const settings = createStoreHooks('settings', {
   persist: localStorageAdapter('my-app:settings'),
   persistVersion: 2,
   migrate: (state, from) => (from < 2 ? { ...state, density: 'cosy' } : state),

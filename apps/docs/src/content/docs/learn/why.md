@@ -137,9 +137,9 @@ Row by row, this is the gap being closed:
 That table _is_ the library — every row built once, tested, and hidden
 behind a `useState`-shaped API. The same-origin rows become
 [`useSharedState`](../hooks/use-shared-state.md),
-[`useMessage`](../hooks/use-message.md), and
+[`useOnMessage`](../hooks/use-on-message.md), and
 [`usePeers`](../hooks/use-peers.md); the cross-origin rows become
-[`useOpenedWindow`](../hooks/use-opened-window.md).
+[`useWindowResult`](../hooks/use-window-result.md).
 
 ## Where to next
 

@@ -32,6 +32,20 @@ export default defineConfig({
   site,
   base,
 
+  // The three hook pages renamed at 1.0 (RFC 0001). Inbound links to the 0.x
+  // URLs — search results, blog posts, the 0.x READMEs on npm — land on a
+  // redirect stub rather than a 404. Astro prefixes `base` on the *source* of
+  // a redirect but writes the destination verbatim, so under the aggregator's
+  // mount the target has to carry the base itself or the stub points at the
+  // site root. `check-md-routes.mjs` knows a redirect stub has no twin.
+  redirects: Object.fromEntries(
+    Object.entries({
+      '/hooks/use-message/': '/hooks/use-on-message/',
+      '/hooks/use-opened-window/': '/hooks/use-window-result/',
+      '/hooks/define-store/': '/hooks/create-store-hooks/',
+    }).map(([from, to]) => [from, `${base.replace(/\/$/, '')}${to}`]),
+  ),
+
   markdown: {
     // The Docusaurus site rendered mermaid via @docusaurus/theme-mermaid;
     // Starlight has no equivalent, so without this the two diagrams degrade

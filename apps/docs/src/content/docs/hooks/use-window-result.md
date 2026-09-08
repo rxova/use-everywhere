@@ -1,11 +1,11 @@
 ---
-title: 'useOpenedWindow'
+title: 'useWindowResult'
 description: 'Open a window on another domain, hand it typed data and await its result, as plain render state.'
 sidebar:
   order: 9
 ---
 
-`useOpenedWindow` turns the messiest flow in web development — open a window
+`useWindowResult` turns the messiest flow in web development — open a window
 on _another domain_, talk to it, and get a result back — into plain render
 state. Think checkout on `shop.example.com` opening a payment page on
 `pay.example.com`: the hook gives you a `status` to render, a typed `post`,
@@ -13,14 +13,14 @@ and a `result` when the child finishes. The handshake, the message
 validation, the "user closed the window" detection: all handled.
 
 ```tsx
-import { openWindow, useOpenedWindow } from 'use-everywhere';
+import { openWindow, useWindowResult } from 'use-everywhere';
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
 function PayButton() {
-  const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+  const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
     openWindow('https://pay.example.com/checkout', {
       peerOrigin: 'https://pay.example.com',
       features: 'popup,width=440,height=640',
@@ -42,9 +42,9 @@ function PayButton() {
 ## Signature
 
 ```ts
-function useOpenedWindow<Out extends MessageMap, In extends MessageMap, R = unknown>(
+function useWindowResult<Out extends MessageMap, In extends MessageMap, R = unknown>(
   factory: () => OpenedWindow<Out, In, R>,
-): UseOpenedWindow<Out, In, R>;
+): UseWindowResult<Out, In, R>;
 ```
 
 The three type parameters are the contract with the child window: `Out` —

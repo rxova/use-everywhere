@@ -166,7 +166,7 @@ fine — but reading something _derived_ from them used to mean subscribing to
 the whole store, which re-renders on every write to anything in it.
 
 ```tsx
-const total = useSharedStore<Cart, number>((cart) => cart.items.length + cart.saved.length);
+const total = useSharedSelector<Cart, number>((cart) => cart.items.length + cart.saved.length);
 ```
 
 The selector runs on every change; the component re-renders only when the
@@ -176,7 +176,7 @@ function, because it returns a new reference every run:
 ```tsx
 import { shallowEqual } from 'use-everywhere';
 
-const who = useSharedStore((s) => ({ first: s.first, last: s.last }), { equal: shallowEqual });
+const who = useSharedSelector((s) => ({ first: s.first, last: s.last }), { equal: shallowEqual });
 ```
 
 **A selector reads; it does not declare.** Unlike `useSharedState(key, initial)`,

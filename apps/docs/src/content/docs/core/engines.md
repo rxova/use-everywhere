@@ -35,7 +35,7 @@ that one key changes, which is what keeps a component from re-rendering because
 some unrelated key moved.
 
 Options: `accept` (a gatekeeper for incoming writes), `persist`
-(see [defineStore](../hooks/define-store.md)), `transport`, `kind`.
+(see [createStoreHooks](../hooks/create-store-hooks.md)), `transport`, `kind`.
 
 ## createChannel
 
