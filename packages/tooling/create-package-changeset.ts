@@ -181,7 +181,7 @@ const printHelp = (packages: readonly PackageMeta[]): void => {
   console.log('');
   console.log('Examples:');
   console.log('  pnpm changeset:pkg -- core minor "Add presence timeout option."');
-  console.log('  pnpm changeset:pkg -- use-everywhere patch "Fix stale handler in useMessage."');
+  console.log('  pnpm changeset:pkg -- use-everywhere patch "Fix stale handler in useOnMessage."');
   console.log('');
   console.log('Known package tokens:');
   for (const pkg of packages) {
