@@ -3,7 +3,7 @@ import { ruleTester } from './rule-tester.js';
 
 ruleTester.run('no-dynamic-name', noDynamicName, {
   valid: [
-    { code: `const cart = defineStore('cart');` },
+    { code: `const cart = createStoreHooks('cart');` },
     { code: `const chat = defineChannel(\`chat\`);` },
     { code: `const CART = 'cart';\nconst cart = createSharedStore(CART, {});` },
     { code: `const CART = 'cart';\nfunction Cart() { return getSharedStore(CART); }` },
@@ -16,7 +16,7 @@ ruleTester.run('no-dynamic-name', noDynamicName, {
     // Not one of ours.
     { code: `const thing = createThing(id);` },
     // Spread: nothing to judge, so nothing to say.
-    { code: `const args = ['cart'];\nconst cart = defineStore(...args);` },
+    { code: `const args = ['cart'];\nconst cart = createStoreHooks(...args);` },
   ],
   invalid: [
     {
@@ -24,7 +24,7 @@ ruleTester.run('no-dynamic-name', noDynamicName, {
       errors: [{ messageId: 'dynamicName', data: { name: 'getSharedStore' } }],
     },
     {
-      code: `const cart = defineStore(\`cart-\${window.location.host}\`);`,
+      code: `const cart = createStoreHooks(\`cart-\${window.location.host}\`);`,
       errors: [{ messageId: 'dynamicName' }],
     },
     {

@@ -7,13 +7,13 @@ const DOCS_BASE = 'https://rxova.org/packages/use-everywhere/eslint';
 export const docsUrl = (rule: string): string => `${DOCS_BASE}/${rule}/`;
 
 /**
- * The name a call invokes, for both `defineStore(...)` and
- * `checkout.defineStore(...)`.
+ * The name a call invokes, for both `createStoreHooks(...)` and
+ * `checkout.createStoreHooks(...)`.
  *
  * Namespaces (`createNamespace('checkout')`) hand back the same factories on an
  * object, so matching only bare identifiers would exempt every namespaced app —
  * the codebases these rules matter most in. The cost is that any object with a
- * `defineStore` method is treated as ours; the names are distinctive enough
+ * `createStoreHooks` method is treated as ours; the names are distinctive enough
  * that the trade is worth it.
  */
 export const calleeName = (node: CallExpression): string | null => {
