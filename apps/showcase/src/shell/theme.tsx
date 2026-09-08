@@ -1,5 +1,10 @@
 import { useEffect } from 'react';
-import { DEFAULT_NAME, defineStore, localStorageAdapter, useSharedState } from 'use-everywhere';
+import {
+  DEFAULT_NAME,
+  createStoreHooks,
+  localStorageAdapter,
+  useSharedState,
+} from 'use-everywhere';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -14,7 +19,7 @@ export const THEME_KEY = 'use-everywhere:showcase-theme';
  * `persistKeys` keeps the rest of the default store out of localStorage: the
  * counter and the note are meant to be forgotten on reload; a theme is not.
  */
-defineStore(DEFAULT_NAME, {
+createStoreHooks(DEFAULT_NAME, {
   persist: localStorageAdapter(THEME_KEY),
   persistKeys: ['theme'],
 });

@@ -43,14 +43,14 @@ Browsers draw a hard line at the **origin** (`scheme://host:port`), and the
 library embraces that line rather than papering over it. Everything you do
 lives in one of two worlds:
 
-|               | Same origin                                | Cross origin                               |
-| ------------- | ------------------------------------------ | ------------------------------------------ |
-| Who is there  | Your own tabs, windows, workers            | A page you opened on another domain        |
-| Trust         | Full — it is all your code                 | None — it is another security principal    |
-| Topology      | Many-to-many bus                           | Strict 1:1, parent ↔ child                 |
-| Transport     | `BroadcastChannel`                         | `window.opener` / `postMessage`            |
-| API surface   | `useSharedState`, `useMessage`, `usePeers` | `openWindow` / `connectToOpener`           |
-| Shape of data | Shared _state_ and broadcast _events_      | Explicit typed _messages_ and one _result_ |
+|               | Same origin                                  | Cross origin                               |
+| ------------- | -------------------------------------------- | ------------------------------------------ |
+| Who is there  | Your own tabs, windows, workers              | A page you opened on another domain        |
+| Trust         | Full — it is all your code                   | None — it is another security principal    |
+| Topology      | Many-to-many bus                             | Strict 1:1, parent ↔ child                 |
+| Transport     | `BroadcastChannel`                           | `window.opener` / `postMessage`            |
+| API surface   | `useSharedState`, `useOnMessage`, `usePeers` | `openWindow` / `connectToOpener`           |
+| Shape of data | Shared _state_ and broadcast _events_        | Explicit typed _messages_ and one _result_ |
 
 Shared state deliberately never crosses the origin line. A foreign page that
 could merge writes into your state tree would be a
@@ -69,7 +69,7 @@ heartbeat.
 graph LR
   subgraph "Tab A"
     A1[useSharedState] --> BUSA(("bus 'checkout'<br/>clientId: k3j9x2"))
-    A2[useMessage] --> BUSA
+    A2[useOnMessage] --> BUSA
     A3[usePeers] --> BUSA
   end
   subgraph "Tab B"
@@ -107,7 +107,7 @@ answering a different question:
 - **Shared state** ([`useSharedState`](../hooks/use-shared-state.md)) —
   _"what is the current value?"_ Convergent, hydrating, last-writer-wins.
   Use it for anything you'd render.
-- **Messages** ([`useMessage`](../hooks/use-message.md) /
+- **Messages** ([`useOnMessage`](../hooks/use-on-message.md) /
   [`useChannel`](../hooks/use-channel.md)) — _"what just happened?"_
   Fire-and-forget events with no history; a tab that joins later never sees
   old events. Use it for triggers: `logged-out`, `cart-updated`.

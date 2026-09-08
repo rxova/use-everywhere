@@ -37,7 +37,7 @@ npm install use-everywhere
 |                          |                                                                                                                                                                                                                           |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Shared state**         | `useState`, but the value lives in every tab on the origin. Per-key `[counter, clientId]` clocks give last-writer-wins with a deterministic tie-break; a hello/snapshot handshake hydrates late joiners instantly.        |
-| **Typed messages**       | Fire-and-forget pub/sub between tabs. Bind the name and the message map once with `defineChannel`, get typed `useSend`/`useMessage` back.                                                                                 |
+| **Typed messages**       | Fire-and-forget pub/sub between tabs. Bind the name and the message map once with `defineChannel`, get typed `useSend`/`useOnMessage` back.                                                                               |
 | **Presence**             | Who else is here, right now — tabs, windows, workers — with a heartbeat and automatic pruning.                                                                                                                            |
 | **Leader election**      | Exactly one tab owns the WebSocket, the polling loop, the token refresh. Lease-and-claim with a sticky incumbent: opening a tab doesn't steal the seat, closing one hands it over instantly. Opt-in, and opt-out per tab. |
 | **Cross-origin windows** | A secure 1:1 channel to a window you opened on **another domain** — a payment page that must report back to the checkout. Validated by origin, envelope brand, per-connection nonce, and source window.                   |
@@ -60,7 +60,7 @@ function StatusBar() {
   const [count, setCount] = useSharedState('count', 0); // exists in every tab
 
   const [cartItems, setCartItems] = useState(0);
-  shop.useMessage('cart-updated', (payload) => setCartItems(payload.items)); // fires when another tab posts
+  shop.useOnMessage('cart-updated', (payload) => setCartItems(payload.items)); // fires when another tab posts
 
   const peers = usePeers(); // who else is here
 
@@ -93,13 +93,13 @@ Leadership is **advisory, not a distributed lock** — good for "don't open five
 **A window on another origin.** Open it, hand it typed data, await its result.
 
 ```tsx
-import { openWindow, useOpenedWindow } from 'use-everywhere';
+import { openWindow, useWindowResult } from 'use-everywhere';
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
-const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
   openWindow('https://pay.example.com/checkout', { peerOrigin: 'https://pay.example.com' }),
 );
 // pay.open() from a click handler; pay.status: idle → opening → connected → done
@@ -126,6 +126,7 @@ conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay
 | [`@use-everywhere/core`](packages/core)                  | Framework-agnostic engine — no React dependency           |
 | [`eslint-plugin-use-everywhere`](packages/eslint-plugin) | The rules for the mistakes that fail silently             |
 | [`@use-everywhere/test-utils`](packages/test-utils)      | Several tabs in one process, for testing                  |
+| [`use-everywhere-codemod`](packages/codemod)             | Rewrites a `0.x` codebase to the 1.0 names, once          |
 | `@use-everywhere/demo` (`apps/demo`)                     | Vite demo app, including a real cross-origin payment flow |
 
 Everything is tree-shakeable and measured: importing one primitive costs roughly one primitive, and every export has its own budget in CI. The whole of core, imported at once, is about 8.5 kB brotlied; `useSharedState` on its own is nearer 4 kB.

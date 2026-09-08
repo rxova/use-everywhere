@@ -14,17 +14,17 @@ gotchas worth knowing before you hit them.
 | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
 | [`useSharedState`](./use-shared-state.md)   | "What is the current value?"                    | `useState`, but the value exists in every tab on your origin       |
 | [`useChannel`](./use-channel.md)            | "Give me the typed event channel named X"       | Returns the page-wide channel singleton for a name                 |
-| [`useMessage`](./use-message.md)            | "Run this when X happens in another tab"        | Subscribes to one event type, with no stale-closure traps          |
+| [`useOnMessage`](./use-on-message.md)       | "Run this when X happens in another tab"        | Subscribes to one event type, with no stale-closure traps          |
 | [`useSend`](./use-send.md)                  | "Let me announce X to every other tab"          | A stable, typed `post` function for a channel                      |
 | [`usePeers`](./use-peers.md)                | "Who else is here?"                             | A live list of open tabs, windows, and workers                     |
 | [`useClientId`](./use-client-id.md)         | "Which one am I?"                               | This tab's stable id on a bus — matches `meta.clientId` everywhere |
-| [`useOpenedWindow`](./use-opened-window.md) | "Open a window on another domain and hear back" | The whole cross-origin window lifecycle as render state            |
+| [`useWindowResult`](./use-window-result.md) | "Open a window on another domain and hear back" | The whole cross-origin window lifecycle as render state            |
 
 There are also two factories. [`defineChannel`](./define-channel.md) binds a
 channel's name and message map once at module level and returns ready-made
-`useSend`/`useMessage` — the ergonomic way to use the event trio across many
-components. [`defineStore`](./define-store.md) does the same for a store, and
-is where you turn on [persistence](./define-store.md) so the state survives
+`useSend`/`useOnMessage` — the ergonomic way to use the event trio across many
+components. [`createStoreHooks`](./create-store-hooks.md) does the same for a store, and
+is where you turn on [persistence](./create-store-hooks.md) so the state survives
 closing the last tab.
 
 And when it misbehaves, [`<Inspector />`](./inspector.md) shows you every
@@ -48,7 +48,7 @@ always:
 :::tip[The litmus test]
 If a tab opened later needs to know it, it's **state** —
 [`useSharedState`](./use-shared-state.md). If only currently-open tabs care,
-it's an **event** — [`useMessage`](./use-message.md).
+it's an **event** — [`useOnMessage`](./use-on-message.md).
 :::
 
 ## Beyond the hooks

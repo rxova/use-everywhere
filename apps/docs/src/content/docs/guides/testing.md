@@ -171,7 +171,7 @@ forged messages (origin/nonce/source gates), popup blocking
 (`openFn: () => null`), and premature closes — all without a browser window.
 The same seams are available to your tests.
 
-For React, `useOpenedWindow(factory)` takes any factory, so tests can return
+For React, `useWindowResult(factory)` takes any factory, so tests can return
 a hand-rolled fake `OpenedWindow` object with controllable promises and
 assert the full status machine: `idle → opening → connected → done`.
 
@@ -347,7 +347,7 @@ expect(renderToString(<Widget />)).toContain('initial-value');
 
 - [Recipes](./recipes.md) — patterns worth wrapping in exactly these kinds
   of tests.
-- [`useOpenedWindow`](../hooks/use-opened-window.md) — the status machine
+- [`useWindowResult`](../hooks/use-window-result.md) — the status machine
   your fakes will be asserting.
 - [How sync works](../under-the-hood/how-sync-works.md) — what "hello →
   snapshot → merge" actually does in that one awaited tick.

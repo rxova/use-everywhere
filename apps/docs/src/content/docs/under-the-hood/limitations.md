@@ -19,12 +19,12 @@ gone; reopen and you start from initial values. Nothing touches
 **If you want it to survive**, say so:
 
 ```tsx
-import { defineStore, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
-const settings = defineStore('settings', { persist: localStorageAdapter('app:settings') });
+const settings = createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
 ```
 
-See [defineStore](../hooks/define-store.md).
+See [createStoreHooks](../hooks/create-store-hooks.md).
 
 Do **not** hand-roll it with a write-through effect:
 
@@ -38,7 +38,7 @@ Two things break. Every tab runs that effect, so N tabs race to write the
 same key. And the stored string carries no version clock, so when you reopen,
 the restored value re-enters the world at counter zero — it cannot win the
 last-writer-wins race even when it genuinely is the newest thing anyone has.
-`defineStore` persists the clocks along with the values, which is the whole
+`createStoreHooks` persists the clocks along with the values, which is the whole
 reason it converges.
 
 ## Persistence is best-effort

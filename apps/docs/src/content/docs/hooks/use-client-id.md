@@ -43,7 +43,7 @@ the page. It is:
 
 - the `id` other tabs see for you in [`usePeers`](./use-peers.md),
 - the `meta.clientId` other tabs receive with your
-  [events](./use-message.md) and state patches,
+  [events](./use-on-message.md) and state patches,
 - new on every full page load (it identifies a _page instance_, not a user or
   a browser).
 

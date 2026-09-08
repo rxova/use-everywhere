@@ -10,7 +10,7 @@ Published:
   (LWW version clocks + late-joiner handshake), typed pub/sub channels,
   presence, leadership, and the cross-origin opener/child window channel.
 - `packages/react` (`use-everywhere`): React hooks (`useSharedState`,
-  `useMessage`, `usePeers`, `useOpenedWindow`, …) layered on core; re-exports a
+  `useOnMessage`, `usePeers`, `useWindowResult`, …) layered on core; re-exports a
   curated core surface, and ships the Inspector on a `devtools` subpath.
 - `packages/eslint-plugin` (`eslint-plugin-use-everywhere`): the four mistakes
   that are silent at runtime.
@@ -185,6 +185,6 @@ the issue.
 - Anything that changes what the library promises belongs in the
   [stability policy](./apps/docs/src/content/docs/under-the-hood/stability.md)
   as well as the changeset.
-- Anything a `0.x` user will have to do by hand at 1.0 belongs in the
+- Anything a user will have to do by hand at the next major belongs in the
   [migration guide](./apps/docs/src/content/docs/guides/migration.md), in the
   same pull request that creates the work.

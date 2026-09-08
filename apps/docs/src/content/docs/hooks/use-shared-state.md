@@ -142,7 +142,7 @@ class of bug, gone. (For the full pattern with an owner id, see the
   shared values, so that mistake throws instead of failing silently —
   [details](../guides/shared-state.md#replace-values-dont-mutate-them).
 - **Not persisted by default.** Close the last tab and the value is gone.
-  Opt in with [`defineStore`'s `persist`](./define-store.md) to keep it — with
+  Opt in with [`createStoreHooks`'s `persist`](./create-store-hooks.md) to keep it — with
   its version clocks, so it re-hydrates correctly.
 - **Subscriptions are per key.** Components using the same key (and store and
   scope) share one subscription, and a `note` update never re-renders `count`
@@ -170,5 +170,5 @@ store.subscribe((key, value, meta) => console.log(key, value, meta.clientId));
   conflict behavior as a walkthrough.
 - [How sync works](../under-the-hood/how-sync-works.md) — the version clocks
   and handshakes underneath.
-- [`useMessage`](./use-message.md) — for things that _happen_ rather than
+- [`useOnMessage`](./use-on-message.md) — for things that _happen_ rather than
   things that _are_.

@@ -1,18 +1,18 @@
 ---
-title: 'defineStore'
+title: 'createStoreHooks'
 description: 'Give a shared store a persisted, typed identity — schema, version and migration path — defined once at module scope.'
 sidebar:
   order: 11
 ---
 
 Shared state is per-origin, but it is not permanent: close every tab and it is
-gone, because the value only ever lived in memory. `defineStore` gives a store a
+gone, because the value only ever lived in memory. `createStoreHooks` gives a store a
 disk, so it comes back.
 
 ```tsx
-import { defineStore, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
-const settings = defineStore<{ theme: string }>('settings', {
+const settings = createStoreHooks<{ theme: string }>('settings', {
   persist: localStorageAdapter('app:settings'),
 });
 
@@ -39,18 +39,18 @@ simply already there by the time your component asks.
 
 ## It's the same store
 
-`defineStore` doesn't create a private store. It resolves to the same singleton
+`createStoreHooks` doesn't create a private store. It resolves to the same singleton
 that a bare hook reaches, so these two touch **one** store, and both get
 persistence:
 
 ```tsx
-const settings = defineStore('settings', { persist: localStorageAdapter('app:settings') });
+const settings = createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
 
 // elsewhere, no import of `settings` at all:
 const [theme] = useSharedState('theme', 'light', { store: 'settings' });
 ```
 
-If `defineStore` runs _after_ that store already exists, it **warns in
+If `createStoreHooks` runs _after_ that store already exists, it **warns in
 development** and the live store keeps the configuration it was built with.
 Handing you back a store that silently isn't persisted is exactly the bug this
 design exists to prevent — so move the call to module scope, where it belongs.
@@ -59,6 +59,19 @@ Re-registering the _same_ configuration is a no-op, not a conflict. That is what
 Fast Refresh does every time you edit the defining module, and comparing the
 adapter by identity would flag each hot reload as a redefinition — so
 configurations are compared by shape instead.
+
+## Outside React
+
+The returned object carries the store itself, for code that is not a component
+— a module-level handler, a worker, a test:
+
+```ts
+settings.store().set('theme', 'dark'); // the same instance the hooks read
+settings.store() === getSharedStore('settings'); // true
+```
+
+`store()` is a getter, not a factory: it resolves the singleton for the name and
+scope you bound, building it on first use exactly as the hooks would.
 
 ## Adapters
 
@@ -89,7 +102,7 @@ restore.
 ## Options
 
 ```tsx
-defineStore('settings', {
+createStoreHooks('settings', {
   persist: localStorageAdapter('app:settings'),
   persistKeys: ['theme'], // persist only these keys
   persistDebounceMs: 100, // coalesce writes

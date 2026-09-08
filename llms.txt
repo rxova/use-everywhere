@@ -34,6 +34,8 @@ read when you are writing calling code.
   names, cloneable values, leader-effect captures.
 - [@use-everywhere/test-utils](packages/test-utils/llms.txt): several tabs in one
   process, for testing. jsdom cannot do this; see `AGENTS.md`.
+- [use-everywhere-codemod](packages/codemod/llms.txt): the migration tool for
+  the 1.0 renames. Run once over a `0.x` codebase; not a dependency of anything.
 
 ## Docs
 
