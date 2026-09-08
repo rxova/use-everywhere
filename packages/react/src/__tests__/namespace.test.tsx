@@ -88,7 +88,7 @@ describe('createNamespace (React)', () => {
   });
 
   it('reaches presence, leadership and the bound factories', async () => {
-    const bound = checkout.defineStore<{ n: number }>('bound');
+    const bound = checkout.createStoreHooks<{ n: number }>('bound');
     function App() {
       const id = checkout.useClientId();
       const peers = checkout.usePeers();
@@ -127,7 +127,7 @@ describe('createNamespace (React)', () => {
     function App() {
       const send = events.useSend();
       const { leaderId } = orders.useLeader(FAST);
-      events.useMessage('ping', (n) => seen.push(n));
+      events.useOnMessage('ping', (n) => seen.push(n));
       orders.useLeaderEffect(() => {
         ranAsLeader++;
       }, FAST);
@@ -154,10 +154,10 @@ describe('createNamespace (React)', () => {
     expect(seen).toEqual([]);
   });
 
-  it('carries useSharedStore, selecting from the namespaced store', async () => {
+  it('carries useSharedSelector, selecting from the namespaced store', async () => {
     function App() {
       const [, setValue] = checkout.useSharedState('picked', 0);
-      const doubled = checkout.useSharedStore<Record<string, unknown>, number>(
+      const doubled = checkout.useSharedSelector<Record<string, unknown>, number>(
         (s) => Number(s.picked ?? 0) * 2,
       );
       return (

@@ -22,7 +22,7 @@ export interface UseSharedSelectorOptions extends UseSharedStateOptions {
  * anything in it.
  *
  * ```tsx
- * const total = useSharedStore<Cart, number>(
+ * const total = useSharedSelector<Cart, number>(
  *   (cart) => cart.items.length + cart.saved.length,
  * );
  * ```
@@ -42,7 +42,7 @@ export interface UseSharedSelectorOptions extends UseSharedStateOptions {
  * selector runs against `{}`, and its result is what the server-rendered markup
  * shows.
  */
-export function useSharedStore<S extends Record<string, unknown>, T>(
+export function useSharedSelector<S extends Record<string, unknown>, T>(
   selector: (state: S) => T,
   options?: UseSharedSelectorOptions,
 ): T {

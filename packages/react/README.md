@@ -57,7 +57,7 @@ function CartBadge() {
   const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated'.
-  shop.useMessage('cart-updated', (payload) => setItems(payload.items));
+  shop.useOnMessage('cart-updated', (payload) => setItems(payload.items));
 
   const addToCart = () => {
     setItems(items + 1); // this tab
@@ -68,7 +68,7 @@ function CartBadge() {
 }
 ```
 
-The standalone hooks — `useChannel(name)`, `useMessage(channel, type,
+The standalone hooks — `useChannel(name)`, `useOnMessage(channel, type,
 handler)`, `useSend(channel)` — are the same machinery without the
 module-level binding, for one-off use.
 
@@ -84,20 +84,20 @@ function DuplicateTabWarning() {
 }
 ```
 
-## Cross-origin windows: `useOpenedWindow`
+## Cross-origin windows: `useWindowResult`
 
 Open a window on another domain, exchange typed messages, and await its
 result — the whole lifecycle folded into render state.
 
 ```tsx
-import { openWindow, useOpenedWindow } from 'use-everywhere';
+import { openWindow, useWindowResult } from 'use-everywhere';
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
 function PayButton() {
-  const pay = useOpenedWindow<ToPayment, FromPayment, Receipt>(() =>
+  const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
     openWindow('https://pay.example.com/checkout', {
       peerOrigin: 'https://pay.example.com', // required — '*' throws
     }),

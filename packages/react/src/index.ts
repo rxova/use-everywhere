@@ -1,17 +1,17 @@
 export { useSharedState } from './use-shared-state.js';
 export { useSharedReducer } from './use-shared-reducer.js';
-export { useSharedStore, shallowEqual } from './use-shared-selector.js';
+export { useSharedSelector, shallowEqual } from './use-shared-selector.js';
 export type { UseSharedSelectorOptions } from './use-shared-selector.js';
 export type { UseSharedReducerOptions } from './use-shared-reducer.js';
 export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
 export { getSharedStore, DEFAULT_NAME } from './registry.js';
 export type { AnyStore } from './registry.types.js';
-export { useChannel, useMessage, useSend, useAsk, useAnswer } from './use-message.js';
-export type { UseMessageOptions } from './use-message.js';
+export { useChannel, useOnMessage, useSend, useAsk, useAnswer } from './use-on-message.js';
+export type { UseOnMessageOptions } from './use-on-message.js';
 export { defineChannel } from './define-channel.js';
 export type { ChannelHooks } from './define-channel.types.js';
-export { defineStore } from './define-store.js';
-export type { DefineStoreOptions, StoreHooks } from './define-store.types.js';
+export { createStoreHooks } from './create-store-hooks.js';
+export type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
 export { usePeers, useClientId, usePresenceMetadata } from './use-peers.js';
 export type { UsePeersOptions } from './use-peers.js';
 export { useHydrated } from './use-hydrated.js';
@@ -22,13 +22,19 @@ export { getLeader } from './registry.js';
 // the namespace it wants is the one that carries hooks.
 export { createNamespace } from './namespace.js';
 export type { ReactNamespace } from './namespace.js';
-export { useOpenedWindow } from './use-opened-window.js';
+export { useWindowResult } from './use-window-result.js';
 export type {
-  UseOpenedWindow,
+  UseWindowResult,
   OpenedWindowStatus,
   OpenedWindowState,
   OpenedWindowControls,
-} from './use-opened-window.types.js';
+} from './use-window-result.types.js';
+
+// The 0.x names RFC 0001 renamed. Kept working for the rest of 0.x, warning
+// once per name in development, and removed in 1.0. Enumerated here rather than
+// `export *` so the 1.0 change is deleting this block and its module.
+export { useMessage, useOpenedWindow, useSharedStore, defineStore } from './deprecated.js';
+export type { UseMessageOptions, DefineStoreOptions, UseOpenedWindow } from './deprecated.js';
 
 // The core surface, enumerated rather than re-exported with `export *`, so a
 // React app still needs one dependency without this package's public API
