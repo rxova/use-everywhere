@@ -27,7 +27,7 @@ export interface OpenedWindowControls<Out extends MessageMap, In extends Message
   close: () => void;
 }
 
-export type UseOpenedWindow<
+export type UseWindowResult<
   Out extends MessageMap,
   In extends MessageMap,
   R,

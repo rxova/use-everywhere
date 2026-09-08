@@ -5,8 +5,8 @@ import {
 } from '@use-everywhere/core';
 import { defineChannel } from './define-channel.js';
 import type { ChannelHooks } from './define-channel.types.js';
-import { defineStore } from './define-store.js';
-import type { DefineStoreOptions, StoreHooks } from './define-store.types.js';
+import { createStoreHooks } from './create-store-hooks.js';
+import type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
 import type { ChannelOptions } from '@use-everywhere/core';
 import { getSharedStore } from './registry.js';
 import type { AnyStore } from './registry.types.js';
@@ -15,7 +15,8 @@ import { useClientId, usePeers, usePresenceMetadata } from './use-peers.js';
 import type { UsePeersOptions } from './use-peers.js';
 import { useIsLeader, useLeader, useLeaderEffect } from './use-leader.js';
 import type { UseLeaderOptions } from './use-leader.types.js';
-import { useSharedStore } from './use-shared-selector.js';
+import { useSharedSelector } from './use-shared-selector.js';
+import { warnRenamed } from './dev.js';
 import type { UseSharedSelectorOptions } from './use-shared-selector.js';
 import { useSharedState } from './use-shared-state.js';
 import type { UseSharedStateOptions } from './use-shared-state.types.js';
@@ -29,9 +30,9 @@ import type { Peer, LeaderSnapshot } from '@use-everywhere/core';
  * which namespace it lives in.
  */
 export interface ReactNamespace extends CoreNamespace {
-  defineStore<S extends Record<string, unknown> = Record<string, unknown>>(
+  createStoreHooks<S extends Record<string, unknown> = Record<string, unknown>>(
     name: string,
-    options?: DefineStoreOptions,
+    options?: CreateStoreHooksOptions,
   ): StoreHooks<S>;
   defineChannel<M extends MessageMap>(name?: string, options?: ChannelOptions<M>): ChannelHooks<M>;
   getSharedStore(name?: string, scope?: UseSharedStateOptions['scope']): AnyStore;
@@ -40,6 +41,16 @@ export interface ReactNamespace extends CoreNamespace {
     initial: T,
     options?: UseSharedStateOptions,
   ): [T, (next: T | ((prev: T) => T)) => void];
+  useSharedSelector<S extends Record<string, unknown>, T>(
+    selector: (state: S) => T,
+    options?: UseSharedSelectorOptions,
+  ): T;
+  /** @deprecated Renamed to `createStoreHooks`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
+  defineStore<S extends Record<string, unknown> = Record<string, unknown>>(
+    name: string,
+    options?: CreateStoreHooksOptions,
+  ): StoreHooks<S>;
+  /** @deprecated Renamed to `useSharedSelector`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
   useSharedStore<S extends Record<string, unknown>, T>(
     selector: (state: S) => T,
     options?: UseSharedSelectorOptions,
@@ -65,7 +76,7 @@ export interface ReactNamespace extends CoreNamespace {
  * const [items, setItems] = checkout.useSharedState('items', []);
  * ```
  *
- * Call it **at module scope**, like `defineStore` and `defineChannel`. It
+ * Call it **at module scope**, like `createStoreHooks` and `defineChannel`. It
  * builds a small object of bound functions, and rebuilding that on every render
  * would hand React a new `useSharedState` identity each time — harmless for the
  * hooks themselves, which key off the bus name, but pointless work and a
@@ -80,13 +91,22 @@ export function createNamespace(namespace: string): ReactNamespace {
 
   return {
     ...core,
-    defineStore: (name, options) => defineStore(busName(name), options),
+    createStoreHooks: (name, options) => createStoreHooks(busName(name), options),
     defineChannel: (name, options) => defineChannel(busName(name), options),
     getSharedStore: (name, scope) => getSharedStore(busName(name), scope),
     useSharedState: (key, initial, options) =>
       useSharedState(key, initial, { ...options, store: busName(options?.store) }),
-    useSharedStore: (selector, options) =>
-      useSharedStore(selector, { ...options, store: busName(options?.store) }),
+    useSharedSelector: (selector, options) =>
+      useSharedSelector(selector, { ...options, store: busName(options?.store) }),
+    // Removed in 1.0 along with the standalone renames; see deprecated.ts.
+    defineStore: (name, options) => {
+      warnRenamed('Namespace.defineStore', 'Namespace.createStoreHooks');
+      return createStoreHooks(busName(name), options);
+    },
+    useSharedStore: (selector, options) => {
+      warnRenamed('Namespace.useSharedStore', 'Namespace.useSharedSelector');
+      return useSharedSelector(selector, { ...options, store: busName(options?.store) });
+    },
     usePeers: (options) => usePeers({ ...options, name: busName(options?.name) }),
     usePresenceMetadata: (metadata, options) =>
       usePresenceMetadata(metadata, { ...options, name: busName(options?.name) }),

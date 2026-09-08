@@ -9,7 +9,7 @@ export function useChannel<M extends MessageMap, R extends ReplyMap<M> = Record<
   return getChannel<M, R>(name);
 }
 
-export interface UseMessageOptions {
+export interface UseOnMessageOptions {
   /**
    * Subscribe at all. Default true.
    *
@@ -26,11 +26,15 @@ export interface UseMessageOptions {
  * Subscribe to one message type. The handler is kept fresh without
  * resubscribing, so it may close over render state.
  */
-export function useMessage<M extends MessageMap, R extends ReplyMap<M>, K extends keyof M & string>(
+export function useOnMessage<
+  M extends MessageMap,
+  R extends ReplyMap<M>,
+  K extends keyof M & string,
+>(
   channel: Channel<M, R>,
   type: K,
   handler: (payload: M[K], meta: MessageMeta) => void,
-  options?: UseMessageOptions,
+  options?: UseOnMessageOptions,
 ): void {
   const handlerRef = useRef(handler);
   useEffect(() => {

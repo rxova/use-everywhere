@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { BroadcastChannelTransport, createChannel } from '@use-everywhere/core';
 import { useState } from 'react';
-import { useAnswer, useAsk, useChannel, useMessage } from '../use-message.js';
+import { useAnswer, useAsk, useChannel, useOnMessage } from '../use-on-message.js';
 
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
@@ -17,7 +17,7 @@ const otherTab = (name: string) =>
     transport: (busName) => new BroadcastChannelTransport(busName),
   });
 
-describe('useMessage options', () => {
+describe('useOnMessage options', () => {
   it('does not subscribe when disabled, and subscribes when enabled turns on', async () => {
     const name = uniqueName();
     const seen: number[] = [];
@@ -25,7 +25,7 @@ describe('useMessage options', () => {
     function Listener() {
       const channel = useChannel<Requests, Replies>(name);
       const [on, setOn] = useState(false);
-      useMessage(channel, 'ping', (value) => seen.push(value), { enabled: on });
+      useOnMessage(channel, 'ping', (value) => seen.push(value), { enabled: on });
       return <button onClick={() => setOn(true)}>enable</button>;
     }
     render(<Listener />);
@@ -53,7 +53,7 @@ describe('useMessage options', () => {
 
     function Listener() {
       const channel = useChannel<Requests, Replies>(name);
-      useMessage(channel, 'ping', (value) => seen.push(value), { once: true });
+      useOnMessage(channel, 'ping', (value) => seen.push(value), { once: true });
       return null;
     }
     render(<Listener />);

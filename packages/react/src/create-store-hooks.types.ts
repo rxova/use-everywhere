@@ -2,7 +2,7 @@ import type { PersistAdapter, RestoreError } from '@use-everywhere/core';
 import type { AnyStore } from './registry.types.js';
 import type { ShareScope } from './use-shared-state.types.js';
 
-export interface DefineStoreOptions {
+export interface CreateStoreHooksOptions {
   /** Restore this store from disk on first use, and write it back as it changes. */
   persist?: PersistAdapter;
   /** Persist only these keys. Default: every key that has been written. */
@@ -26,6 +26,8 @@ export interface DefineStoreOptions {
 /** A store bound to a name and a shape: typed hooks with no per-call generics. */
 export interface StoreHooks<S extends Record<string, unknown>> {
   /** The underlying store instance (the same one the hooks use) — for non-React code. */
+  store: () => AnyStore;
+  /** @deprecated Renamed to `store`. Removed in 1.0 — `npx use-everywhere-codemod rename-1.0 src/`. */
   get: () => AnyStore;
   useSharedState: <K extends keyof S & string>(
     key: K,

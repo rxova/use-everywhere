@@ -35,6 +35,25 @@ export function devWarn(code: string, message: string): void {
   console.warn(line);
 }
 
+/**
+ * One diagnostic per name RFC 0001 renamed, worded the same way so the errors
+ * page can carry a single entry for all of them.
+ *
+ * It lives here rather than next to the deprecated exports themselves because
+ * `createStoreHooks`, `defineChannel` and `createNamespace` each carry one
+ * deprecated member and so each need to call it. Importing it from
+ * `deprecated.js` would make those three modules pull in every deprecated hook
+ * through it, and a bundle that imports only 1.0 names would carry the whole 0.x
+ * surface it never calls. This module is a leaf, so it costs them nothing.
+ */
+export function warnRenamed(from: string, to: string): void {
+  devWarn(
+    'UE2005',
+    `\`${from}\` was renamed to \`${to}\` and is removed in 1.0. ` +
+      'Run `npx use-everywhere-codemod rename-1.0 src/` to update, or rename it by hand — nothing else changes.',
+  );
+}
+
 /** The initial each key was first registered with. Populated only in development — dynamic keys would otherwise grow it without bound. */
 const seenInitials = new Map<string, unknown>();
 
@@ -58,7 +77,7 @@ export function warnOnInitialMismatch(storeName: string, key: string, initial: u
     devWarn(
       'UE2001',
       `useSharedState('${key}') was called with different initial values (${String(first)} and ${String(initial)}). ` +
-        'The first registration wins, so the second is ignored. Define the default once — defineStore, or a shared constant.',
+        'The first registration wins, so the second is ignored. Define the default once — createStoreHooks, or a shared constant.',
     );
   }
 }
