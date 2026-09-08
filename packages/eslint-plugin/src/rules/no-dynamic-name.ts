@@ -9,6 +9,9 @@ import { argumentAt, calleeName, docsUrl } from '../shared.js';
  * the bus itself.
  */
 const NAME_FIRST = new Set([
+  'createStoreHooks',
+  // The 0.x spelling, matched for as long as it is exported. See
+  // define-at-module-scope for why.
   'defineStore',
   'defineChannel',
   'createNamespace',
