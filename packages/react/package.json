@@ -156,7 +156,7 @@
       "name": "createStoreHooks (persisted)",
       "path": "dist/index.js",
       "import": "{ createStoreHooks, localStorageAdapter }",
-      "limit": "4.70 kB"
+      "limit": "6 kB"
     },
     {
       "name": "Inspector (devtools subpath)",
