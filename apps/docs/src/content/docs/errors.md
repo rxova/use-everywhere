@@ -213,3 +213,38 @@ built with.
 
 **Fix:** move `defineChannel` to module scope, before any component sends or
 receives on it.
+
+---
+
+## Retired codes
+
+Codes the library no longer emits. They stay listed because an older build can
+still print one, and they are never reassigned.
+
+### UE2005
+
+**A name that was renamed for 1.0 is still being used.** Emitted by `0.13.x`.
+
+[RFC 0001](https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md)
+renamed five exports and three types. 0.13 shipped the new names alongside the
+old ones and warned once per old name per session, in development only. 1.0
+removed the old names, so there the same mistake is a compile error and this
+warning no longer exists.
+
+| 0.x                       | 1.0                         |
+| ------------------------- | --------------------------- |
+| `useMessage`              | `useOnMessage`              |
+| `useOpenedWindow`         | `useWindowResult`           |
+| `defineStore`             | `createStoreHooks`          |
+| `useSharedStore`          | `useSharedSelector`         |
+| `StoreHooks.get()`        | `StoreHooks.store()`        |
+| `ChannelHooks.useMessage` | `ChannelHooks.useOnMessage` |
+| `UseMessageOptions`       | `UseOnMessageOptions`       |
+| `DefineStoreOptions`      | `CreateStoreHooksOptions`   |
+| `UseOpenedWindow`         | `UseWindowResult`           |
+
+**Fix:** run the codemod, which handles all of them:
+
+```sh
+npx use-everywhere-codemod rename-1.0 src/
+```
