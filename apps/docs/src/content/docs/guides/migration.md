@@ -19,6 +19,10 @@ npx use-everywhere-codemod rename-1.0 src/
 
 Run it once, review the diff, commit.
 
+The smooth path goes through 0.13. It has both spellings, so the codemod lands
+as a change you can ship on its own, and any old name it missed warns in
+development ([`UE2005`](../errors.md#ue2005)). Then take the major.
+
 ## Renames
 
 From [RFC 0001](https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md).
@@ -50,8 +54,14 @@ Names that are **not** changing, in case you were bracing for them:
 
 ## How you find out
 
-The old names are removed in 1.0, not deprecated. An import of one is a compile
-error; run the codemod, or rename by hand.
+On 0.13, each old name still in use warns once per session in development:
+[`UE2005`](../errors.md#ue2005). In 1.0 the old names are gone, so an import of
+one is a compile error; run the codemod, or rename by hand.
+
+That deprecation window was one minor, shorter than the
+[stability policy](../under-the-hood/stability.md#deprecation) promises for
+later removals. The policy takes effect at 1.0; these renames are the last
+change made before it did.
 
 ## What the codemod covers
 
