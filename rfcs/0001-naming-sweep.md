@@ -9,10 +9,12 @@ target: '1.0'
 ---
 
 :::note[Decision]
-Accepted as amended; shipped in 1.0.0. The old names are removed in 1.0 with no
-`0.x` deprecation release, so `UE2005` was never emitted and stays unassigned.
-`ChannelHooks.useMessage` and the `ReactNamespace` members `defineStore` and
-`useSharedStore` are renamed with the exports they wrap; the codemod covers them.
+Accepted as amended; shipped in two steps. 0.13 added the new names alongside
+the old ones, which warned once per name in development as `UE2005`. 1.0.0
+removes the old names and the warning with them, so `UE2005` is retired, not
+reused. `ChannelHooks.useMessage` and the `ReactNamespace` members `defineStore`
+and `useSharedStore` are renamed with the exports they wrap; the codemod covers
+them.
 :::
 
 ## Summary
