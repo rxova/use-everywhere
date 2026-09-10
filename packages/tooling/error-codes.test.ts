@@ -15,6 +15,10 @@ import { describe, expect, it } from 'vitest';
  *
  * It also catches the quieter half: a heading for a code that was deleted, which
  * reads as documentation for behaviour the library no longer has.
+ *
+ * A code retired on purpose moves to a `### UEnnnn` entry under "Retired codes"
+ * instead: an old build still prints it and links here. Those must stay out of
+ * the source for good, because codes are never reused.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +54,9 @@ const emittedCodes = (): Set<string> => {
 const documentedCodes = (): string[] =>
   [...readFileSync(docsPage, 'utf8').matchAll(/^## (UE\d{4})$/gm)].map((match) => match[1]!);
 
+const retiredCodes = (): string[] =>
+  [...readFileSync(docsPage, 'utf8').matchAll(/^### (UE\d{4})$/gm)].map((match) => match[1]!);
+
 describe('error codes', () => {
   it('are documented, every one of them', () => {
     const documented = new Set(documentedCodes());
@@ -70,6 +77,14 @@ describe('error codes', () => {
 
     expect(new Set(documented).size).toBe(documented.length);
     expect([...documented]).toEqual([...documented].sort());
+  });
+
+  it('stay retired — never emitted again, never back as a live entry', () => {
+    const emitted = emittedCodes();
+    const live = new Set(documentedCodes());
+    const revived = retiredCodes().filter((code) => emitted.has(code) || live.has(code));
+
+    expect(revived).toEqual([]);
   });
 
   it('finds enough of them to be checking anything at all', () => {
