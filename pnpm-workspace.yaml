@@ -14,6 +14,9 @@ overrides:
   # bypasses the earlier CVE-2026-14257 mitigation. Reached through eslint's
   # minimatch, so dev-only, but `audit:check` gates on high and turns main red.
   brace-expansion: ^5.0.9
+  # <=3.4.12. Moderate, reached only through mermaid (below) in the docs build.
+  # Taken for the same reason as postcss: one line, and it goes with mermaid's.
+  dompurify: '>=3.4.13'
   esbuild: ^0.28.2
   # Four advisories against the same parser, all host confusion: a backslash
   # parsed as an authority introducer, a percent-encoded scheme that normalises
@@ -36,8 +39,18 @@ overrides:
   # published package), but `audit:check` gates on high and this is what kept the
   # 0.9.0 release from cutting. Pinned per-major: the 3.x consumers still call the
   # pre-4.0 API, so a single `>=4.3.1` would break them rather than patch them.
+  #
+  # The 4.x floor was 4.3.1, where the patched range started when this entry was
+  # written; the advisory has since moved it to 4.3.2, so the pin went stale on
+  # its own — the same drift the nanoid and sharp notes describe. The 3.x range
+  # was not widened and stays put.
   js-yaml@3: '>=3.15.1 <4'
-  js-yaml@4: '>=4.3.1 <5'
+  js-yaml@4: '>=4.3.2 <5'
+  # Five advisories, low and moderate, all fixed in 11.16.1. The only path is
+  # rehype-mermaid -> mermaid-isomorphic in the docs build, which renders the
+  # diagrams at build time — dev-only. Closed at the top: mermaid-isomorphic
+  # asks for the 11.x line, and 12.0.0 is a major it has not been tested on.
+  mermaid@11: '>=11.16.1 <12'
   # GHSA-2v37-7h3g-55p8: with a custom alphabet and a size of zero, the fill loop
   # has nothing to consume and never terminates. High, and every path is the demo
   # app's Astro reaching postcss — dev-only, and nanoid ships in neither published
@@ -57,12 +70,45 @@ overrides:
   # taken here because it is one line and the alternative is carrying a known
   # advisory until something else forces the issue.
   postcss: '>=8.5.23'
+  # Three moderate advisories, all fixed in 6.16.0. The only path is
+  # typed-rest-client inside @stryker-mutator/core, the mutation-testing
+  # devDependency — nothing here parses a query string at runtime.
+  qs: '>=6.16.0'
+  # Not a security pin — a lockfile-determinism one, carried over from
+  # rxova/brand. Astro 7.3 moved its markdown pipeline to
+  # `@astrojs/markdown-satteri` 0.4, which wants satteri ^0.10, while
+  # `@astrojs/mdx` 7 (through Starlight 0.41) still pins the 0.3 line on satteri
+  # 0.9. With both in the tree, pnpm 11 records satteri 0.10's optional
+  # `@bruits/satteri-*` binaries on Linux and not on macOS, so
+  # `pnpm dedupe --check` cannot pass on both CI and a local checkout.
+  # `supportedArchitectures` does not help because `dedupe` ignores it. One
+  # version does. Drop once @astrojs/mdx depends on the 0.4 line itself.
+  satteri: '0.10.5'
   serialize-javascript: ^7.0.7
   # GHSA-f88m-g3jw-g9cj: sharp <0.35.0 inherits four libvips CVEs. Astro pins the
   # 0.34 line and all 16 paths reach it through the docs site's Astro, so the fix
   # has to be forced from the root. Dev-only — sharp runs during the docs build
-  # and is in neither published package. Drop once Astro depends on >=0.35.0.
-  sharp: '>=0.35.0'
+  # and is in neither published package. Drop once Astro depends on >=0.35.4.
+  #
+  # The floor was '>=0.35.0' and the lockfile held 0.35.3; a later advisory put
+  # the patched floor at 0.35.4, so the same pin went red with nothing here
+  # changing. Same story as nanoid below.
+  sharp: '>=0.35.4'
+  # GHSA-7w5x-hrqm-74c2: smol-toml's parser backtracks on a malformed document,
+  # so a hostile .toml file is a denial of service. High, and every path is
+  # `@astrojs/internal-helpers` under Astro's content pipeline in the docs, demo
+  # and showcase builds, which parses frontmatter this repo authors — dev-only,
+  # and in neither published package. Closed at the top so a future 2.x is not
+  # picked up on its own; matches rxova/brand. Drop once Astro depends on
+  # >=1.7.1 itself.
+  smol-toml: '>=1.7.1 <2'
+  # GHSA-w27v-7q3p-w38r: svgo's `removeScripts` plugin can be walked past with a
+  # namespaced attribute or a control character in the URL, so a hostile SVG
+  # keeps its executable link through the sanitiser. High, and reached only
+  # through Astro's asset pipeline, which optimises SVGs this repo authors.
+  # 4.1.0 tightens the matching; no plugin API changed. Drop once Astro depends
+  # on >=4.1.0 itself.
+  svgo: '>=4.1.0 <5'
   uuid: ^14.0.1
 
 # The advisory lookup is the one request whose result is advisory rather than
