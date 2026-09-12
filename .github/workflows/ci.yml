@@ -413,3 +413,22 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: node --import tsx ./packages/tooling/check-changeset.ts
+
+  # The one status the default branch requires. Every other job is listed in
+  # `needs`, so requiring this single name covers all of them — including every
+  # leg of the e2e and unit matrices, whose check names change with the matrix.
+  #
+  # `always()` so it reports on every run, even when a job it depends on failed
+  # or was skipped. Skipped counts as passed: the metadata-only events and the
+  # version PR skip the jobs that read the tree on purpose. A failure or a
+  # cancellation does not, so a run killed mid-flight can never read as green.
+  all-checks:
+    name: all checks
+    if: always()
+    needs: [commitlint, checks, supply-chain, pack-smoke, e2e, test, react18, changeset]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+      - run: echo "Every job passed or was skipped."
