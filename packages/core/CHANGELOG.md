@@ -1,5 +1,11 @@
 # @use-everywhere/core
 
+## 1.0.0
+
+### Major Changes
+
+- [#122](https://github.com/rxova/use-everywhere/pull/122) [`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf) - 1.0. No export changes name and the wire protocol stays at version 1. The stability policy is in effect from this release.
+
 ## 0.11.2
 
 ### Patch Changes

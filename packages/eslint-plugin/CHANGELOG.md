@@ -1,5 +1,11 @@
 # eslint-plugin-use-everywhere
 
+## 1.0.0
+
+### Major Changes
+
+- [#122](https://github.com/rxova/use-everywhere/pull/122) [`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf) - 1.0. `define-at-module-scope` and `no-dynamic-name` match `createStoreHooks` instead of `defineStore`. Rule ids and the recommended config are unchanged.
+
 ## 0.2.0
 
 ### Minor Changes
