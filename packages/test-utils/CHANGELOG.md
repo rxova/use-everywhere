@@ -1,5 +1,16 @@
 # @use-everywhere/test-utils
 
+## 1.0.0
+
+### Major Changes
+
+- [#122](https://github.com/rxova/use-everywhere/pull/122) [`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf) - 1.0. No export changes; the stability policy now covers this package.
+
+### Patch Changes
+
+- Updated dependencies [[`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf)]:
+  - @use-everywhere/core@1.0.0
+
 ## 0.1.5
 
 ### Patch Changes

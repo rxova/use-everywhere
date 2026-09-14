@@ -1,5 +1,16 @@
 # use-everywhere
 
+## 1.0.0
+
+### Major Changes
+
+- [#122](https://github.com/rxova/use-everywhere/pull/122) [`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf) - 1.0. Renamed per RFC 0001; the old names, deprecated in 0.13 (`UE2005`), are removed: `useMessage` → `useOnMessage`, `useOpenedWindow` → `useWindowResult`, `defineStore` → `createStoreHooks`, `useSharedStore` → `useSharedSelector`, `StoreHooks.get()` → `StoreHooks.store()`, `UseMessageOptions` → `UseOnMessageOptions`, `DefineStoreOptions` → `CreateStoreHooksOptions`, `UseOpenedWindow` → `UseWindowResult`; `ChannelHooks.useMessage` → `useOnMessage`; `ReactNamespace.defineStore` / `.useSharedStore` follow. No behaviour change; wire protocol stays at 1. Migrate with `npx use-everywhere-codemod rename-1.0 src/`.
+
+### Patch Changes
+
+- Updated dependencies [[`fb93731`](https://github.com/rxova/use-everywhere/commit/fb93731d749c4ea19938efbfbdde01c55f6e27cf)]:
+  - @use-everywhere/core@1.0.0
+
 ## 0.13.0
 
 ### Minor Changes
