@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
 
-export type Theme = 'system' | 'light' | 'dark';
+type Theme = 'system' | 'light' | 'dark';
 
 /** Read before paint by the inline script in index.html, so the choice does not flash. */
-export const THEME_KEY = 'use-everywhere:demo-theme';
+const THEME_KEY = 'use-everywhere:demo-theme';
 
 /**
  * A store of its own rather than the default one: the demos on this page are

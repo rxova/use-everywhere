@@ -11,7 +11,7 @@
  * runner, because a slow runner slows the baseline too.
  */
 
-export type Comparison = 'at-most' | 'at-least';
+type Comparison = 'at-most' | 'at-least';
 
 export interface Budget {
   readonly metric: string;

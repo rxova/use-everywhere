@@ -20,7 +20,3 @@ const read = (): string => location.hash.replace(/^#\/?/, '') || 'shared-state';
 export const useRoute = (): string => useSyncExternalStore(subscribe, read, () => 'shared-state');
 
 export const hrefFor = (slug: string): string => `#/${slug}`;
-
-export const go = (slug: string): void => {
-  location.hash = `/${slug}`;
-};

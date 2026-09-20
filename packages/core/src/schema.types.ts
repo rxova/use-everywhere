@@ -20,7 +20,7 @@ export interface StandardSchemaV1<Input = unknown, Output = Input> {
   };
 }
 
-export type StandardSchemaResult<Output> =
+type StandardSchemaResult<Output> =
   | { readonly value: Output; readonly issues?: undefined }
   | { readonly issues: ReadonlyArray<{ readonly message: string }> };
 
