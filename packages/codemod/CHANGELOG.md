@@ -1,5 +1,11 @@
 # use-everywhere-codemod
 
+## 0.1.1
+
+### Patch Changes
+
+- [#126](https://github.com/rxova/use-everywhere/pull/126) [`00038c2`](https://github.com/rxova/use-everywhere/commit/00038c22c1b7e6e0c892d7ac3aba7bf765cb832a) - Build with tsdown instead of tsup. The published output is unchanged: same dual ESM + CJS shape, same `.js`/`.cjs` filenames, same declarations.
+
 ## 0.1.0
 
 ### Minor Changes
