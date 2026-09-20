@@ -36,7 +36,7 @@ export interface StormResult {
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Open one more tab onto a bus that already has `tabs` on it, and count the answers. */
-export async function joinCost(tabs: number): Promise<StormResult> {
+async function joinCost(tabs: number): Promise<StormResult> {
   const name = uniqueName('bench-storm');
   const options = { transport: (bus: string) => new BroadcastChannelTransport(bus) };
   const initial = Object.fromEntries(

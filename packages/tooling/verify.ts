@@ -38,9 +38,19 @@ export type StepResult = { readonly status: number | null; readonly error?: unkn
  */
 export const steps: readonly VerifyStep[] = [
   { name: 'Audit dependencies', script: 'audit:check' },
+  // One version of each dependency across the workspace. Two packages on two
+  // minors of the same library typecheck fine and then disagree at runtime.
+  { name: 'Check dependency versions across the workspace', script: 'sherif:check' },
+  // Unused files, exports and dependencies. The only check here that notices
+  // an export nothing imports.
+  { name: 'Check for unused files, exports and dependencies', script: 'knip:check' },
   // Cached by Turbo on the lockfile + manifests (see turbo.json) rather than run
   // directly, which turns the slowest step in the gate into a replay whenever
   // the dependency graph is untouched.
+  //
+  // Kept after the two checks above on purpose: `pnpm dedupe --check` removes
+  // the modules directory when CI is set, so a step placed after it on a cache
+  // miss runs without node_modules and fails looking for its own binary.
   { name: 'Check dependency dedupe', turbo: ['//#dedupe:check'] },
   { name: 'Check formatting', script: 'format:check' },
   { name: 'Lint', script: 'lint' },

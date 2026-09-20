@@ -9,7 +9,7 @@ import {
 export type Theme = 'system' | 'light' | 'dark';
 
 /** Read before paint by the inline script in index.html, so the choice does not flash. */
-export const THEME_KEY = 'use-everywhere:showcase-theme';
+const THEME_KEY = 'use-everywhere:showcase-theme';
 
 /**
  * The theme lives in the default store, under the same `theme` key the shared

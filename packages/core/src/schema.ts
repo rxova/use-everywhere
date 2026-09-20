@@ -17,7 +17,7 @@ import type { InvalidPayload, OnInvalid, SchemaMap, StandardSchemaV1 } from './s
  * Every synchronous validator — which is every Zod, Valibot and ArkType schema
  * that does not use an async refinement — is unaffected.
  */
-export function validate(
+function validate(
   schema: StandardSchemaV1<unknown, unknown>,
   payload: unknown,
 ): { ok: true; value: unknown } | { ok: false; issues: string[] } {

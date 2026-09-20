@@ -28,7 +28,6 @@
     "@astrojs/check": "^0.9.9",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@use-everywhere/core": "workspace:*",
     "@vitejs/plugin-react": "^6.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
