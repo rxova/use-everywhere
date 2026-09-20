@@ -1,5 +1,11 @@
 # @use-everywhere/core
 
+## 1.0.2
+
+### Patch Changes
+
+- [#128](https://github.com/rxova/use-everywhere/pull/128) [`1c89810`](https://github.com/rxova/use-everywhere/commit/1c898105d3b37236eac552334d63fa58987245c9) - Drop `export` from `validate` and `StandardSchemaResult`, which nothing imported. The published API is unchanged — neither was re-exported from `src/index.ts`, and `StandardSchemaV1` still declares its result shape inline in the emitted types.
+
 ## 1.0.1
 
 ### Patch Changes

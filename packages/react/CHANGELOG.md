@@ -1,5 +1,12 @@
 # use-everywhere
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`1c89810`](https://github.com/rxova/use-everywhere/commit/1c898105d3b37236eac552334d63fa58987245c9)]:
+  - @use-everywhere/core@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
