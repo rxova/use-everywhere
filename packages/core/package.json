@@ -84,7 +84,7 @@
     "llms.txt"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "test": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "size": "size-limit",
@@ -180,6 +180,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@repo/config": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
@@ -190,7 +191,7 @@
     "happy-dom": "^20.11.15",
     "publint": "^0.3.24",
     "size-limit": "^13.0.3",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
   },
