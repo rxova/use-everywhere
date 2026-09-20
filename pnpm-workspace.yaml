@@ -17,7 +17,6 @@ overrides:
   # <=3.4.12. Moderate, reached only through mermaid (below) in the docs build.
   # Taken for the same reason as postcss: one line, and it goes with mermaid's.
   dompurify: '>=3.4.13'
-  esbuild: ^0.28.2
   # Four advisories against the same parser, all host confusion: a backslash
   # parsed as an authority introducer, a percent-encoded scheme that normalises
   # into a different one, a skipped IDN conversion, and two SSRF paths out of

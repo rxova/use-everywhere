@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    // tsup's dts build hardcodes `baseUrl` (rollup.js: `compilerOptions.baseUrl || "."`),
-    // which TS 6 deprecates and TS 7 removes. None of our own configs set it, so this
-    // only silences tsup's injection -- drop it when tsup stops forcing baseUrl.
-    "ignoreDeprecations": "6.0",
     "target": "ES2020",
     // ES2022.Error on top of ES2020: types for `new Error(msg, { cause })` only.
     // Engines that predate `cause` ignore the extra argument, so this costs
