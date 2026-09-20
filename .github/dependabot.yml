@@ -1,12 +1,59 @@
 version: 2
+
+# Weekly, one grouped pull request per ecosystem, at most one open at a time.
+# `dependabot-auto-merge.yml` turns auto-merge on for every Dependabot pull
+# request that carries no major bump, so these merge themselves once `all checks`
+# is green — but only if they *can* go green, and the grouping below is what
+# makes that possible:
+#
+#   - Ungrouped, Dependabot bumps one package per pull request and leaves the
+#     rest of the lockfile on the old transitive versions. `dedupe:check` in the
+#     `audit · dedupe` job fails on exactly that, so each single-package bump
+#     went red and sat there with auto-merge enabled and nothing to merge.
+#   - `labels` is what Dependabot cannot invent for itself: `skip-changeset` is
+#     the escape hatch the changeset gate reads, and a bump changes what the
+#     repository builds with, never what it publishes.
+#   - `commit-message.prefix` keeps the pull request title a valid commit
+#     subject — the title is the squash subject and commitlint gates it in
+#     `pr-title.yml`.
+#
+# Dependabot silently drops a label that does not exist in the repository, so
+# both must exist: `gh label create dependencies && gh label create skip-changeset`.
 updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 1
+    labels: ['dependencies', 'skip-changeset']
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm-all:
+        applies-to: version-updates
+        patterns: ['*']
+      npm-security:
+        applies-to: security-updates
+        patterns: ['*']
+    ignore:
+      # typescript-eslint lags a TypeScript major.
+      - dependency-name: typescript
+        versions: ['>=7']
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: monthly
-      time: '03:00'
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
+    labels: ['dependencies', 'skip-changeset']
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      actions-all:
+        applies-to: version-updates
+        patterns: ['*']
+      actions-security:
+        applies-to: security-updates
+        patterns: ['*']
