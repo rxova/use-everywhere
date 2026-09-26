@@ -10,7 +10,6 @@
     "build:fixtures": "node build-fixtures.mjs"
   },
   "dependencies": {
-    "@rxova/brand": "^1.0.0",
     "@use-everywhere/core": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

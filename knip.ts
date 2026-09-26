@@ -14,6 +14,11 @@ import type { KnipConfig } from 'knip';
 export default {
   // Advice nobody has to act on is advice that stops being read.
   treatConfigHintsAsErrors: true,
+  // Declared once at the root for the three apps that wear the brand. Nothing
+  // imports it in TypeScript: the demo and showcase reach it through `@import`
+  // in their styles.css, and the docs through the Starlight preset, which lists
+  // `@rxova/brand/fonts.css` in `customCss` as a string.
+  ignoreDependencies: ['@rxova/brand'],
   workspaces: {
     'apps/demo': {
       // A multi-page Vite app. Each page's entry is loaded by a
@@ -21,22 +26,14 @@ export default {
       // Vite-root-absolute path, which knip cannot resolve from the HTML, so
       // the entry modules are named here instead.
       entry: ['src/*-main.{ts,tsx}', 'mfe/*.ts', 'relay/*.ts'],
-      // Reached through `@import` in src/styles.css. Knip reads TypeScript, so
-      // a CSS import is invisible to it.
-      ignoreDependencies: ['@rxova/brand'],
     },
     'apps/showcase': {
       entry: ['index.html'],
-      ignoreDependencies: ['@rxova/brand'],
     },
     'apps/docs': {
       // The playground is a standalone app embedded in a docs page by
       // `<iframe>`, so nothing in the Astro tree imports it.
       entry: ['playground/tab.tsx'],
-      // Reached only as a string: the Starlight preset from @rxova/astro-ui lists
-      // `@rxova/brand/fonts.css` in `customCss`, which Vite resolves from this
-      // site's root. Knip reads imports, so the path is invisible to it.
-      ignoreDependencies: ['@rxova/brand'],
       ignore: [
         // A one-shot Docusaurus-to-Starlight migration, deliberately kept: its
         // own header says it stays "so the transforms it applied are auditable
