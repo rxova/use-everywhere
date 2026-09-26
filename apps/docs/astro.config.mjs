@@ -4,7 +4,7 @@ import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import starlightLinksValidator from 'starlight-links-validator';
 import sitemap from '@astrojs/sitemap';
 import rehypeMermaid from 'rehype-mermaid';
-import { sharedStarlightConfig } from '@rxova/brand';
+import { sharedStarlightConfig } from '@rxova/astro-ui/starlight';
 
 /**
  * Defaults keep the standalone build working; the rxova.org aggregator sets
