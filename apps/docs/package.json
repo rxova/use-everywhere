@@ -14,8 +14,6 @@
     "@astrojs/markdown-remark": "^7.3.0",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/starlight": "^0.41.4",
-    "@rxova/astro-ui": "^0.1.0",
-    "@rxova/brand": "^1.0.0",
     "astro": "^7.3.2",
     "playwright": "^1.61.1",
     "rehype-mermaid": "^3.0.0",
