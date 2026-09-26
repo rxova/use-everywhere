@@ -7,6 +7,7 @@ allowBuilds:
   sharp: true
 minimumReleaseAgeExclude:
   - '@rxova/brand'
+  - '@rxova/astro-ui'
 # Transitive deps pulled in by Docusaurus/webpack that lag behind their
 # security patches. Drop an entry once the upstream range covers it.
 overrides:

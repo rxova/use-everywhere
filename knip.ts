@@ -33,6 +33,10 @@ export default {
       // The playground is a standalone app embedded in a docs page by
       // `<iframe>`, so nothing in the Astro tree imports it.
       entry: ['playground/tab.tsx'],
+      // Reached only as a string: the Starlight preset from @rxova/astro-ui lists
+      // `@rxova/brand/fonts.css` in `customCss`, which Vite resolves from this
+      // site's root. Knip reads imports, so the path is invisible to it.
+      ignoreDependencies: ['@rxova/brand'],
       ignore: [
         // A one-shot Docusaurus-to-Starlight migration, deliberately kept: its
         // own header says it stays "so the transforms it applied are auditable
