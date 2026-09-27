@@ -6,7 +6,7 @@ Please report security issues privately.
 
 Use one of the following:
 
-- Email: rxova@proton.me
+- Email: jonatan@rxova.org
 - [GitHub Security Advisory form](https://github.com/rxova/use-everywhere/security/advisories/new)
 
 If the advisory link is unavailable, use email.
