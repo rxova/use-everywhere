@@ -4,7 +4,7 @@
 - **Idea or missing primitive?** Open a
   [feature request](https://github.com/rxova/use-everywhere/issues/new?template=feature_request.yml).
 - **Security issue?** Follow [SECURITY.md](./SECURITY.md) — please do not open a public issue.
-- **Something private?** Email [rxova@proton.me](mailto:rxova@proton.me).
+- **Something private?** Email [jonatan@rxova.org](mailto:jonatan@rxova.org).
 
 Before filing, check whether the behaviour is already documented. Two pages answer most of what
 gets reported:

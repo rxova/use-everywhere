@@ -4,5 +4,5 @@ contact_links:
     url: 'https://github.com/rxova/use-everywhere/security/policy'
     about: 'Please report security issues via the policy page, not a public issue.'
   - name: 'Private contact'
-    url: 'mailto:rxova@proton.me'
+    url: 'mailto:jonatan@rxova.org'
     about: 'Use email for sensitive or private inquiries.'
