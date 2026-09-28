@@ -1,8 +1,12 @@
 import { defineConfig } from 'tsdown';
-import { baseBuildConfig } from '@repo/config/tsdown.base';
+import { baseBuildConfig } from '@rxova/repo-config/tsdown';
 
 export default defineConfig(
   baseBuildConfig({
+    // The shared preset is ESM-only for Node 22. These packages also serve
+    // `require()` from their exports maps and run in browsers.
+    format: ['esm', 'cjs'],
+    target: 'es2020',
     entry: {
       index: 'src/index.ts',
       'devtools/index': 'src/devtools/index.ts',

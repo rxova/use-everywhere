@@ -134,7 +134,8 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
-      # Both are in the local pre-push gate too (packages/tooling/verify.ts). Running
+      # Both are in the local pre-push gate too (`pnpm verify`, whose steps are
+      # `repoConfig.verify.steps` in the root package.json). Running
       # them here as well is what keeps a stale local checkout from being the
       # only thing between a newly-disclosed advisory and a release.
       #
@@ -343,11 +344,6 @@ jobs:
     if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
     permissions:
       contents: read
-      # check-changeset.ts reads the skip-changeset label through the API
-      # (`gh api repos/.../labels`). Without this the call 403s, the script
-      # warns and proceeds label-blind, and the documented escape hatch
-      # silently does nothing.
-      pull-requests: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -355,14 +351,18 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
+      # The labels come from the event payload, which is current on every run:
+      # `labeled` / `unlabeled` are in this workflow's triggers, so adding
+      # `skip-changeset` re-runs this job with the label present. Each changeset
+      # must name exactly one package (`repoConfig.changeset.singlePackage` in
+      # the root package.json).
       - name: Require a changeset for published-package changes
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run: node --import tsx ./packages/tooling/check-changeset.ts
+        run: pnpm exec rxova-repo-config check-changeset
 
   # The one status the default branch requires. Every other job is listed in
   # `needs`, so requiring this single name covers all of them — including every

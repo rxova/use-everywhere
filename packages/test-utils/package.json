@@ -60,14 +60,14 @@
     "test": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "check:exports": "publint --strict && attw --pack .",
-    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts"
+    "pack:smoke": "rxova-repo-config pack-smoke"
   },
   "dependencies": {
     "@use-everywhere/core": "workspace:*"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@repo/config": "workspace:*",
+    "@rxova/repo-config": "^0.1.0",
     "@vitest/coverage-v8": "^4.1.11",
     "publint": "^0.3.24",
     "tsdown": "^0.23.0",

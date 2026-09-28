@@ -25,7 +25,7 @@
     "knip:check": "knip",
     "check:exports": "turbo run check:exports --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils --filter=use-everywhere-codemod",
     "pack:smoke": "turbo run pack:smoke --concurrency=1 --filter=@use-everywhere/core --filter=use-everywhere --filter=eslint-plugin-use-everywhere --filter=@use-everywhere/test-utils --filter=use-everywhere-codemod",
-    "verify": "node --import tsx ./packages/tooling/verify.ts",
+    "verify": "rxova-repo-config verify",
     "check:llms": "node --import tsx ./packages/tooling/check-llms.ts",
     "release": "pnpm run libs:build && changeset publish",
     "prepare": "husky",
@@ -45,6 +45,59 @@
     ],
     "*.{json,jsonc,css,md,mdx,yaml,yml}": "prettier --write"
   },
+  "repoConfig": {
+    "verify": {
+      "steps": [
+        {
+          "name": "Audit dependencies",
+          "command": "pnpm run audit:check"
+        },
+        {
+          "name": "Check dependency versions across the workspace",
+          "command": "pnpm run sherif:check"
+        },
+        {
+          "name": "Check for unused files, exports and dependencies",
+          "command": "pnpm run knip:check"
+        },
+        {
+          "name": "Check dependency dedupe",
+          "command": "pnpm exec turbo run //#dedupe:check"
+        },
+        {
+          "name": "Check formatting",
+          "command": "pnpm run format:check"
+        },
+        {
+          "name": "Lint",
+          "command": "pnpm run lint"
+        },
+        {
+          "name": "Check packaged llms.txt files",
+          "command": "pnpm run check:llms"
+        },
+        {
+          "name": "Build and size budgets (docs site excluded, needs a browser)",
+          "command": "pnpm exec turbo run build size --filter=!@use-everywhere/docs"
+        },
+        {
+          "name": "Typecheck and test",
+          "command": "pnpm exec turbo run typecheck test"
+        },
+        {
+          "name": "Check package publishing metadata",
+          "command": "pnpm run check:exports"
+        },
+        {
+          "name": "Smoke-test the package tarballs",
+          "command": "pnpm run pack:smoke"
+        }
+      ]
+    },
+    "changeset": {
+      "singlePackage": true
+    }
+  },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.1",
@@ -54,6 +107,7 @@
     "@playwright/test": "^1.62.1",
     "@rxova/astro-ui": "^0.6.0",
     "@rxova/brand": "^1.2.0",
+    "@rxova/repo-config": "^0.1.0",
     "eslint": "^10.7.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
