@@ -1,38 +1,30 @@
-// A local twin of core's dev.ts rather than an import: core keeps this out of
-// its public exports, and a development-only diagnostic is not worth widening
-// a package's 1.0 API surface for. Same NODE_ENV strategy — bundlers inline the
-// string, the try/catch keeps unbundled runs inert.
+import { createDevWarner, isDevelopment } from '@rxova/ts-utils';
 
-let inDev = false;
-try {
-  inDev = process.env.NODE_ENV !== 'production';
-} catch {
-  /* v8 ignore next -- defensive: only hit when run unbundled, where `process` is undefined */
-}
-
-const warned = new Set<string>();
-
-const DOCS = 'https://rxova.org/packages/use-everywhere/errors';
+// The same shared warner core uses, `createDevWarner` from @rxova/ts-utils,
+// inlined at build time. React keeps its own instance rather than importing
+// core's: core keeps its helpers out of its public exports, and a
+// development-only diagnostic is not worth widening a package's 1.0 API surface
+// for. The trailing slash keeps the link exactly as core prints it.
+const warner = createDevWarner({
+  prefix: 'use-everywhere',
+  docsUrl: 'https://rxova.org/packages/use-everywhere/errors/',
+});
 
 /**
- * Stamp a diagnostic with its code and the page that explains it. Core's twin
- * of this, for the same reason the twin of `devWarn` exists — see above.
+ * Stamp a diagnostic with its code and the page that explains it, in the same
+ * format as core's.
  *
  * Codes are permanent, and a retired one is never reused: an old build in
  * somebody's browser is still emitting it. Core owns UE1xxx, this package
  * UE2xxx.
  */
 export function diagnostic(code: string, message: string): string {
-  return `[use-everywhere] ${code}: ${message}\n  → ${DOCS}/#${code.toLowerCase()}`;
+  return warner.format(message, code);
 }
 
 /** Warn once per distinct message, development only. */
 export function devWarn(code: string, message: string): void {
-  if (!inDev) return;
-  const line = diagnostic(code, message);
-  if (warned.has(line)) return;
-  warned.add(line);
-  console.warn(line);
+  warner.warnOnce(`${code} ${message}`, message, { code });
 }
 
 /** The initial each key was first registered with. Populated only in development — dynamic keys would otherwise grow it without bound. */
@@ -44,7 +36,7 @@ const seenInitials = new Map<string, unknown>();
  * disagreement that surfaces much later as "why is this value not what I set".
  */
 export function warnOnInitialMismatch(storeName: string, key: string, initial: unknown): void {
-  if (!inDev) return;
+  if (!isDevelopment()) return;
   const id = `${storeName} ${key}`;
   if (!seenInitials.has(id)) {
     seenInitials.set(id, initial);

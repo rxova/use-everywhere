@@ -14,6 +14,9 @@ export default defineConfig(
       'shared-worker': 'src/shared-worker.ts',
     },
     external: ['react', 'react-dom'],
+    // @rxova/ts-utils is a devDependency inlined here, as in core, so the only
+    // runtime dependency stays @use-everywhere/core.
+    deps: { onlyBundle: ['@rxova/ts-utils'] },
     // Every entry is client-only (useSyncExternalStore, BroadcastChannel). The
     // banner marks the built modules as a React Server Components client
     // boundary, so hooks can be imported directly in a Next.js App Router file
