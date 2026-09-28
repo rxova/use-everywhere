@@ -57,12 +57,12 @@
     // for plain Node. The root script serialises it with --concurrency=1:
     // concurrent `pnpm pack` invocations race on the store.
     //
-    // Keyed on the shared script as well as the package, so editing the checker
-    // invalidates the cache instead of replaying an old pass.
+    // The checker is `rxova-repo-config pack-smoke`. Every published package
+    // declares @rxova/repo-config as a devDependency, so bumping it changes the
+    // package's hash and a cached pass is not replayed over a new checker.
     "pack:smoke": {
       "dependsOn": ["build"],
       "outputs": [],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/tooling/pack-smoke.ts"],
       "outputLogs": "new-only"
     },
     // A root task (`//#`): `pnpm dedupe --check` reads the whole workspace in one

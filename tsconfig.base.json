@@ -1,22 +1,13 @@
 {
+  // The shared strict preset, retargeted: these libraries run in browsers, tabs
+  // and workers as well as Node, so the syntax floor is ES2020 and the DOM and
+  // WebWorker libs are in scope.
+  "extends": "@rxova/repo-config/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2020",
     // ES2022.Error on top of ES2020: types for `new Error(msg, { cause })` only.
     // Engines that predate `cause` ignore the extra argument, so this costs
     // nothing at runtime while keeping caught errors attached to their symptom.
-    "lib": ["ES2020", "ES2022.Error", "DOM", "DOM.Iterable", "WebWorker"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": true,
-    "resolveJsonModule": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "lib": ["ES2020", "ES2022.Error", "DOM", "DOM.Iterable", "WebWorker"]
   }
 }

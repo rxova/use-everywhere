@@ -19,8 +19,11 @@ Published:
 
 Not published:
 
-- `packages/tooling`: the repo's own scripts (the verify gate, changeset checks,
-  pack smoke test, mutation-score gate), each with tests.
+- `packages/tooling`: the repo-specific scripts (the llms.txt check, the
+  mutation-score gate, the one-package changeset helper, the error-code test),
+  each with tests. The verify gate, the changeset check and the pack smoke test
+  are `rxova-repo-config` commands from `@rxova/repo-config`, as are the shared
+  tsdown, vitest, commitlint, prettier and tsconfig presets.
 - `packages/benchmarks`: what the library costs over a raw `BroadcastChannel`,
   with ratio-based budgets.
 - `apps/demo`: Vite playground, including the cross-origin payment flow, and the
@@ -74,8 +77,8 @@ Two hooks, deliberately split so the slow one runs least often:
 - **pre-commit** — `lint-staged`: eslint and prettier over the staged files only.
 - **pre-push** — `pnpm verify`: audit, dependency dedupe, formatting, lint, then
   build + typecheck + test + size budgets in one Turbo invocation. The ordered
-  list lives in [`packages/tooling/verify.ts`](./packages/tooling/verify.ts) and is the same list
-  CI runs, so a green push means a green pipeline. Turbo caches what did not
+  list lives in `repoConfig.verify.steps` in the root `package.json`, run by
+  `rxova-repo-config verify`, and is the same list CI runs, so a green push means a green pipeline. Turbo caches what did not
   change, so a repeat run is seconds.
 
 Coverage thresholds (95% statements/branches/functions/lines, enforced per file)

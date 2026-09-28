@@ -14,7 +14,8 @@ done
 [ "$has_updates" = true ] || exit 0
 
 # One ordered gate, the same list CI runs, so a green push means a green
-# pipeline. `verify` is defined once in packages/tooling/verify.ts; Turbo caches
+# pipeline. `verify` is defined once, as repoConfig.verify.steps in the root
+# package.json, and run by `rxova-repo-config verify`; Turbo caches
 # unchanged tasks, so a re-push after a docs-only edit replays in seconds.
 # (E2E is not in verify — it runs as its own CI job.)
 pnpm run verify

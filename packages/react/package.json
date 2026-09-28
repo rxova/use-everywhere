@@ -101,7 +101,7 @@
     "typecheck": "tsc --noEmit",
     "size": "size-limit",
     "check:exports": "publint --strict && attw --pack .",
-    "pack:smoke": "node --import tsx ../tooling/pack-smoke.ts"
+    "pack:smoke": "rxova-repo-config pack-smoke && node -e \"if (!/^['\\\"]use client/.test(require('fs').readFileSync('dist/index.js', 'utf8'))) throw new Error('dist/index.js lost its use client directive')\""
   },
   "size-limit": [
     {
@@ -191,7 +191,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@repo/config": "workspace:*",
+    "@rxova/repo-config": "^0.1.0",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.17",
