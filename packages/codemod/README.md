@@ -28,7 +28,8 @@ The hook `defineChannel` hands back is renamed with the standalone one:
 
 Pass files or directories. Directories are walked for `.ts`, `.tsx`, `.js`,
 `.jsx`, `.mjs`, `.cjs`, `.mts` and `.cts`; `node_modules` and dot-directories
-are skipped. `--dry-run` lists what would change and writes nothing.
+are skipped. `--dry-run` lists what would change and writes nothing, and
+`--version` prints the installed version.
 
 The transform edits identifiers in place over the TypeScript syntax tree, so
 formatting, comments and every other byte come back exactly as they were — the

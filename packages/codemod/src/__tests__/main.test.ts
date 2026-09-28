@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import manifest from '../../package.json' with { type: 'json' };
 import { main, USAGE, type Io } from '../main.js';
 
 const made: string[] = [];
@@ -38,6 +39,14 @@ describe('main', () => {
 
     expect(main([flag], io)).toBe(0);
     expect(out).toEqual([USAGE]);
+  });
+
+  it.each(['--version', '-v'])('prints the package version and succeeds on %s', (flag) => {
+    const { io, out } = fakeIo();
+
+    expect(main([flag], io)).toBe(0);
+    expect(out).toEqual([manifest.version]);
+    expect(out[0]).toMatch(/^\d+\.\d+\.\d+/);
   });
 
   it('rejects a transform it does not have', () => {
