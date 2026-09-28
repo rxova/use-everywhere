@@ -24,6 +24,10 @@ export default defineConfig(
     // imports to take effect, and it has to reach the shared chunks too, not
     // just the entries — a chunk the entry re-exports from is part of the same
     // client boundary.
+    //
+    // `rxova-repo-config pack-smoke` only checks the directive on an entry
+    // whose source opens with one, and these sources do not: the banner adds
+    // it. So `pack:smoke` keeps its own check that dist/index.js starts with it.
     banner: { js: "'use client';" },
   }),
 );
