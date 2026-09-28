@@ -67,7 +67,6 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@rxova/repo-config": "^0.2.0",
     "@vitest/coverage-v8": "^4.1.11",
     "publint": "^0.3.24",
     "tsdown": "^0.23.0",

@@ -14,7 +14,7 @@ export default defineConfig(
       'shared-worker': 'src/shared-worker.ts',
     },
     external: ['react', 'react-dom'],
-    // @rxova/ts-utils is a devDependency inlined here, as in core, so the only
+    // @rxova/ts-utils is a root devDependency inlined here, as in core, so the only
     // runtime dependency stays @use-everywhere/core.
     deps: { onlyBundle: ['@rxova/ts-utils'] },
     // Every entry is client-only (useSyncExternalStore, BroadcastChannel). The

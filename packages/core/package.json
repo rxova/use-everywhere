@@ -180,8 +180,6 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@rxova/repo-config": "^0.2.0",
-    "@rxova/ts-utils": "^0.1.0",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
