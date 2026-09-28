@@ -1,3 +1,5 @@
+import { deepFreeze } from '@rxova/ts-utils';
+
 // A shared store's `state` is a *shallow* Proxy: `store.state.step = 2` traps and
 // broadcasts a patch, but `store.state.list.push(x)` or a same-reference mutation
 // (`const [v] = useSharedState(...); v.nested = 1`) never hits the trap — it
@@ -18,40 +20,17 @@
 // run unbundled (where `process` is a genuine ReferenceError).
 // Typed locally so core needs no @types/node (it's a browser library). The
 // runtime try/catch below, not this declaration, handles process being absent.
+//
+// The walk itself is `deepFreeze` from @rxova/ts-utils, inlined at build time:
+// typed arrays and DataViews pass through unfrozen (freezing a non-empty view
+// throws), a Map's or Set's entries are frozen though the collection itself
+// cannot be locked, and a reference cycle ends at the `isFrozen` check.
 
 let inDev = false;
 try {
   inDev = process.env.NODE_ENV !== 'production';
 } catch {
   /* v8 ignore next -- defensive: only hit when run unbundled, where `process` is undefined */
-}
-
-function deepFreeze(value: unknown): void {
-  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return;
-  // Typed arrays and DataViews are documented as shareable, but freezing a
-  // non-empty ArrayBuffer view throws a TypeError — so they pass through the
-  // guard unfrozen instead of crashing dev builds on a production-legal value.
-  if (ArrayBuffer.isView(value)) return;
-  // Freeze before recursing, so a reference cycle terminates at the isFrozen
-  // check above instead of looping forever.
-  Object.freeze(value);
-  if (value instanceof Map) {
-    // Freezing a Map/Set cannot lock its *entries* (`map.set()` still works —
-    // a documented gap), but the keys and values it holds are still shared
-    // objects: freeze them so in-place edits of those throw like any other.
-    for (const [k, v] of value) {
-      deepFreeze(k);
-      deepFreeze(v);
-    }
-    return;
-  }
-  if (value instanceof Set) {
-    for (const entry of value) deepFreeze(entry);
-    return;
-  }
-  for (const key of Object.keys(value as Record<string, unknown>)) {
-    deepFreeze((value as Record<string, unknown>)[key]);
-  }
 }
 
 /**
