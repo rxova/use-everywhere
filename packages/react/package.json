@@ -191,7 +191,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@rxova/repo-config": "^0.1.0",
+    "@rxova/repo-config": "^0.2.0",
     "@rxova/ts-utils": "^0.1.0",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@testing-library/react": "^16.3.2",
