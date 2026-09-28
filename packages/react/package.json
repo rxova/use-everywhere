@@ -114,43 +114,43 @@
       "name": "useSharedState",
       "path": "dist/index.js",
       "import": "{ useSharedState }",
-      "limit": "4.24 kB"
+      "limit": "4.50 kB"
     },
     {
       "name": "useSharedSelector",
       "path": "dist/index.js",
       "import": "{ useSharedSelector, shallowEqual }",
-      "limit": "4.40 kB"
+      "limit": "4.67 kB"
     },
     {
       "name": "useSharedReducer",
       "path": "dist/index.js",
       "import": "{ useSharedReducer }",
-      "limit": "4.21 kB"
+      "limit": "4.49 kB"
     },
     {
       "name": "useChannel + useOnMessage + useSend",
       "path": "dist/index.js",
       "import": "{ useChannel, useOnMessage, useSend }",
-      "limit": "3.07 kB"
+      "limit": "3.34 kB"
     },
     {
       "name": "usePeers + useClientId",
       "path": "dist/index.js",
       "import": "{ usePeers, useClientId }",
-      "limit": "2.77 kB"
+      "limit": "3.05 kB"
     },
     {
       "name": "useWindowResult + openWindow",
       "path": "dist/index.js",
       "import": "{ useWindowResult, openWindow }",
-      "limit": "1.47 kB"
+      "limit": "1.74 kB"
     },
     {
       "name": "useLeader + useLeaderEffect",
       "path": "dist/index.js",
       "import": "{ useLeader, useLeaderEffect }",
-      "limit": "3.65 kB"
+      "limit": "3.90 kB"
     },
     {
       "name": "createStoreHooks (persisted)",
@@ -162,7 +162,7 @@
       "name": "Inspector (devtools subpath)",
       "path": "dist/devtools/index.js",
       "import": "{ Inspector }",
-      "limit": "7.20 kB"
+      "limit": "7.63 kB"
     },
     {
       "name": "SharedWorker relay (shared-worker subpath)",
@@ -192,6 +192,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@rxova/repo-config": "^0.1.0",
+    "@rxova/ts-utils": "^0.1.0",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.17",

@@ -1,16 +1,16 @@
-// Same NODE_ENV strategy as dev-freeze.ts: bundlers inline the string, the
-// try/catch keeps unbundled runs (where `process` is a ReferenceError) inert.
+import { createDevWarner } from '@rxova/ts-utils';
 
-let inDev = false;
-try {
-  inDev = process.env.NODE_ENV !== 'production';
-} catch {
-  /* v8 ignore next -- defensive: only hit when run unbundled, where `process` is undefined */
-}
-
-const warned = new Set<string>();
-
-const DOCS = 'https://rxova.org/packages/use-everywhere/errors';
+// The warner is `createDevWarner` from @rxova/ts-utils, inlined at build time
+// like `deepFreeze` in dev-freeze.ts. It reads `isDevelopment()` on every call:
+// a boolean `__DEV__` global wins, otherwise anything but
+// `NODE_ENV=production` is development, and unbundled runs (where `process` is
+// a ReferenceError) stay inert.
+//
+// The trailing slash keeps the link exactly as before: `…/errors/#ue1001`.
+const warner = createDevWarner({
+  prefix: 'use-everywhere',
+  docsUrl: 'https://rxova.org/packages/use-everywhere/errors/',
+});
 
 /**
  * Stamp a diagnostic with its code and the page that explains it.
@@ -25,17 +25,14 @@ const DOCS = 'https://rxova.org/packages/use-everywhere/errors';
  * somebody's browser is still emitting it.
  */
 export function diagnostic(code: string, message: string): string {
-  return `[use-everywhere] ${code}: ${message}\n  → ${DOCS}/#${code.toLowerCase()}`;
+  return warner.format(message, code);
 }
 
 /**
  * Warn once per distinct message, development only. Production builds
- * dead-code-eliminate the body along with every call site's string.
+ * dead-code-eliminate every call site's string: each call sits under a literal
+ * `process.env.NODE_ENV !== 'production'` guard.
  */
 export function devWarn(code: string, message: string): void {
-  if (!inDev) return;
-  const line = diagnostic(code, message);
-  if (warned.has(line)) return;
-  warned.add(line);
-  console.warn(line);
+  warner.warnOnce(`${code} ${message}`, message, { code });
 }

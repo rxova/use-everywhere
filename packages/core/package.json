@@ -97,73 +97,73 @@
       "name": "everything (import *)",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "8.78 kB"
+      "limit": "9.26 kB"
     },
     {
       "name": "createLeader",
       "path": "dist/index.js",
       "import": "{ createLeader }",
-      "limit": "3.23 kB"
+      "limit": "3.49 kB"
     },
     {
       "name": "createSharedStore",
       "path": "dist/index.js",
       "import": "{ createSharedStore }",
-      "limit": "3.90 kB"
+      "limit": "4.15 kB"
     },
     {
       "name": "createSharedReducer",
       "path": "dist/index.js",
       "import": "{ createSharedReducer }",
-      "limit": "3.79 kB"
+      "limit": "4.05 kB"
     },
     {
       "name": "createChannel",
       "path": "dist/index.js",
       "import": "{ createChannel }",
-      "limit": "2.74 kB"
+      "limit": "3.02 kB"
     },
     {
       "name": "createPresence",
       "path": "dist/index.js",
       "import": "{ createPresence }",
-      "limit": "2.47 kB"
+      "limit": "2.75 kB"
     },
     {
       "name": "openWindow (opener side)",
       "path": "dist/index.js",
       "import": "{ openWindow }",
-      "limit": "1.23 kB"
+      "limit": "1.52 kB"
     },
     {
       "name": "connectToOpener (child side)",
       "path": "dist/index.js",
       "import": "{ connectToOpener }",
-      "limit": "1.09 kB"
+      "limit": "1.37 kB"
     },
     {
       "name": "observeBus + enableDebug",
       "path": "dist/index.js",
       "import": "{ observeBus, enableDebug }",
-      "limit": "316 B"
+      "limit": "600 B"
     },
     {
       "name": "localStorageAdapter",
       "path": "dist/index.js",
       "import": "{ localStorageAdapter }",
-      "limit": "655 B"
+      "limit": "935 B"
     },
     {
       "name": "indexedDbAdapter",
       "path": "dist/index.js",
       "import": "{ indexedDbAdapter }",
-      "limit": "447 B"
+      "limit": "735 B"
     },
     {
       "name": "SharedWorkerTransport",
       "path": "dist/index.js",
       "import": "{ SharedWorkerTransport }",
-      "limit": "380 B"
+      "limit": "640 B"
     },
     {
       "name": "SharedWorker relay (shared-worker subpath)",
