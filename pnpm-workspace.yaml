@@ -9,6 +9,7 @@ minimumReleaseAgeExclude:
   - '@rxova/brand'
   - '@rxova/astro-ui'
   - '@rxova/repo-config'
+  - '@rxova/ts-utils'
 # Transitive deps pulled in by Docusaurus/webpack that lag behind their
 # security patches. Drop an entry once the upstream range covers it.
 overrides:

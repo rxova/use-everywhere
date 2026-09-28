@@ -15,5 +15,8 @@ export default defineConfig(
       // imports a hook carry an `onconnect` handler.
       'shared-worker': 'src/shared-worker.ts',
     },
+    // @rxova/ts-utils is a devDependency inlined here, so core keeps zero runtime
+    // dependencies; `onlyBundle` names it as the one dependency the build may inline.
+    deps: { onlyBundle: ['@rxova/ts-utils'] },
   }),
 );
