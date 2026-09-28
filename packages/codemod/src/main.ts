@@ -1,3 +1,4 @@
+import { version } from '../package.json' with { type: 'json' };
 import { run } from './run.js';
 
 export interface Io {
@@ -13,6 +14,7 @@ export const USAGE = [
   '.ts, .tsx, .js, .jsx, .mjs, .cjs, .mts and .cts file under the given paths.',
   '',
   '  --dry-run   list the files that would change, and write nothing',
+  '  --version   print the version and exit',
   '',
   'Migration guide: https://rxova.org/packages/use-everywhere/guides/migration/',
 ].join('\n');
@@ -30,6 +32,10 @@ export function main(argv: readonly string[], io: Io): number {
   if (command === undefined || command === '--help' || command === '-h') {
     io.log(USAGE);
     return command === undefined ? 2 : 0;
+  }
+  if (command === '--version' || command === '-v') {
+    io.log(version);
+    return 0;
   }
   if (!TRANSFORMS.has(command)) {
     io.error(`Unknown transform "${command}". The only one is rename-1.0.\n\n${USAGE}`);
