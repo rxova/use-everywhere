@@ -1,21 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
-# Git passes one "<local ref> <local sha> <remote ref> <remote sha>" line per
-# ref on stdin; a deleted ref has an all-zero local sha. A push that only
-# deletes refs (`git push --delete`, removing a remote branch from a GUI) sends
-# no commits, so there is nothing to verify.
-has_updates=false
-while read -r _local_ref local_sha _remote_ref _remote_sha; do
-  case "$local_sha" in
-    *[!0]*) has_updates=true ;;
-  esac
-done
-[ "$has_updates" = true ] || exit 0
-
-# One ordered gate, the same list CI runs, so a green push means a green
-# pipeline. `verify` is defined once, as repoConfig.verify.steps in the root
-# package.json, and run by `rxova-repo-config verify`; Turbo caches
-# unchanged tasks, so a re-push after a docs-only edit replays in seconds.
-# (E2E is not in verify — it runs as its own CI job.)
-pnpm run verify
+# The whole hook is `rxova-repo-config pre-push`: it skips a push that only
+# deletes refs and otherwise runs the same ordered gate CI runs
+# (repoConfig.verify.steps in package.json), so a green push means a green
+# pipeline. E2E is not in verify — it runs as its own CI job.
+pnpm exec rxova-repo-config pre-push

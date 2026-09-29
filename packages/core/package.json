@@ -90,7 +90,7 @@
     "size": "size-limit",
     "check:exports": "publint --strict && attw --pack .",
     "pack:smoke": "rxova-repo-config pack-smoke",
-    "mutation": "stryker run && node --import tsx ../tooling/check-mutation.ts reports/mutation/mutation.json"
+    "mutation": "stryker run && node --import tsx ../../scripts/mutation/check-mutation.ts reports/mutation/mutation.json"
   },
   "size-limit": [
     {

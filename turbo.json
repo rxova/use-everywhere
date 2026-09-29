@@ -98,6 +98,33 @@
       "outputs": ["reports/**"],
       "outputLogs": "new-only"
     },
+    // The repository scripts under scripts/ and the repo-wide error-codes test,
+    // which reads the packages' sources and the docs' error-codes page.
+    "//#test:scripts": {
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "scripts/**",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "package.json",
+        "packages/*/src/**",
+        "apps/docs/src/content/docs/errors.md*"
+      ],
+      "outputLogs": "new-only"
+    },
+    "//#typecheck:scripts": {
+      "outputs": [],
+      "inputs": ["scripts/**", "vitest.config.ts", "tsconfig.json", "package.json"],
+      "outputLogs": "new-only"
+    },
+    // The types `astro:content` and `import.meta.env` resolve to, which
+    // type-aware lint reads. starlight-typedoc runs during sync and reads the
+    // libraries' emitted types, hence `^build`.
+    "sync": {
+      "dependsOn": ["^build"],
+      "outputs": [".astro/**"],
+      "outputLogs": "errors-only"
+    },
     "dev": {
       "cache": false,
       "persistent": true

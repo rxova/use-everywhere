@@ -18,9 +18,9 @@ on:
   # that ships it — a red rxova.org build blocks every project on the site.
   pull_request:
     paths:
-      - 'apps/docs/**'
-      - 'packages/*/src/**'
-      - '.github/workflows/docs.yml'
+      - "apps/docs/**"
+      - "packages/*/src/**"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:
@@ -42,8 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
-      - uses: ./.github/actions/turbo-cache
+      - uses: rxova/shared/actions/setup-pnpm@main
+      - uses: rxova/shared/actions/turbo-cache@main
       - run: pnpm install --frozen-lockfile
       # Build the libraries first: TypeDoc resolves use-everywhere -> core through dist types.
       - run: pnpm run libs:build
@@ -51,26 +51,16 @@ jobs:
       # The two mermaid diagrams are rendered to static SVG at build time by
       # rehype-mermaid, which drives headless chromium. Without this the build
       # fails rather than silently degrading.
-      #
-      # Cached the same way CI's e2e legs cache theirs: the browser build keys
-      # on the lockfile that pins Playwright, and a hit leaves only
-      # `install-deps` — the shared libraries, which belong to the runner rather
-      # than to the repository and so have to be installed every time.
-      - name: Restore the chromium build
-        id: browser-cache
-        uses: actions/cache@v6
+      - uses: rxova/shared/actions/setup-playwright@main
         with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
-      - if: steps.browser-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @use-everywhere/docs exec playwright install --with-deps chromium
-      - if: steps.browser-cache.outputs.cache-hit == 'true'
-        run: pnpm --filter @use-everywhere/docs exec playwright install-deps chromium
+          browsers: chromium
+          working-directory: apps/docs
 
       # Build at the path the aggregator actually serves these docs from.
       # Absolute references that only work at the domain root are invisible in a
       # root build and break silently once mounted. starlight-links-validator
-      # runs as part of the build and fails on any broken internal link.
+      # runs as part of the build and fails on any broken internal link, and
+      # `rxova-docs-kit check-md-routes` then checks every `.md` twin.
       - name: Build docs at the aggregator base path
         env:
           DOCS_URL: https://rxova.org
@@ -101,24 +91,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      # No continue-on-error: the dispatch *is* the publish, so swallowing a
+      # failure would leave the site serving stale docs behind a green tick.
       - name: Dispatch docs ingest to rxova.org
-        # No continue-on-error, unlike the pre-contract dispatch this replaces.
-        # Back then the aggregator rebuilt the docs from source on its own
-        # schedule, so a dropped notification only delayed a publish. Now the
-        # dispatch *is* the publish: swallowing a failure would leave the site
-        # serving stale docs with a green tick here and nothing to look at.
-        env:
-          GH_TOKEN: ${{ secrets.AGGREGATOR_DISPATCH_TOKEN }}
-        # `-F` only for schema, which the receiver compares as the number 1;
-        # everything else goes through `-f` so it stays a string, and an
-        # all-digit ref or sha cannot arrive as a number.
-        run: |
-          gh api repos/rxova/rxova-website/dispatches \
-            -f event_type=docs \
-            -F 'client_payload[schema]=1' \
-            -f 'client_payload[project]=use-everywhere' \
-            -f "client_payload[ref]=${GITHUB_REF_NAME}" \
-            -f "client_payload[sha]=${GITHUB_SHA}" \
-            -f "client_payload[run_id]=${GITHUB_RUN_ID}" \
-            -f 'client_payload[base]=/packages/use-everywhere/' \
-            -f 'client_payload[framework]=astro'
+        uses: rxova/shared/actions/notify-website@main
+        with:
+          project: use-everywhere
+          token: ${{ secrets.AGGREGATOR_DISPATCH_TOKEN }}

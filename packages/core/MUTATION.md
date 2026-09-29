@@ -47,7 +47,7 @@ Two gates, because they catch different things.
 
 Stryker's own `thresholds.break` is **90**, and it applies to the **overall**
 score — which a large well-tested file can hold up while a small one rots
-underneath it. So `packages/tooling/check-mutation.ts` runs straight afterwards
+underneath it. So `scripts/mutation/check-mutation.ts` runs straight afterwards
 and fails **any single module** below the same floor. That is the shape the
 roadmap actually asks for, and the reason a 100-mutant file at 100% cannot
 paper over a 10-mutant file at 50%.

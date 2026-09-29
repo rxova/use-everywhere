@@ -21,7 +21,7 @@ on:
     #
     # Deliberately not on the hour: GitHub queues scheduled jobs across every
     # repository, and the top of the hour is where they pile up.
-    - cron: '17 3 * * 0,3,5'
+    - cron: "17 3 * * 0,3,5"
   workflow_dispatch:
 
 permissions:
@@ -31,21 +31,14 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# Stryker reruns the core suite, which includes the happy-dom files. See the
-# matching block in ci.yml for why Node 26 needs this: happy-dom does not
-# install its Storage over the placeholder `localStorage` that Node 26 now
-# defines, so those specs fail without it.
-env:
-  NODE_OPTIONS: --no-experimental-webstorage
-
 jobs:
   mutation:
     name: mutation score
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
-      - uses: ./.github/actions/turbo-cache
+      - uses: rxova/shared/actions/setup-pnpm@main
+      - uses: rxova/shared/actions/turbo-cache@main
       - run: pnpm install --frozen-lockfile
       # Stryker's own threshold gates the overall score; check-mutation.ts then
       # fails any single module below the floor, which an overall number can

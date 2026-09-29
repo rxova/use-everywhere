@@ -1,12 +1,16 @@
 name: CodeQL
 
+# Security analysis of the libraries' source, weekly as well as per change,
+# because the query pack changes without this tree changing.
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   schedule:
-    - cron: '17 9 * * 6'
+    # Weekly, because the query pack changes without this tree changing.
+    - cron: "23 6 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -14,14 +18,6 @@ permissions:
   contents: read
   security-events: write
 
-# This workflow had no concurrency group, so a branch pushed three times in a
-# minute ran three full analyses and kept the last one. An analysis is a
-# property of a commit, and only the newest commit on a ref can still be
-# merged — superseding the older runs costs nothing and is what every other
-# workflow here already does.
-#
-# Grouped per ref rather than per workflow so two branches under review do not
-# take turns cancelling each other.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,19 +25,4 @@ concurrency:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['javascript-typescript']
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.38.0
-        with:
-          languages: ${{ matrix.language }}
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.38.0
+    uses: rxova/shared/.github/workflows/codeql-analysis.yml@main
