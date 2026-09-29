@@ -1,6 +1,6 @@
-import type { Rule, Scope } from 'eslint';
-import type { CallExpression, Expression, Node } from 'estree';
-import { argumentAt, calleeName, docsUrl } from '../shared.js';
+import type { Rule, Scope } from "eslint";
+import type { CallExpression, Expression, Node } from "estree";
+import { argumentAt, calleeName, docsUrl } from "../shared.js";
 
 /**
  * Calls whose result is stable for the life of the tab, not per render.
@@ -12,34 +12,34 @@ import { argumentAt, calleeName, docsUrl } from '../shared.js';
  * rule.
  */
 const STABLE_CALLS = new Set([
-  'useRef',
-  'useChannel',
-  'useSend',
-  'useAsk',
-  'getSharedStore',
-  'getLeader',
-  'getChannel',
+  "useRef",
+  "useChannel",
+  "useSend",
+  "useAsk",
+  "getSharedStore",
+  "getLeader",
+  "getChannel",
 ]);
 
 /** `const [state, setState] = useState()` — the setter half is stable. */
-const SETTER_FACTORIES = new Set(['useState', 'useReducer', 'useSharedState', 'useSharedReducer']);
+const SETTER_FACTORIES = new Set(["useState", "useReducer", "useSharedState", "useSharedReducer"]);
 
 const isStableInit = (init: Node | null | undefined): boolean =>
-  init?.type === 'CallExpression' && STABLE_CALLS.has(calleeName(init) ?? '');
+  init?.type === "CallExpression" && STABLE_CALLS.has(calleeName(init) ?? "");
 
 /**
  * Is this variable the second binding of an array destructure from a
  * setter-returning hook? React guarantees that identity; ours does too.
  */
 const isSetterBinding = (variable: Scope.Variable, def: Scope.Definition): boolean => {
-  if (def.type !== 'Variable') return false;
+  if (def.type !== "Variable") return false;
   const declarator = def.node;
-  if (declarator.id.type !== 'ArrayPattern') return false;
+  if (declarator.id.type !== "ArrayPattern") return false;
   const init = declarator.init;
-  if (init?.type !== 'CallExpression' || !SETTER_FACTORIES.has(calleeName(init) ?? ''))
+  if (init?.type !== "CallExpression" || !SETTER_FACTORIES.has(calleeName(init) ?? ""))
     return false;
   const second = declarator.id.elements[1];
-  return second?.type === 'Identifier' && second.name === variable.name;
+  return second?.type === "Identifier" && second.name === variable.name;
 };
 
 /** Does `scope` sit inside `outer` — is the declaration under this callback's component? */
@@ -52,18 +52,18 @@ const isInside = (scope: Scope.Scope, outer: Scope.Scope): boolean => {
 
 export const leaderEffectCaptures: Rule.RuleModule = {
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
-      description: 'Warn when a leader effect closes over a value that changes between renders',
+      description: "Warn when a leader effect closes over a value that changes between renders",
       recommended: true,
-      url: docsUrl('leader-effect-captures'),
+      url: docsUrl("leader-effect-captures"),
     },
     schema: [],
     messages: {
       staleCapture:
-        '`{{name}}` is read inside useLeaderEffect, which re-runs only when leadership moves — ' +
-        'not when `{{name}}` changes. The effect will keep using the value from the moment this ' +
-        'tab took the seat. Read it through a ref, or move the value into shared state.',
+        "`{{name}}` is read inside useLeaderEffect, which re-runs only when leadership moves — " +
+        "not when `{{name}}` changes. The effect will keep using the value from the moment this " +
+        "tab took the seat. Read it through a ref, or move the value into shared state.",
     },
   },
   create(context) {
@@ -71,22 +71,22 @@ export const leaderEffectCaptures: Rule.RuleModule = {
 
     return {
       CallExpression(node: CallExpression) {
-        if (calleeName(node) !== 'useLeaderEffect') return;
+        if (calleeName(node) !== "useLeaderEffect") return;
 
         const callback: Expression | null = argumentAt(node, 0);
         if (
           callback === null ||
-          (callback.type !== 'ArrowFunctionExpression' && callback.type !== 'FunctionExpression')
+          (callback.type !== "ArrowFunctionExpression" && callback.type !== "FunctionExpression")
         ) {
           return;
         }
 
-        const callbackScope = sourceCode.getScope(callback as Node as Rule.Node);
+        const callbackScope = sourceCode.getScope(callback);
         // The function the call itself sits in: the component or hook whose
         // per-render bindings are the ones that go stale. Anything declared
         // above it (module scope, imports) is stable by construction.
-        const componentScope = sourceCode.getScope(node as Node as Rule.Node).variableScope;
-        if (componentScope.type === 'module' || componentScope.type === 'global') return;
+        const componentScope = sourceCode.getScope(node).variableScope;
+        if (componentScope.type === "module" || componentScope.type === "global") return;
 
         const reported = new Set<string>();
         for (const reference of callbackScope.through) {
@@ -96,13 +96,13 @@ export const leaderEffectCaptures: Rule.RuleModule = {
           if (!isInside(variable.scope, componentScope)) continue;
 
           const def = variable.defs[0]!;
-          if (def.type === 'Variable' && isStableInit(def.node.init)) continue;
+          if (def.type === "Variable" && isStableInit(def.node.init)) continue;
           if (isSetterBinding(variable, def)) continue;
 
           reported.add(variable.name);
           context.report({
-            node: reference.identifier as Node as Rule.Node,
-            messageId: 'staleCapture',
+            node: reference.identifier,
+            messageId: "staleCapture",
             data: { name: variable.name },
           });
         }

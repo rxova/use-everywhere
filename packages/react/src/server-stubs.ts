@@ -1,5 +1,5 @@
-import type { SharedReducer, Channel, Leader, MessageMap, Presence } from '@use-everywhere/core';
-import type { AnyStore } from './registry.types.js';
+import type { SharedReducer, Channel, Leader, MessageMap, Presence } from "@use-everywhere/core";
+import type { AnyStore } from "./registry.types.js";
 
 /**
  * On a server there is no BroadcastChannel, no other tab, and no way to change
@@ -19,7 +19,7 @@ import type { AnyStore } from './registry.types.js';
  * value the server invents can never match the one the client mints, which is
  * a guaranteed hydration mismatch.
  */
-export const SERVER_CLIENT_ID = '';
+export const SERVER_CLIENT_ID = "";
 
 const EMPTY = Object.freeze({});
 // A constant, not a fresh `[]` per call: these are read through
@@ -63,7 +63,7 @@ const INERT = Object.freeze({
 });
 
 export const createServerStore = (): AnyStore => INERT as unknown as AnyStore;
-export const createServerPresence = (): Presence => INERT as unknown as Presence;
+export const createServerPresence = (): Presence => INERT;
 
 /**
  * Leadership needs its own snapshot shape, so it wraps the shared constant.
@@ -76,7 +76,7 @@ const NEVER = () => new Promise<void>(() => {});
 export const createServerLeader = (): Leader =>
   ({
     ...INERT,
-    strategy: 'heartbeat',
+    strategy: "heartbeat",
     getSnapshot: () => NO_LEADER,
     waitForLeadership: NEVER,
   }) as unknown as Leader;
@@ -86,13 +86,12 @@ export const createServerLeader = (): Leader =>
  * no-op: a server render has no peers to order anything with, and an action
  * applied here would show a value the browser is about to disagree with.
  */
-export const createServerReducer = <S>(initial: S): SharedReducer<S, unknown> =>
-  ({
-    ...INERT,
-    getSnapshot: () => initial,
-    dispatch: noop,
-    pendingCount: () => 0,
-  }) as unknown as SharedReducer<S, unknown>;
+export const createServerReducer = <S>(initial: S): SharedReducer<S, unknown> => ({
+  ...INERT,
+  getSnapshot: () => initial,
+  dispatch: noop,
+  pendingCount: () => 0,
+});
 
 /** Channels carry their name, so this is the one double that allocates. */
 export const createServerChannel = <M extends MessageMap>(name: string): Channel<M> =>

@@ -1,6 +1,6 @@
-import type { Rule, Scope } from 'eslint';
-import type { Expression, Node } from 'estree';
-import { argumentAt, calleeName, docsUrl } from '../shared.js';
+import type { Rule, Scope } from "eslint";
+import type { Expression } from "estree";
+import { argumentAt, calleeName, docsUrl } from "../shared.js";
 
 /**
  * Every factory whose first argument is a bus name. Keys are deliberately not
@@ -9,16 +9,16 @@ import { argumentAt, calleeName, docsUrl } from '../shared.js';
  * the bus itself.
  */
 const NAME_FIRST = new Set([
-  'createStoreHooks',
-  'defineChannel',
-  'createNamespace',
-  'createSharedStore',
-  'createSharedReducer',
-  'createChannel',
-  'createPresence',
-  'createLeader',
-  'getSharedStore',
-  'getLeader',
+  "createStoreHooks",
+  "defineChannel",
+  "createNamespace",
+  "createSharedStore",
+  "createSharedReducer",
+  "createChannel",
+  "createPresence",
+  "createLeader",
+  "getSharedStore",
+  "getLeader",
 ]);
 
 /** The variable `name` resolves to from `scope`, or null when it is free. */
@@ -32,8 +32,8 @@ const resolveVariable = (scope: Scope.Scope | null, name: string): Scope.Variabl
 
 /** A string that is fixed at author time: `'cart'`, or `` `cart` ``. */
 const isStaticString = (node: Expression): boolean => {
-  if (node.type === 'Literal') return typeof node.value === 'string';
-  return node.type === 'TemplateLiteral' && node.expressions.length === 0;
+  if (node.type === "Literal") return typeof node.value === "string";
+  return node.type === "TemplateLiteral" && node.expressions.length === 0;
 };
 
 /**
@@ -47,34 +47,34 @@ const isStaticString = (node: Expression): boolean => {
  * that are supposed to land on the same bus.
  */
 const isSharedNameConstant = (context: Rule.RuleContext, node: Expression): boolean => {
-  if (node.type !== 'Identifier') return false;
-  const variable = resolveVariable(context.sourceCode.getScope(node as Rule.Node), node.name);
+  if (node.type !== "Identifier") return false;
+  const variable = resolveVariable(context.sourceCode.getScope(node), node.name);
   if (!variable || variable.defs.length !== 1) return false;
 
   const def = variable.defs[0]!;
-  if (def.type === 'ImportBinding') return true;
+  if (def.type === "ImportBinding") return true;
 
   const scopeType = variable.scope.type;
-  if (scopeType !== 'module' && scopeType !== 'global') return false;
-  if (def.type !== 'Variable' || def.parent.kind !== 'const') return false;
+  if (scopeType !== "module" && scopeType !== "global") return false;
+  if (def.type !== "Variable" || def.parent.kind !== "const") return false;
   // `const` without an initialiser is a syntax error, so there is always one.
   return isStaticString(def.node.init as Expression);
 };
 
 export const noDynamicName: Rule.RuleModule = {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Require bus names to be statically known',
+      description: "Require bus names to be statically known",
       recommended: true,
-      url: docsUrl('no-dynamic-name'),
+      url: docsUrl("no-dynamic-name"),
     },
     schema: [],
     messages: {
       dynamicName:
-        'The name passed to `{{name}}` must be a string literal or a module-scope const string. ' +
-        'A name computed at runtime forks the bus: two tabs that compute different names share ' +
-        'nothing, and nothing warns — the sync just never happens.',
+        "The name passed to `{{name}}` must be a string literal or a module-scope const string. " +
+        "A name computed at runtime forks the bus: two tabs that compute different names share " +
+        "nothing, and nothing warns — the sync just never happens.",
     },
   },
   create(context) {
@@ -89,8 +89,8 @@ export const noDynamicName: Rule.RuleModule = {
         if (isStaticString(first) || isSharedNameConstant(context, first)) return;
 
         context.report({
-          node: first as Node as Rule.Node,
-          messageId: 'dynamicName',
+          node: first,
+          messageId: "dynamicName",
           data: { name },
         });
       },

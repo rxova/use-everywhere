@@ -1,4 +1,4 @@
-import type { Transport, TransportKind } from './transport.types.js';
+import type { Transport, TransportKind } from "./transport.types.js";
 
 /**
  * The subset of `SharedWorker` this transport uses. Narrower than the DOM type
@@ -13,8 +13,8 @@ export interface MessagePortLike {
   postMessage(data: unknown): void;
   start?: () => void;
   close(): void;
-  addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
-  removeEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
+  addEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
+  removeEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
 }
 
 export interface SharedWorkerTransportOptions {
@@ -72,18 +72,17 @@ export interface SharedWorkerTransportOptions {
  * ```
  */
 export class SharedWorkerTransport implements Transport {
-  readonly kind: TransportKind = 'shared-worker';
+  readonly kind: TransportKind = "shared-worker";
   private port: MessagePortLike;
   private listeners = new Set<(data: unknown) => void>();
   private onMessage: (event: { data: unknown }) => void;
   private closed = false;
 
   constructor(options: SharedWorkerTransportOptions) {
-    const name = options.name ?? 'use-everywhere';
+    const name = options.name ?? "use-everywhere";
     const factory =
       options.factory ??
-      ((url: string, workerName: string) =>
-        new SharedWorker(url, { name: workerName }) as SharedWorkerLike);
+      ((url: string, workerName: string) => new SharedWorker(url, { name: workerName }));
 
     const worker = factory(String(options.url), name);
     this.port = worker.port;
@@ -91,7 +90,7 @@ export class SharedWorkerTransport implements Transport {
     this.onMessage = (event) => {
       for (const listener of this.listeners) listener(event.data);
     };
-    this.port.addEventListener('message', this.onMessage);
+    this.port.addEventListener("message", this.onMessage);
     // `start()` is required whenever the port is used through addEventListener
     // rather than `onmessage` — without it the port never begins dispatching and
     // every message queues silently, which is the same shape of bug as having
@@ -113,7 +112,7 @@ export class SharedWorkerTransport implements Transport {
     if (this.closed) return;
     this.closed = true;
     this.listeners.clear();
-    this.port.removeEventListener('message', this.onMessage);
+    this.port.removeEventListener("message", this.onMessage);
     this.port.close();
   }
 }
@@ -126,5 +125,5 @@ export class SharedWorkerTransport implements Transport {
  * the constructor throws rather than degrading.
  */
 export function isSharedWorkerAvailable(): boolean {
-  return typeof SharedWorker !== 'undefined';
+  return typeof SharedWorker !== "undefined";
 }

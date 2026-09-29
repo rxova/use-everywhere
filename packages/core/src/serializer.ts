@@ -40,14 +40,14 @@ function lossyType(raw: unknown, value: unknown): string | undefined {
   // undefined and an object whose `toJSON` returns undefined are both dropped
   // by JSON without a word, and only the first has an undefined `raw` — testing
   // both halves let the second through.
-  if (value === undefined) return raw === undefined ? 'undefined' : 'undefined after toJSON';
-  if (raw instanceof Date) return 'Date';
-  if (raw instanceof Map) return 'Map';
-  if (raw instanceof Set) return 'Set';
-  if (raw instanceof RegExp) return 'RegExp';
-  if (ArrayBuffer.isView(raw)) return 'TypedArray';
+  if (value === undefined) return raw === undefined ? "undefined" : "undefined after toJSON";
+  if (raw instanceof Date) return "Date";
+  if (raw instanceof Map) return "Map";
+  if (raw instanceof Set) return "Set";
+  if (raw instanceof RegExp) return "RegExp";
+  if (ArrayBuffer.isView(raw)) return "TypedArray";
   const type = typeof raw;
-  return type === 'function' || type === 'symbol' ? type : undefined;
+  return type === "function" || type === "symbol" ? type : undefined;
 }
 
 /**
@@ -65,20 +65,23 @@ function lossyType(raw: unknown, value: unknown): string | undefined {
 export const jsonSerializer: Serializer = {
   stringify(value) {
     if (value === undefined) {
-      throw new TypeError('use-everywhere: cannot serialize undefined');
+      throw new TypeError("use-everywhere: cannot serialize undefined");
     }
-    return JSON.stringify(value, function replacer(this: Record<string, unknown>, key, forJson) {
-      // `this[key]` is the value *before* toJSON, which is the only place a
-      // Date is still a Date rather than the string it becomes.
-      const type = lossyType(this[key], forJson);
-      if (type) {
-        throw new TypeError(
-          `use-everywhere: ${key ? `"${key}" is ` : ''}${type}, which JSON cannot round-trip. ` +
-            `https://rxova.org/packages/use-everywhere/guides/serialization/`,
-        );
-      }
-      return forJson;
-    });
+    return JSON.stringify(
+      value,
+      function replacer(this: Record<string, unknown>, key, forJson: unknown) {
+        // `this[key]` is the value *before* toJSON, which is the only place a
+        // Date is still a Date rather than the string it becomes.
+        const type = lossyType(this[key], forJson);
+        if (type) {
+          throw new TypeError(
+            `use-everywhere: ${key ? `"${key}" is ` : ""}${type}, which JSON cannot round-trip. ` +
+              `https://rxova.org/packages/use-everywhere/guides/serialization/`,
+          );
+        }
+        return forJson;
+      },
+    );
   },
   parse: (text) => JSON.parse(text) as unknown,
 };

@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import type { Channel, MessageMap, MessageMeta, ReplyMap } from '@use-everywhere/core';
-import { getChannel } from './registry.js';
+import { useEffect, useRef } from "react";
+import type { Channel, MessageMap, MessageMeta, ReplyMap } from "@use-everywhere/core";
+import { getChannel } from "./registry.js";
 
 /** Get the page-wide typed channel for `name` (one instance per name). */
 export function useChannel<M extends MessageMap, R extends ReplyMap<M> = Record<never, never>>(
@@ -82,13 +82,17 @@ export function useAnswer<
 /** The channel's post function (stable identity per channel). */
 export function useSend<M extends MessageMap, R extends ReplyMap<M>>(
   channel: Channel<M, R>,
-): Channel<M, R>['post'] {
+): Channel<M, R>["post"] {
+  // `post` is bound per channel, which is what gives it a stable identity.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   return channel.post;
 }
 
 /** The channel's ask function (stable identity per channel). */
 export function useAsk<M extends MessageMap, R extends ReplyMap<M>>(
   channel: Channel<M, R>,
-): Channel<M, R>['ask'] {
+): Channel<M, R>["ask"] {
+  // `ask` is bound per channel, which is what gives it a stable identity.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   return channel.ask;
 }

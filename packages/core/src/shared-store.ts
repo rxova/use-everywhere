@@ -1,11 +1,11 @@
-import { getBus } from './bus.js';
-import { isVersion, newer } from './clock.js';
-import { devWarn } from './dev.js';
-import { freezeShared } from './dev-freeze.js';
-import type { MessageMeta, Version } from './common.types.js';
-import type { Persisted, RestoreError } from './persist.types.js';
-import { createGate } from './schema.js';
-import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
+import { getBus } from "./bus.js";
+import { isVersion, newer } from "./clock.js";
+import { devWarn } from "./dev.js";
+import { freezeShared } from "./dev-freeze.js";
+import type { MessageMeta, Version } from "./common.types.js";
+import type { Persisted, RestoreError } from "./persist.types.js";
+import { createGate } from "./schema.js";
+import type { SharedStore, SharedStoreOptions } from "./shared-store.types.js";
 
 // Live-store count per name on the shared (registry) bus, to catch the
 // two-stores-one-name mistake. Custom transports are exempt: in tests every
@@ -26,9 +26,9 @@ export function createSharedStore<S extends Record<string, unknown>>(
   if (onSharedBus) {
     const live = liveStores.get(name) ?? 0;
     if (live > 0) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== "production") {
         devWarn(
-          'UE1001',
+          "UE1001",
           `second shared store for "${name}" in this tab — they stay in sync, but you are paying twice for one store's state, subscriptions, and persistence writes. Reuse one per name.`,
         );
       }
@@ -63,7 +63,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   };
 
   const emit = (key: string, value: unknown, meta: MessageMeta) => {
-    for (const fn of listeners) fn(key as keyof S & string, value, meta);
+    for (const fn of listeners) fn(key, value, meta);
     const set = keyListeners.get(key);
     if (set) for (const fn of set) fn();
   };
@@ -167,8 +167,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
       snapshotTimer = undefined;
       bus.post({
         v: 1,
-        scope: 'state',
-        type: 'snapshot',
+        scope: "state",
+        type: "snapshot",
         clientId,
         kind: bus.kind,
         state: { ...state },
@@ -178,24 +178,24 @@ export function createSharedStore<S extends Record<string, unknown>>(
   };
 
   const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'state') return;
+    if (wire.scope !== "state") return;
     const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
-    if (wire.type === 'hello') {
+    if (wire.type === "hello") {
       scheduleSnapshot();
       return;
     }
     if (accept && !accept(meta)) return;
-    if (wire.type === 'patch') {
+    if (wire.type === "patch") {
       // The version is a claim until it is checked: a malformed one used to
       // reach newer() and throw inside this handler, taking the tab's bus down
       // with it. A wire we cannot arbitrate is one we drop.
-      if (typeof wire.key !== 'string' || !isVersion(wire.version)) return;
+      if (typeof wire.key !== "string" || !isVersion(wire.version)) return;
       applyRemote(wire.key, wire.value, wire.version, meta);
       return;
     }
-    if (wire.type === 'snapshot') {
+    if (wire.type === "snapshot") {
       const versions = wire.versions;
-      if (typeof versions !== 'object' || versions === null) return;
+      if (typeof versions !== "object" || versions === null) return;
       // Somebody answered. Stand down only if they said everything this client
       // would have — otherwise the pending reply still has something to add.
       if (coveredBy(versions)) cancelSnapshot();
@@ -228,8 +228,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
     try {
       bus.post({
         v: 1,
-        scope: 'state',
-        type: 'patch',
+        scope: "state",
+        type: "patch",
         key,
         value,
         version,
@@ -249,7 +249,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
   const proxy = new Proxy(state, {
     set(_target, key, value) {
-      if (typeof key !== 'string') return false;
+      if (typeof key !== "string") return false;
       setKey(key, value);
       return true;
     },
@@ -280,9 +280,9 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
     const refuse = (error: RestoreError) => {
       if (onRestoreError) onRestoreError(error);
-      else if (process.env.NODE_ENV !== 'production') {
+      else if (process.env.NODE_ENV !== "production") {
         devWarn(
-          'UE1002',
+          "UE1002",
           `${name}: persisted schema v${error.found} not restored, ` +
             `expected v${error.expected} (${error.reason}). https://rxova.org/packages/use-everywhere/guides/persistence/`,
         );
@@ -306,11 +306,11 @@ export function createSharedStore<S extends Record<string, unknown>>(
         // understand a shape that postdates it, and guessing would put values
         // it misreads back on the wire with winning clocks. Same call the
         // envelope makes for a protocol version it does not know.
-        refuse({ reason: 'ahead', found, expected: schemaVersion });
+        refuse({ reason: "ahead", found, expected: schemaVersion });
         return undefined;
       }
       if (!migrate) {
-        refuse({ reason: 'no-migrate', found, expected: schemaVersion });
+        refuse({ reason: "no-migrate", found, expected: schemaVersion });
         return undefined;
       }
       try {
@@ -318,7 +318,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
       } catch (cause) {
         // A throwing migration is a bug in the migration, and the one thing it
         // must not do is take the store down with it on every page load.
-        refuse({ reason: 'migrate-threw', found, expected: schemaVersion, cause });
+        refuse({ reason: "migrate-threw", found, expected: schemaVersion, cause });
         return undefined;
       }
     };
@@ -356,8 +356,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
         // wire.version and uses clientId only for meta, so this is legal.
         bus.post({
           v: 1,
-          scope: 'state',
-          type: 'patch',
+          scope: "state",
+          type: "patch",
           key,
           value: restored[key],
           version,
@@ -407,13 +407,13 @@ export function createSharedStore<S extends Record<string, unknown>>(
     });
 
     // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-    if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
-      addEventListener('pagehide', flushPersist);
+    if (typeof document !== "undefined" && typeof addEventListener === "function") {
+      addEventListener("pagehide", flushPersist);
     }
   }
 
   const sayHello = () =>
-    bus.post({ v: 1, scope: 'state', type: 'hello', clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "state", type: "hello", clientId, kind: bus.kind });
 
   // A tab restored from bfcache missed every patch broadcast while it was
   // cached — with no re-handshake it would hold silently stale state until the
@@ -425,8 +425,8 @@ export function createSharedStore<S extends Record<string, unknown>>(
     sayHello();
   };
   // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-  const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
-  if (hasWindow) addEventListener('pageshow', onPageShow);
+  const hasWindow = typeof document !== "undefined" && typeof addEventListener === "function";
+  if (hasWindow) addEventListener("pageshow", onPageShow);
 
   // Late-joiner handshake: ask everyone for their state.
   sayHello();
@@ -440,7 +440,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
     getVersions: () => versionsSnapshot,
     set(key, value) {
       const next =
-        typeof value === 'function' ? (value as (prev: unknown) => unknown)(state[key]) : value;
+        typeof value === "function" ? (value as (prev: unknown) => unknown)(state[key]) : value;
       setKey(key, next);
     },
     transaction(fn) {
@@ -487,12 +487,12 @@ export function createSharedStore<S extends Record<string, unknown>>(
         else liveStores.delete(name);
       }
       cancelSnapshot();
-      if (hasWindow) removeEventListener('pageshow', onPageShow);
+      if (hasWindow) removeEventListener("pageshow", onPageShow);
       if (flushPersist) {
         flushPersist();
         // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-        if (typeof document !== 'undefined' && typeof removeEventListener === 'function') {
-          removeEventListener('pagehide', flushPersist);
+        if (typeof document !== "undefined" && typeof removeEventListener === "function") {
+          removeEventListener("pagehide", flushPersist);
         }
       }
       unsubscribe();

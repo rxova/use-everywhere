@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { observeBus, type BusEvent, type BusWire } from '@use-everywhere/core';
-import { getSharedStore } from '../registry.js';
-import { usePeers } from '../use-peers.js';
-import type { InspectorProps } from './inspector.types.js';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { observeBus, type BusEvent, type BusWire } from "@use-everywhere/core";
+import { getSharedStore } from "../registry.js";
+import { usePeers } from "../use-peers.js";
+import type { InspectorProps } from "./inspector.types.js";
 
 interface LoggedWire {
   id: number;
-  direction: 'in' | 'out';
+  direction: "in" | "out";
   scope: string;
   label: string;
   from: string;
@@ -29,7 +29,7 @@ function wireLabel(wire: BusWire): string {
 }
 
 /** The scopes worth separating. `all` is not a scope; it is the absence of one. */
-const SCOPES = ['all', 'state', 'leader', 'presence', 'channel'] as const;
+const SCOPES = ["all", "state", "leader", "presence", "channel"] as const;
 type ScopeView = (typeof SCOPES)[number];
 
 /**
@@ -44,13 +44,13 @@ export function Panel({
   leaseMs,
   position,
   defaultOpen,
-}: Required<Pick<InspectorProps, 'name' | 'limit' | 'leaseMs' | 'position' | 'defaultOpen'>>) {
+}: Required<Pick<InspectorProps, "name" | "limit" | "leaseMs" | "position" | "defaultOpen">>) {
   const [open, setOpen] = useState(defaultOpen);
   const [wires, setWires] = useState<readonly LoggedWire[]>([]);
   const [crown, setCrown] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
-  const [filter, setFilter] = useState('');
-  const [scopeView, setScopeView] = useState<ScopeView>('all');
+  const [filter, setFilter] = useState("");
+  const [scopeView, setScopeView] = useState<ScopeView>("all");
   const [editing, setEditing] = useState<{ key: string; draft: string } | null>(null);
   const [frames, setFrames] = useState<readonly Frame[]>([]);
   const nextId = useRef(0);
@@ -80,11 +80,11 @@ export function Panel({
     return observeBus(name, (event: BusEvent) => {
       const { wire, direction } = event;
 
-      if (wire.scope === 'leader') {
-        if (wire.type === 'resign') {
+      if (wire.scope === "leader") {
+        if (wire.type === "resign") {
           setCrown(null);
           crownAt.current = 0;
-        } else if (wire.type === 'claim' || wire.type === 'heartbeat') {
+        } else if (wire.type === "claim" || wire.type === "heartbeat") {
           setCrown(wire.clientId);
           crownAt.current = Date.now();
         }
@@ -108,7 +108,7 @@ export function Panel({
       // already applied this wire, and React has not re-rendered yet, so the
       // rendered value is the state *before* the wire — which would label every
       // frame with the write that came after it.
-      if (wire.scope === 'state') {
+      if (wire.scope === "state") {
         setFrames((prev) =>
           [...prev, { wireId: id, label, snapshot: { ...store.getSnapshot() } }].slice(-limit),
         );
@@ -134,7 +134,7 @@ export function Panel({
 
   const needle = filter.trim().toLowerCase();
   const shown = wires.filter((wire) => {
-    if (scopeView !== 'all' && wire.scope !== scopeView) return false;
+    if (scopeView !== "all" && wire.scope !== scopeView) return false;
     if (!needle) return true;
     return wire.label.toLowerCase().includes(needle) || wire.from.toLowerCase().includes(needle);
   });
@@ -146,7 +146,7 @@ export function Panel({
     } catch {
       return;
     }
-    store.set(key, value as never);
+    store.set(key, value);
     setEditing(null);
   };
 
@@ -176,7 +176,7 @@ export function Panel({
   const restore = (frame: Frame): void => {
     for (const [key, value] of Object.entries(frame.snapshot)) {
       if (Object.is(store.getSnapshot()[key], value)) continue;
-      store.set(key, value as never);
+      store.set(key, value);
     }
   };
 
@@ -193,7 +193,7 @@ export function Panel({
         <span className="ue-ins__muted">{name}</span>
         {crown ? (
           <span className="ue-ins__crown" data-testid="ue-crown">
-            ♔ {crown === selfId ? 'this tab' : short(crown)}
+            ♔ {crown === selfId ? "this tab" : short(crown)}
           </span>
         ) : null}
       </button>
@@ -205,7 +205,7 @@ export function Panel({
             <div className="ue-ins__row">
               <span className="ue-ins__k">{short(selfId)}</span>
               <span className="ue-ins__v">
-                {crown === selfId ? 'leader' : crown ? 'follower' : 'no leader'}
+                {crown === selfId ? "leader" : crown ? "follower" : "no leader"}
               </span>
             </div>
           </div>
@@ -234,14 +234,16 @@ export function Panel({
                   <span className="ue-ins__k">{key}</span>
                   {editing?.key === key ? (
                     <input
-                      className={`ue-ins__edit${draftIsValid(editing.draft) ? '' : ' ue-ins__v--invalid'}`}
+                      className={`ue-ins__edit${draftIsValid(editing.draft) ? "" : " ue-ins__v--invalid"}`}
                       value={editing.draft}
+                      // Opened by the user clicking the value to edit it, so focus follows their action.
+                      // eslint-disable-next-line jsx-a11y/no-autofocus
                       autoFocus
                       aria-label={`Value of ${key}`}
                       onChange={(event) => setEditing({ key, draft: event.target.value })}
                       onKeyDown={(event) => {
-                        if (event.key === 'Enter') commit(key, editing.draft);
-                        if (event.key === 'Escape') setEditing(null);
+                        if (event.key === "Enter") commit(key, editing.draft);
+                        if (event.key === "Escape") setEditing(null);
                       }}
                       onBlur={() => setEditing(null)}
                       data-testid={`ue-edit-${key}`}
@@ -251,7 +253,7 @@ export function Panel({
                       type="button"
                       className="ue-ins__v ue-ins__v--editable"
                       onClick={() =>
-                        setEditing({ key, draft: JSON.stringify(snapshot[key]) ?? '' })
+                        setEditing({ key, draft: JSON.stringify(snapshot[key]) ?? "" })
                       }
                       data-testid={`ue-value-${key}`}
                     >
@@ -269,7 +271,7 @@ export function Panel({
           <div className="ue-ins__section">
             <div className="ue-ins__h">
               Wires ({shown.length}
-              {shown.length === wires.length ? '' : ` of ${wires.length}`})
+              {shown.length === wires.length ? "" : ` of ${wires.length}`})
               {paused ? <span className="ue-ins__paused"> · paused</span> : null}
             </div>
             <div className="ue-ins__tools">
@@ -280,7 +282,7 @@ export function Panel({
                 onClick={() => setPaused((value) => !value)}
                 data-testid="ue-pause"
               >
-                {paused ? 'resume' : 'pause'}
+                {paused ? "resume" : "pause"}
               </button>
               <button
                 type="button"
@@ -318,14 +320,14 @@ export function Panel({
             </div>
             {shown.length === 0 ? (
               <div className="ue-ins__empty" data-testid="ue-wires">
-                {wires.length === 0 ? 'nothing yet' : 'no matches'}
+                {wires.length === 0 ? "nothing yet" : "no matches"}
               </div>
             ) : (
               <div className="ue-ins__log" data-testid="ue-wires">
                 {shown.map((wire) => (
                   <div className="ue-ins__wire" key={wire.id}>
                     <span className={`ue-ins__dir ue-ins__dir--${wire.direction}`}>
-                      {wire.direction === 'out' ? '→' : '←'}
+                      {wire.direction === "out" ? "→" : "←"}
                     </span>
                     <span className="ue-ins__scope">{wire.label}</span>
                     <span className="ue-ins__from">{wire.from}</span>
@@ -354,7 +356,7 @@ export function Panel({
                     <span className="ue-ins__scope">{frame.label}</span>
                     <span className="ue-ins__from">
                       {Object.keys(frame.snapshot).length} key
-                      {Object.keys(frame.snapshot).length === 1 ? '' : 's'}
+                      {Object.keys(frame.snapshot).length === 1 ? "" : "s"}
                     </span>
                   </div>
                 ))}
