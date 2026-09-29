@@ -1,13 +1,13 @@
-import fc from 'fast-check';
-import { describe, expect, it, vi } from 'vitest';
-import { isBusWire } from '../bus.js';
-import type { BusWire } from '../bus.types.js';
-import { newer } from '../clock.js';
-import type { Version } from '../common.types.js';
-import { createLeader } from '../leader.js';
-import { createPresence } from '../presence.js';
-import { createSharedStore } from '../shared-store.js';
-import { MemoryHub } from '../transport/memory-hub.js';
+import fc from "fast-check";
+import { describe, expect, it, vi } from "vitest";
+import { isBusWire } from "../bus.js";
+import type { BusWire } from "../bus.types.js";
+import { newer } from "../clock.js";
+import type { Version } from "../common.types.js";
+import { createLeader } from "../leader.js";
+import { createPresence } from "../presence.js";
+import { createSharedStore } from "../shared-store.js";
+import { MemoryHub } from "../transport/memory-hub.js";
 
 /**
  * The example-based suites next door prove the cases we thought of. These
@@ -19,10 +19,10 @@ import { MemoryHub } from '../transport/memory-hub.js';
 
 const RUNS = 200;
 
-describe('last-writer-wins convergence', () => {
-  it('is a total order: exactly one of a > b, b > a, or a === b', () => {
+describe("last-writer-wins convergence", () => {
+  it("is a total order: exactly one of a > b, b > a, or a === b", () => {
     const version = (): fc.Arbitrary<Version> =>
-      fc.tuple(fc.integer({ min: 0, max: 6 }), fc.constantFrom('a', 'b', 'c')) as fc.Arbitrary<
+      fc.tuple(fc.integer({ min: 0, max: 6 }), fc.constantFrom("a", "b", "c")) as fc.Arbitrary<
         [number, string]
       >;
 
@@ -38,9 +38,9 @@ describe('last-writer-wins convergence', () => {
     );
   });
 
-  it('is transitive, so no write can beat one that already beat it', () => {
+  it("is transitive, so no write can beat one that already beat it", () => {
     const version = (): fc.Arbitrary<Version> =>
-      fc.tuple(fc.integer({ min: 0, max: 4 }), fc.constantFrom('a', 'b', 'c')) as fc.Arbitrary<
+      fc.tuple(fc.integer({ min: 0, max: 4 }), fc.constantFrom("a", "b", "c")) as fc.Arbitrary<
         [number, string]
       >;
 
@@ -52,14 +52,14 @@ describe('last-writer-wins convergence', () => {
     );
   });
 
-  it('leaves every tab holding identical state, whatever order the writes land in', async () => {
+  it("leaves every tab holding identical state, whatever order the writes land in", async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.integer({ min: 2, max: 5 }),
         fc.array(
           fc.record({
             writer: fc.nat({ max: 4 }),
-            key: fc.constantFrom('a', 'b', 'c'),
+            key: fc.constantFrom("a", "b", "c"),
             value: fc.integer({ min: 0, max: 99 }),
           }),
           { minLength: 1, maxLength: 25 },
@@ -68,7 +68,7 @@ describe('last-writer-wins convergence', () => {
           const hub = new MemoryHub();
           const tabs = Array.from({ length: tabCount }, () =>
             createSharedStore<Record<string, number>>(
-              'prop',
+              "prop",
               {},
               { transport: () => hub.connect() },
             ),
@@ -99,11 +99,11 @@ describe('last-writer-wins convergence', () => {
   });
 });
 
-describe('leader election safety', () => {
-  it('never seats two leaders at once, under arbitrary join and leave orders', async () => {
+describe("leader election safety", () => {
+  it("never seats two leaders at once, under arbitrary join and leave orders", async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.array(fc.constantFrom<'join' | 'leave' | 'wait'>('join', 'leave', 'wait'), {
+        fc.array(fc.constantFrom<"join" | "leave" | "wait">("join", "leave", "wait"), {
           minLength: 3,
           maxLength: 14,
         }),
@@ -113,14 +113,14 @@ describe('leader election safety', () => {
           const live: ReturnType<typeof createLeader>[] = [];
           try {
             for (const step of script) {
-              if (step === 'join') {
+              if (step === "join") {
                 live.push(
-                  createLeader('prop-lead', {
-                    strategy: 'heartbeat',
+                  createLeader("prop-lead", {
+                    strategy: "heartbeat",
                     transport: () => hub.connect(),
                   }),
                 );
-              } else if (step === 'leave' && live.length > 0) {
+              } else if (step === "leave" && live.length > 0) {
                 live.pop()!.close();
               }
               await vi.advanceTimersByTimeAsync(1200);
@@ -147,8 +147,8 @@ describe('leader election safety', () => {
   });
 });
 
-describe('presence exactness', () => {
-  it('after quiescence, the roster is exactly the other live clients', async () => {
+describe("presence exactness", () => {
+  it("after quiescence, the roster is exactly the other live clients", async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.integer({ min: 1, max: 5 }),
@@ -157,7 +157,7 @@ describe('presence exactness', () => {
           vi.useFakeTimers();
           const hub = new MemoryHub();
           const all = Array.from({ length: joins }, () =>
-            createPresence('prop-presence', { transport: () => hub.connect() }),
+            createPresence("prop-presence", { transport: () => hub.connect() }),
           );
           try {
             await vi.advanceTimersByTimeAsync(3000);
@@ -183,8 +183,8 @@ describe('presence exactness', () => {
   });
 });
 
-describe('the bus survives hostile input', () => {
-  it('drops anything that is not a v1 wire without throwing', () => {
+describe("the bus survives hostile input", () => {
+  it("drops anything that is not a v1 wire without throwing", () => {
     fc.assert(
       fc.property(fc.anything(), (junk) => {
         expect(() => isBusWire(junk)).not.toThrow();
@@ -198,19 +198,19 @@ describe('the bus survives hostile input', () => {
     );
   });
 
-  it('never corrupts a store, whatever a peer puts on the wire', async () => {
+  it("never corrupts a store, whatever a peer puts on the wire", async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.array(
           fc.record({
-            scope: fc.constantFrom('state', 'presence', 'leader', 'event', 'nonsense'),
-            type: fc.constantFrom('patch', 'hello', 'snapshot', 'ping', 'bye', 'junk'),
-            key: fc.constantFrom('a', 'b'),
+            scope: fc.constantFrom("state", "presence", "leader", "event", "nonsense"),
+            type: fc.constantFrom("patch", "hello", "snapshot", "ping", "bye", "junk"),
+            key: fc.constantFrom("a", "b"),
             value: fc.oneof(fc.integer(), fc.string(), fc.constant(null)),
             version: fc.oneof(
-              fc.tuple(fc.integer({ min: 0, max: 5 }), fc.constantFrom('z')),
+              fc.tuple(fc.integer({ min: 0, max: 5 }), fc.constantFrom("z")),
               fc.constant(undefined),
-              fc.constant('not-a-version'),
+              fc.constant("not-a-version"),
             ),
             v: fc.constantFrom(1, 2, undefined),
           }),
@@ -219,7 +219,7 @@ describe('the bus survives hostile input', () => {
         async (wires) => {
           const hub = new MemoryHub();
           const store = createSharedStore<Record<string, unknown>>(
-            'prop-fuzz',
+            "prop-fuzz",
             { a: 0 },
             { transport: () => hub.connect() },
           );
@@ -228,7 +228,7 @@ describe('the bus survives hostile input', () => {
             for (const wire of wires) {
               // Deliberately ill-typed: this is what a peer running a different
               // version of the app, or a bug, actually looks like on the wire.
-              rogue.post({ clientId: 'z', kind: 'tab', ...wire } as unknown as BusWire);
+              rogue.post({ clientId: "z", kind: "tab", ...wire } as unknown as BusWire);
             }
             await new Promise((r) => setTimeout(r, 0));
 
@@ -240,11 +240,11 @@ describe('the bus survives hostile input', () => {
             for (const key of Object.keys(versions)) {
               const version = versions[key]!;
               expect(Array.isArray(version)).toBe(true);
-              expect(typeof version[0]).toBe('number');
+              expect(typeof version[0]).toBe("number");
             }
             // And it still works.
-            store.set('a', 12345);
-            expect(store.getSnapshot()['a']).toBe(12345);
+            store.set("a", 12345);
+            expect(store.getSnapshot()["a"]).toBe(12345);
           } finally {
             store.close();
             rogue.close();

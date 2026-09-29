@@ -1,5 +1,5 @@
-import { BroadcastChannelTransport, createChannel } from '@use-everywhere/core';
-import { settle, time } from '../measure.js';
+import { BroadcastChannelTransport, createChannel } from "@use-everywhere/core";
+import { settle, time } from "../measure.js";
 
 /**
  * Messages per second through one channel to one listener, against the same
@@ -25,7 +25,7 @@ const perSecond = (durations: readonly number[]): number =>
   MESSAGES / (Math.min(...durations) / 1000);
 
 async function libraryThroughput(): Promise<number> {
-  const name = uniqueName('bench-channel');
+  const name = uniqueName("bench-channel");
   const options = { transport: (bus: string) => new BroadcastChannelTransport(bus) };
   const sender = createChannel<{ tick: number }>(name, options);
   const listener = createChannel<{ tick: number }>(name, options);
@@ -36,7 +36,7 @@ async function libraryThroughput(): Promise<number> {
     for (let round = 0; round < ROUNDS; round += 1) {
       let seen = 0;
       const done = new Promise<void>((resolve) => {
-        const stop = listener.on('tick', () => {
+        const stop = listener.on("tick", () => {
           seen += 1;
           if (seen === MESSAGES) {
             stop();
@@ -46,7 +46,7 @@ async function libraryThroughput(): Promise<number> {
       });
       durations.push(
         await time(async () => {
-          for (let index = 0; index < MESSAGES; index += 1) sender.post('tick', index);
+          for (let index = 0; index < MESSAGES; index += 1) sender.post("tick", index);
           await done;
         }),
       );
@@ -59,7 +59,7 @@ async function libraryThroughput(): Promise<number> {
 }
 
 async function rawThroughput(): Promise<number> {
-  const name = uniqueName('bench-raw-channel');
+  const name = uniqueName("bench-raw-channel");
   const sender = new BroadcastChannel(name);
   const listener = new BroadcastChannel(name);
 
@@ -71,11 +71,11 @@ async function rawThroughput(): Promise<number> {
         const onMessage = (): void => {
           seen += 1;
           if (seen === MESSAGES) {
-            listener.removeEventListener('message', onMessage);
+            listener.removeEventListener("message", onMessage);
             resolve();
           }
         };
-        listener.addEventListener('message', onMessage);
+        listener.addEventListener("message", onMessage);
       });
       durations.push(
         await time(async () => {

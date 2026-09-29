@@ -1,6 +1,6 @@
-import type { PersistAdapter, RestoreError } from '@use-everywhere/core';
-import type { AnyStore } from './registry.types.js';
-import type { ShareScope } from './use-shared-state.types.js';
+import type { PersistAdapter, RestoreError } from "@use-everywhere/core";
+import type { AnyStore } from "./registry.types.js";
+import type { ShareScope } from "./use-shared-state.types.js";
 
 export interface CreateStoreHooksOptions {
   /** Restore this store from disk on first use, and write it back as it changes. */

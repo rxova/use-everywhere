@@ -1,6 +1,6 @@
 ---
-title: 'The mental model'
-description: 'The two ideas the whole API follows from: one bus per name, and two worlds with two different trust levels.'
+title: "The mental model"
+description: "The two ideas the whole API follows from: one bus per name, and two worlds with two different trust levels."
 sidebar:
   order: 4
 ---
@@ -16,7 +16,7 @@ and it exists in one React tree. use-everywhere lifts it one more level:
 **the value exists in every tab, window, and worker on your origin at once.**
 
 ```tsx
-const [count, setCount] = useSharedState('count', 0);
+const [count, setCount] = useSharedState("count", 0);
 ```
 
 There is no "server tab" and no "main copy". Each tab holds its own replica,

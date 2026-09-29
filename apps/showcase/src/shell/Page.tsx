@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 /** Every page: what it is, why it is hard, then the live thing. */
 export function Page({

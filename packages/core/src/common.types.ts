@@ -1,8 +1,8 @@
-import type { Transport } from './transport/transport.types.js';
+import type { Transport } from "./transport/transport.types.js";
 
 export type MessageMap = Record<string, unknown>;
 
-export type PeerKind = 'tab' | 'worker' | (string & {});
+export type PeerKind = "tab" | "worker" | (string & {});
 
 /** Per-key logical clock: [counter, clientId]. Ties break by clientId. */
 export type Version = readonly [counter: number, clientId: string];

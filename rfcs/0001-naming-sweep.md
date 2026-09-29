@@ -1,11 +1,11 @@
 ---
-title: 'Naming sweep before 1.0'
+title: "Naming sweep before 1.0"
 status: implemented
 opened: 2026-08-05
 amended: 2026-08-31
 decided: 2026-09-04
-shipped: '1.0.0'
-target: '1.0'
+shipped: "1.0.0"
+target: "1.0"
 ---
 
 :::note[Decision]

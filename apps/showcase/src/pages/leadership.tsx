@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
-import { DEFAULT_NAME, getLeader, useClientId, useLeader, useLeaderEffect } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
-import { colorOf } from '../shell/Shell.js';
+import { useRef, useState } from "react";
+import { DEFAULT_NAME, getLeader, useClientId, useLeader, useLeaderEffect } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
+import { colorOf } from "../shell/Shell.js";
 
 export function LeadershipPage() {
   const self = useClientId();
@@ -20,13 +20,13 @@ export function LeadershipPage() {
 
   const waitForIt = () => {
     startedAt.current = performance.now();
-    setWaited('waiting…');
+    setWaited("waiting…");
     void getLeader(DEFAULT_NAME)
       .waitForLeadership()
       .then(() =>
         setWaited(`took the seat after ${Math.round(performance.now() - startedAt.current)}ms`),
       )
-      .catch(() => setWaited('gave up — this tab closed first'));
+      .catch(() => setWaited("gave up — this tab closed first"));
   };
 
   return (
@@ -42,16 +42,16 @@ export function LeadershipPage() {
     >
       <Card
         title="useLeader()"
-        aside={isLeader ? 'this tab holds the seat' : leaderId ? 'following' : 'no leader yet'}
+        aside={isLeader ? "this tab holds the seat" : leaderId ? "following" : "no leader yet"}
       >
         <div className="row">
-          <span className={`tag ${isLeader ? 'tag--on' : ''}`}>
-            {isLeader ? '♔ leader' : leaderId ? 'follower' : 'vacant'}
+          <span className={`tag ${isLeader ? "tag--on" : ""}`}>
+            {isLeader ? "♔ leader" : leaderId ? "follower" : "vacant"}
           </span>
           {leaderId ? (
             <>
               <span className="peer" style={{ background: colorOf(leaderId) }} />
-              <code>{leaderId === self ? 'this tab' : leaderId.slice(0, 8)}</code>
+              <code>{leaderId === self ? "this tab" : leaderId.slice(0, 8)}</code>
             </>
           ) : null}
           <button
@@ -63,7 +63,7 @@ export function LeadershipPage() {
           </button>
         </div>
         <p className="hint">
-          Open this page in a few tabs: exactly one shows the crown. Press <strong>resign</strong>{' '}
+          Open this page in a few tabs: exactly one shows the crown. Press <strong>resign</strong>{" "}
           and another takes it immediately — handed over, not waited out. Closing the leading tab
           does the same, because a tab that closes cleanly resigns on its way out. With no other
           candidate on this page, resigning gives the seat straight back to this tab, which is the
@@ -90,7 +90,7 @@ export function LeadershipPage() {
           <button type="button" onClick={waitForIt}>
             wait for the seat
           </button>
-          <code>{waited ?? '—'}</code>
+          <code>{waited ?? "—"}</code>
         </div>
         <p className="hint">
           Press this in a follower tab, then close the leader. The promise resolves the moment this

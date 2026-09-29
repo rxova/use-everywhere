@@ -1,13 +1,13 @@
-import { createChannel } from './channel.js';
-import type { Channel, ChannelOptions } from './channel.types.js';
-import type { MessageMap } from './common.types.js';
-import { DEFAULT_NAME } from './defaults.js';
-import { createLeader } from './leader.js';
-import type { Leader, LeaderOptions } from './leader.types.js';
-import { createPresence } from './presence.js';
-import type { Presence, PresenceOptions } from './presence.types.js';
-import { createSharedStore } from './shared-store.js';
-import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
+import { createChannel } from "./channel.js";
+import type { Channel, ChannelOptions } from "./channel.types.js";
+import type { MessageMap } from "./common.types.js";
+import { DEFAULT_NAME } from "./defaults.js";
+import { createLeader } from "./leader.js";
+import type { Leader, LeaderOptions } from "./leader.types.js";
+import { createPresence } from "./presence.js";
+import type { Presence, PresenceOptions } from "./presence.types.js";
+import { createSharedStore } from "./shared-store.js";
+import type { SharedStore, SharedStoreOptions } from "./shared-store.types.js";
 
 /**
  * Separates a namespace from the name inside it.
@@ -17,7 +17,7 @@ import type { SharedStore, SharedStoreOptions } from './shared-store.types.js';
  * separator none of those treat as structure. It is also what everyone already
  * types when they prefix names by hand, which is the convention this replaces.
  */
-const SEPARATOR = ':';
+const SEPARATOR = ":";
 
 /**
  * Everything a namespace makes, with the prefix already applied.
@@ -74,7 +74,7 @@ export interface Namespace {
 export function createNamespace(namespace: string): Namespace {
   if (!namespace) {
     throw new TypeError(
-      'use-everywhere: createNamespace() needs a non-empty name — an empty one would put every bus back on the shared defaults, which is what it exists to prevent.',
+      "use-everywhere: createNamespace() needs a non-empty name — an empty one would put every bus back on the shared defaults, which is what it exists to prevent.",
     );
   }
   const busName = (name: string = DEFAULT_NAME) => `${namespace}${SEPARATOR}${name}`;

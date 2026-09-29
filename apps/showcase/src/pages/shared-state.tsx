@@ -1,11 +1,11 @@
-import { useSharedState } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { useTheme } from '../shell/theme.js';
-import { Code } from '../shell/Code.js';
+import { useSharedState } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { useTheme } from "../shell/theme.js";
+import { Code } from "../shell/Code.js";
 
 export function SharedStatePage() {
-  const [count, setCount] = useSharedState('count', 0);
-  const [note, setNote] = useSharedState('note', '');
+  const [count, setCount] = useSharedState("count", 0);
+  const [note, setNote] = useSharedState("note", "");
   const [theme, setTheme] = useTheme();
 
   return (
@@ -33,9 +33,9 @@ export function SharedStatePage() {
           </button>
         </div>
         <p className="hint">
-          The updater form works the way it does in React: <code>setCount(n =&gt; n + 1)</code>{' '}
+          The updater form works the way it does in React: <code>setCount(n =&gt; n + 1)</code>{" "}
           reads the value this tab has right now. It is still last-writer-wins, so two tabs
-          incrementing at the same millisecond can land on the same number — that is what{' '}
+          incrementing at the same millisecond can land on the same number — that is what{" "}
           <a href="#/reducer">counters that add up</a> is about.
         </p>
       </Card>
@@ -54,11 +54,11 @@ export function SharedStatePage() {
 
       <Card title="A key can hold anything cloneable" aside="the toggle up there writes this key">
         <div className="row">
-          {(['system', 'light', 'dark'] as const).map((option) => (
+          {(["system", "light", "dark"] as const).map((option) => (
             <button
               key={option}
               type="button"
-              className={theme === option ? 'primary' : ''}
+              className={theme === option ? "primary" : ""}
               onClick={() => setTheme(option)}
             >
               {option}
@@ -67,8 +67,8 @@ export function SharedStatePage() {
         </div>
         <p className="hint">
           These are the same three buttons as the toggle in the top bar, because they are the same
-          key in the same store — press one and every open tab repaints. Values cross the wire by{' '}
-          <strong>structured clone</strong>: objects, arrays, <code>Date</code>, <code>Map</code>,{' '}
+          key in the same store — press one and every open tab repaints. Values cross the wire by{" "}
+          <strong>structured clone</strong>: objects, arrays, <code>Date</code>, <code>Map</code>,{" "}
           <code>Set</code>, typed arrays. Not functions, not class instances — a write that cannot
           be cloned throws where you made it, rather than leaving this tab holding a value no peer
           will ever see.

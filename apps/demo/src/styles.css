@@ -5,8 +5,8 @@
  * written against — and both light and dark come free, because every neutral in
  * the token set flips.
  */
-@import '@rxova/brand/fonts.css';
-@import '@rxova/brand/tokens.css';
+@import "@rxova/brand/fonts.css";
+@import "@rxova/brand/tokens.css";
 
 :root {
   --paper: var(--rx-bg);
@@ -26,7 +26,7 @@
   --mono: var(--rx-font-mono);
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   --ok: #4bcf8c;
   --warn: #e0a34a;
   --bad: #ff6a5e;
@@ -92,11 +92,11 @@ h1 .paren {
   padding: 3px 10px;
 }
 
-.seg__btn:hover:not([aria-pressed='true']) {
+.seg__btn:hover:not([aria-pressed="true"]) {
   color: var(--ink);
 }
 
-.seg__btn[aria-pressed='true'] {
+.seg__btn[aria-pressed="true"] {
   background: var(--accent);
   color: var(--rx-bg);
 }
@@ -195,7 +195,7 @@ button:disabled {
   color: var(--ink-soft);
   cursor: not-allowed;
 }
-input[type='text'] {
+input[type="text"] {
   width: 100%;
   font: 15px inherit;
   padding: 10px 12px;

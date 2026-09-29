@@ -1,5 +1,5 @@
-import type { CommonOptions, PeerKind, Version } from './common.types.js';
-import type { TransportKind } from './transport/transport.types.js';
+import type { CommonOptions, PeerKind, Version } from "./common.types.js";
+import type { TransportKind } from "./transport/transport.types.js";
 
 /**
  * Everything on the same-origin bus, multiplexed by scope over one
@@ -11,19 +11,19 @@ import type { TransportKind } from './transport/transport.types.js';
 export type BusWire =
   | {
       v: 1;
-      scope: 'state';
-      type: 'patch';
+      scope: "state";
+      type: "patch";
       key: string;
       value: unknown;
       version: Version;
       clientId: string;
       kind: PeerKind;
     }
-  | { v: 1; scope: 'state'; type: 'hello'; clientId: string; kind: PeerKind }
+  | { v: 1; scope: "state"; type: "hello"; clientId: string; kind: PeerKind }
   | {
       v: 1;
-      scope: 'state';
-      type: 'snapshot';
+      scope: "state";
+      type: "snapshot";
       clientId: string;
       kind: PeerKind;
       state: Record<string, unknown>;
@@ -31,8 +31,8 @@ export type BusWire =
     }
   | {
       v: 1;
-      scope: 'presence';
-      type: 'hello' | 'ping' | 'bye';
+      scope: "presence";
+      type: "hello" | "ping" | "bye";
       clientId: string;
       kind: PeerKind;
       /**
@@ -46,11 +46,11 @@ export type BusWire =
        */
       metadata?: unknown;
     }
-  | { v: 1; scope: 'leader'; type: 'hello'; clientId: string; kind: PeerKind }
+  | { v: 1; scope: "leader"; type: "hello"; clientId: string; kind: PeerKind }
   | {
       v: 1;
-      scope: 'leader';
-      type: 'claim' | 'heartbeat' | 'resign';
+      scope: "leader";
+      type: "claim" | "heartbeat" | "resign";
       /** The claimant's term. Arbitrated with newer() — the same clock the store uses. */
       term: Version;
       clientId: string;
@@ -59,11 +59,11 @@ export type BusWire =
   // The op scope carries reducer traffic, which is ordered rather than
   // last-writer-wins. `key` separates reducers sharing one bus, the way the
   // state scope's `key` separates store keys.
-  | { v: 1; scope: 'op'; type: 'hello'; key: string; clientId: string; kind: PeerKind }
+  | { v: 1; scope: "op"; type: "hello"; key: string; clientId: string; kind: PeerKind }
   | {
       v: 1;
-      scope: 'op';
-      type: 'propose';
+      scope: "op";
+      type: "propose";
       key: string;
       action: unknown;
       /** Identifies this dispatch across its proposal and its commit, so a commit can be recognised as one's own and applied once. */
@@ -73,8 +73,8 @@ export type BusWire =
     }
   | {
       v: 1;
-      scope: 'op';
-      type: 'commit';
+      scope: "op";
+      type: "commit";
       key: string;
       action: unknown;
       opId: string;
@@ -85,8 +85,8 @@ export type BusWire =
     }
   | {
       v: 1;
-      scope: 'op';
-      type: 'snapshot';
+      scope: "op";
+      type: "snapshot";
       key: string;
       state: unknown;
       seq: number;
@@ -95,7 +95,7 @@ export type BusWire =
     }
   | {
       v: 1;
-      scope: 'event';
+      scope: "event";
       type: string;
       payload: unknown;
       clientId: string;

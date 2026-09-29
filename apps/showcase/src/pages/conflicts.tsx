@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   getSharedStore,
   useClientId,
   usePeers,
   useSharedState,
   type MessageMeta,
-} from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
-import { colorOf } from '../shell/Shell.js';
+} from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
+import { colorOf } from "../shell/Shell.js";
 
 interface Patch {
   seq: number;
@@ -31,7 +31,7 @@ function usePatchLog(limit = 12): Patch[] {
           {
             seq: seq++,
             key,
-            value: JSON.stringify(value)?.slice(0, 32) ?? 'undefined',
+            value: JSON.stringify(value)?.slice(0, 32) ?? "undefined",
             who: meta.clientId,
             self: meta.self,
           },
@@ -46,7 +46,7 @@ function usePatchLog(limit = 12): Patch[] {
 
 export function ConflictsPage() {
   const self = useClientId();
-  const [contested, setContested] = useSharedState('contested', 'nobody yet');
+  const [contested, setContested] = useSharedState("contested", "nobody yet");
   const [versions, setVersions] = useState<Record<string, readonly [number, string]>>({});
   const log = usePatchLog();
 
@@ -96,15 +96,15 @@ export function ConflictsPage() {
           both saw counter 3 therefore both write counter 4 — a tie. The tie is settled by comparing
           the two client ids as plain strings, and the higher string wins:
         </p>
-        <pre style={{ margin: '10px 0 0', fontSize: 12.5, color: 'var(--ink-soft)' }}>
-          {'newer(a, b) = a.counter > b.counter\n' +
-            '           || (a.counter === b.counter && a.clientId > b.clientId)'}
+        <pre style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--ink-soft)" }}>
+          {"newer(a, b) = a.counter > b.counter\n" +
+            "           || (a.counter === b.counter && a.clientId > b.clientId)"}
         </pre>
         <p className="hint">
           No election, no timestamps, no asking anyone. Both tabs already hold both ids, both run
-          the same comparison, and so both reach the same answer —{' '}
+          the same comparison, and so both reach the same answer —{" "}
           <strong>in whichever order the two messages happen to arrive</strong>. That last part is
-          what makes it convergence rather than a race: the loser's write is discarded on arrival{' '}
+          what makes it convergence rather than a race: the loser's write is discarded on arrival{" "}
           <em>and</em> undone at home, so the two tabs cannot end up disagreeing.
         </p>
       </Card>
@@ -112,16 +112,16 @@ export function ConflictsPage() {
       <Card title="Who wins a tie, on this bus, right now" aside="highest id first">
         <div className="row">
           {ranked.map((id, index) => (
-            <span key={id} className={`tag${id === self ? ' tag--on' : ''}`}>
-              {index === 0 ? '♛ ' : ''}
+            <span key={id} className={`tag${id === self ? " tag--on" : ""}`}>
+              {index === 0 ? "♛ " : ""}
               {id === self ? `${id.slice(0, 8)} — you` : id.slice(0, 8)}
             </span>
           ))}
         </div>
         <p className="hint">
           {ranked[0] === self
-            ? 'Your id sorts highest, so this tab wins every tie on this bus. Open another tab and the list may reorder — ids are random per tab, not per browser.'
-            : 'Your id does not sort highest, so a simultaneous write from the tab above yours wins. Nothing is unfair about it: the rule only has to be the same everywhere, not favourable to anyone.'}
+            ? "Your id sorts highest, so this tab wins every tie on this bus. Open another tab and the list may reorder — ids are random per tab, not per browser."
+            : "Your id does not sort highest, so a simultaneous write from the tab above yours wins. Nothing is unfair about it: the rule only has to be the same everywhere, not favourable to anyone."}
         </p>
         <p className="hint">
           Ties are also rarer than they sound. Two writes only tie when both tabs wrote from the
@@ -150,9 +150,9 @@ export function ConflictsPage() {
                   <td>
                     <span
                       className="peer"
-                      style={{ background: colorOf(who), display: 'inline-block' }}
-                    />{' '}
-                    {who === self ? 'this tab' : who.slice(0, 6)}
+                      style={{ background: colorOf(who), display: "inline-block" }}
+                    />{" "}
+                    {who === self ? "this tab" : who.slice(0, 6)}
                   </td>
                 </tr>
               ))}
@@ -177,7 +177,7 @@ export function ConflictsPage() {
                 <span>
                   {patch.key} = {patch.value}
                 </span>
-                <span className="who">{patch.self ? 'you' : patch.who.slice(0, 6)}</span>
+                <span className="who">{patch.self ? "you" : patch.who.slice(0, 6)}</span>
               </li>
             ))}
           </ul>

@@ -1,5 +1,5 @@
 ---
-title: 'useClientId'
+title: "useClientId"
 description: "This tab's identity on a bus: the id that stamps every state patch and event it sends."
 sidebar:
   order: 8
@@ -11,14 +11,14 @@ that "this tab wrote it", "this tab holds the lock", and "this presence dot
 is me" all agree.
 
 ```tsx
-import { usePeers, useClientId } from 'use-everywhere';
+import { usePeers, useClientId } from "use-everywhere";
 
 function TabStrip() {
   const me = useClientId();
   const peers = usePeers(); // everyone except me
   return (
     <p>
-      me: {me} · also here: {peers.map((p) => `${p.kind} ${p.id}`).join(', ') || 'nobody'}
+      me: {me} · also here: {peers.map((p) => `${p.kind} ${p.id}`).join(", ") || "nobody"}
     </p>
   );
 }
@@ -68,7 +68,7 @@ it is:
 
 ```tsx title="useSingleFlight.ts (excerpt)"
 const me = useClientId();
-const [owner, setOwner] = useSharedState<string | null>('export:owner', null);
+const [owner, setOwner] = useSharedState<string | null>("export:owner", null);
 
 const claim = () => setOwner(me);
 const mine = owner === me; // am I the one exporting?

@@ -1,4 +1,4 @@
-import type { CommonOptions } from './common.types.js';
+import type { CommonOptions } from "./common.types.js";
 
 /**
  * Deliberately extends CommonOptions, not BusOptions: `heartbeatMs` here means
@@ -16,7 +16,7 @@ import type { CommonOptions } from './common.types.js';
  *   plain-http origins where `navigator.locks` does not exist.
  * - `'auto'` (default) — Web Locks when available, heartbeat otherwise.
  */
-export type LeaderStrategy = 'auto' | 'web-locks' | 'heartbeat';
+export type LeaderStrategy = "auto" | "web-locks" | "heartbeat";
 
 export interface LeaderOptions extends CommonOptions {
   /** How often the leader re-announces itself, in ms. Default 1000. Heartbeat strategy only. */
@@ -55,7 +55,7 @@ export interface LeaderSnapshot {
 export interface Leader {
   readonly clientId: string;
   /** Which mechanism arbitrates this seat — useful in devtools and bug reports. */
-  readonly strategy: Exclude<LeaderStrategy, 'auto'>;
+  readonly strategy: Exclude<LeaderStrategy, "auto">;
   /** Frozen; a new object only when the leader actually changes. */
   getSnapshot(): LeaderSnapshot;
   subscribe(fn: () => void): () => void;

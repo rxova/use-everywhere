@@ -1,10 +1,10 @@
-import type { LockManagerLike } from '@use-everywhere/core';
+import type { LockManagerLike } from "@use-everywhere/core";
 
 type Hold = { readonly owner: string | undefined; readonly id: number };
 type Waiter = { readonly owner: string | undefined; readonly grant: () => void };
 
 /** What `navigator.locks` rejects with when a request is abandoned. */
-const abortError = (): Error => new DOMException('The operation was aborted.', 'AbortError');
+const abortError = (): Error => new DOMException("The operation was aborted.", "AbortError");
 
 /**
  * A stand-in for `navigator.locks` with the three behaviours leadership rests
@@ -126,7 +126,7 @@ export class FakeLockManager {
       queue.push(waiter);
       this.queues.set(name, queue);
 
-      options.signal?.addEventListener('abort', () => {
+      options.signal?.addEventListener("abort", () => {
         const at = queue.indexOf(waiter);
         // Already granted, or already reclaimed: there is nothing to withdraw,
         // and rejecting a request that has had its turn would be a lie.

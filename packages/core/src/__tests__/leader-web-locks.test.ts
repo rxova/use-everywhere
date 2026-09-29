@@ -1,20 +1,20 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createLeader } from '../leader.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { FakeLockManager } from './helpers/fake-locks.js';
-import { tick } from './helpers/tick.js';
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createLeader } from "../leader.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { FakeLockManager } from "./helpers/fake-locks.js";
+import { tick } from "./helpers/tick.js";
 
 /**
  * The strategy that exists because the heartbeat one cannot tell a dead tab
  * from a throttled one. Here the browser owns the queue, so there is no lease
  * to lose and nothing for a background timer to get wrong.
  */
-describe('leader election on Web Locks', () => {
+describe("leader election on Web Locks", () => {
   const setup = () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const tab = (options: { eligible?: boolean } = {}) =>
-      createLeader('wl', { transport: () => hub.connect(), locks, ...options });
+      createLeader("wl", { transport: () => hub.connect(), locks, ...options });
     return { hub, locks, tab };
   };
 
@@ -23,10 +23,10 @@ describe('leader election on Web Locks', () => {
     vi.unstubAllGlobals();
   });
 
-  it('is chosen automatically when navigator.locks exists, and reports itself', () => {
+  it("is chosen automatically when navigator.locks exists, and reports itself", () => {
     const { tab } = setup();
     const leader = tab();
-    expect(leader.strategy).toBe('web-locks');
+    expect(leader.strategy).toBe("web-locks");
     leader.close();
   });
 
@@ -34,36 +34,36 @@ describe('leader election on Web Locks', () => {
   // relying on the runtime not having it. Node 22 exposes no navigator.locks
   // and Node 24 does — a test whose meaning depends on which one is running is
   // not a test.
-  it('falls back to the heartbeat election where Web Locks is absent', () => {
+  it("falls back to the heartbeat election where Web Locks is absent", () => {
     // A plain-http origin: navigator.locks is a secure-context API, so this is
     // the common case on an intranet, not an exotic one.
-    vi.stubGlobal('navigator', undefined);
+    vi.stubGlobal("navigator", undefined);
     const hub = new MemoryHub();
-    const leader = createLeader('wl-fallback', { transport: () => hub.connect() });
-    expect(leader.strategy).toBe('heartbeat');
+    const leader = createLeader("wl-fallback", { transport: () => hub.connect() });
+    expect(leader.strategy).toBe("heartbeat");
     leader.close();
   });
 
-  it('refuses to pretend when web-locks is demanded and unavailable', () => {
-    vi.stubGlobal('navigator', undefined);
+  it("refuses to pretend when web-locks is demanded and unavailable", () => {
+    vi.stubGlobal("navigator", undefined);
     const hub = new MemoryHub();
     expect(() =>
-      createLeader('wl-demand', { transport: () => hub.connect(), strategy: 'web-locks' }),
+      createLeader("wl-demand", { transport: () => hub.connect(), strategy: "web-locks" }),
     ).toThrow(/secure context/);
   });
 
-  it('honours an explicit heartbeat request even where locks exist', () => {
+  it("honours an explicit heartbeat request even where locks exist", () => {
     const { hub, locks } = setup();
-    const leader = createLeader('wl-explicit', {
+    const leader = createLeader("wl-explicit", {
       transport: () => hub.connect(),
       locks,
-      strategy: 'heartbeat',
+      strategy: "heartbeat",
     });
-    expect(leader.strategy).toBe('heartbeat');
+    expect(leader.strategy).toBe("heartbeat");
     leader.close();
   });
 
-  it('seats exactly one tab, and the others follow it', async () => {
+  it("seats exactly one tab, and the others follow it", async () => {
     const { locks, tab } = setup();
     const a = tab();
     const b = tab();
@@ -71,8 +71,8 @@ describe('leader election on Web Locks', () => {
     await tick();
 
     expect([a, b, c].filter((l) => l.getSnapshot().isLeader)).toHaveLength(1);
-    expect(locks.isHeld('wl')).toBe(true);
-    expect(locks.queued('wl')).toBe(2); // the followers are waiting, not polling
+    expect(locks.isHeld("wl")).toBe(true);
+    expect(locks.queued("wl")).toBe(2); // the followers are waiting, not polling
 
     // And everyone agrees who it is — the lock grants, the bus announces.
     const ids = [a, b, c].map((l) => l.getSnapshot().leaderId);
@@ -82,7 +82,7 @@ describe('leader election on Web Locks', () => {
     for (const l of [a, b, c]) l.close();
   });
 
-  it('hands the seat to the next in line the moment the holder closes', async () => {
+  it("hands the seat to the next in line the moment the holder closes", async () => {
     const { tab } = setup();
     const first = tab();
     const second = tab();
@@ -97,7 +97,7 @@ describe('leader election on Web Locks', () => {
     second.close();
   });
 
-  it('waitForLeadership resolves on acquiring the seat, and at once if already held', async () => {
+  it("waitForLeadership resolves on acquiring the seat, and at once if already held", async () => {
     const { tab } = setup();
     const first = tab();
     const second = tab();
@@ -117,7 +117,7 @@ describe('leader election on Web Locks', () => {
     second.close();
   });
 
-  it('waitForLeadership rejects rather than hanging when the tab is torn down', async () => {
+  it("waitForLeadership rejects rather than hanging when the tab is torn down", async () => {
     const { tab } = setup();
     const holder = tab();
     const waiter = tab();
@@ -131,7 +131,7 @@ describe('leader election on Web Locks', () => {
     holder.close();
   });
 
-  it('resign moves the seat to a waiting tab', async () => {
+  it("resign moves the seat to a waiting tab", async () => {
     const { tab } = setup();
     const first = tab();
     const second = tab();
@@ -148,7 +148,7 @@ describe('leader election on Web Locks', () => {
     second.close();
   });
 
-  it('a lone tab that resigns takes the seat back — somebody has to hold it', async () => {
+  it("a lone tab that resigns takes the seat back — somebody has to hold it", async () => {
     const { tab } = setup();
     const only = tab();
     await tick();
@@ -163,13 +163,13 @@ describe('leader election on Web Locks', () => {
     only.close();
   });
 
-  it('an ineligible tab never joins the queue, and can opt back in', async () => {
+  it("an ineligible tab never joins the queue, and can opt back in", async () => {
     const { locks, tab } = setup();
     const abstainer = tab({ eligible: false });
     await tick();
 
     expect(abstainer.getSnapshot().isLeader).toBe(false);
-    expect(locks.isHeld('wl')).toBe(false); // it did not even queue
+    expect(locks.isHeld("wl")).toBe(false); // it did not even queue
 
     abstainer.setEligible(true);
     await tick();
@@ -178,7 +178,7 @@ describe('leader election on Web Locks', () => {
     abstainer.close();
   });
 
-  it('withdrawing while holding the seat releases it to the next tab', async () => {
+  it("withdrawing while holding the seat releases it to the next tab", async () => {
     const { tab } = setup();
     const holder = tab();
     const waiter = tab();
@@ -195,22 +195,22 @@ describe('leader election on Web Locks', () => {
     waiter.close();
   });
 
-  it('withdrawing while merely queued leaves the queue', async () => {
+  it("withdrawing while merely queued leaves the queue", async () => {
     const { locks, tab } = setup();
     const holder = tab();
     const waiter = tab();
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued("wl")).toBe(1);
 
     waiter.setEligible(false);
     await tick();
 
-    expect(locks.queued('wl')).toBe(0);
+    expect(locks.queued("wl")).toBe(0);
     holder.close();
     waiter.close();
   });
 
-  it('a tab that withdrew from the queue rejoins it when it opts back in', async () => {
+  it("a tab that withdrew from the queue rejoins it when it opts back in", async () => {
     // The other half of the test above. Leaving the queue is only correct if it
     // is reversible: a tab that never held the lock has nothing to release, so
     // opting back in must put it back in line — otherwise a follower that
@@ -220,15 +220,15 @@ describe('leader election on Web Locks', () => {
     const holder = tab();
     const waiter = tab();
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued("wl")).toBe(1);
 
     waiter.setEligible(false);
     await tick();
-    expect(locks.queued('wl')).toBe(0);
+    expect(locks.queued("wl")).toBe(0);
 
     waiter.setEligible(true);
     await tick();
-    expect(locks.queued('wl')).toBe(1);
+    expect(locks.queued("wl")).toBe(1);
 
     // And the queue it rejoined is a real one: the seat actually reaches it.
     holder.close();
@@ -238,7 +238,7 @@ describe('leader election on Web Locks', () => {
     waiter.close();
   });
 
-  it('a late joiner learns the incumbent without waiting for a heartbeat', async () => {
+  it("a late joiner learns the incumbent without waiting for a heartbeat", async () => {
     const { tab } = setup();
     const incumbent = tab();
     await tick();
@@ -254,20 +254,20 @@ describe('leader election on Web Locks', () => {
     joiner.close();
   });
 
-  it('close is idempotent and stops the tab holding anything', async () => {
+  it("close is idempotent and stops the tab holding anything", async () => {
     const { locks, tab } = setup();
     const leader = tab();
     await tick();
-    expect(locks.isHeld('wl')).toBe(true);
+    expect(locks.isHeld("wl")).toBe(true);
 
     leader.close();
     expect(() => leader.close()).not.toThrow();
     await tick();
 
-    expect(locks.isHeld('wl')).toBe(false);
+    expect(locks.isHeld("wl")).toBe(false);
   });
 
-  it('wakes subscribers when the seat moves, and stops after unsubscribing', async () => {
+  it("wakes subscribers when the seat moves, and stops after unsubscribing", async () => {
     const { tab } = setup();
     const holder = tab();
     const follower = tab();
@@ -292,7 +292,7 @@ describe('leader election on Web Locks', () => {
     follower.close();
   });
 
-  it('setEligible with the value it already has changes nothing', async () => {
+  it("setEligible with the value it already has changes nothing", async () => {
     const { locks, tab } = setup();
     const leader = tab();
     await tick();
@@ -301,11 +301,11 @@ describe('leader election on Web Locks', () => {
     await tick();
 
     expect(leader.getSnapshot().isLeader).toBe(true);
-    expect(locks.isHeld('wl')).toBe(true);
+    expect(locks.isHeld("wl")).toBe(true);
     leader.close();
   });
 
-  it('ignores a resign from a client that was not holding the seat', async () => {
+  it("ignores a resign from a client that was not holding the seat", async () => {
     const { hub, tab } = setup();
     const leader = tab();
     const rogue = hub.connect();
@@ -314,11 +314,11 @@ describe('leader election on Web Locks', () => {
 
     rogue.post({
       v: 1,
-      scope: 'leader',
-      type: 'resign',
-      term: [9, 'nobody'],
-      clientId: 'nobody',
-      kind: 'tab',
+      scope: "leader",
+      type: "resign",
+      term: [9, "nobody"],
+      clientId: "nobody",
+      kind: "tab",
     });
     await tick();
 
@@ -328,27 +328,27 @@ describe('leader election on Web Locks', () => {
     rogue.close();
   });
 
-  it('announces itself with the kind it was given', async () => {
+  it("announces itself with the kind it was given", async () => {
     const { hub, locks } = setup();
     const heard: string[] = [];
     const rogue = hub.connect();
     rogue.subscribe((data) => {
       const wire = data as { scope?: string; kind?: string };
-      if (wire.scope === 'leader' && wire.kind) heard.push(wire.kind);
+      if (wire.scope === "leader" && wire.kind) heard.push(wire.kind);
     });
-    const leader = createLeader('wl', {
+    const leader = createLeader("wl", {
       transport: () => hub.connect(),
       locks,
-      kind: 'worker',
+      kind: "worker",
     });
     await tick();
 
-    expect(heard).toContain('worker');
+    expect(heard).toContain("worker");
     leader.close();
     rogue.close();
   });
 
-  it('ignores a grant that arrives after the tab was closed', async () => {
+  it("ignores a grant that arrives after the tab was closed", async () => {
     // Real Web Locks grants asynchronously, so a tab can be torn down between
     // the browser deciding it is next and our callback running. This lock
     // manager defers the grant to make that window reproducible.
@@ -360,7 +360,7 @@ describe('leader election on Web Locks', () => {
         }),
     };
     const hub = new MemoryHub();
-    const leader = createLeader('wl-late', { transport: () => hub.connect(), locks: deferred });
+    const leader = createLeader("wl-late", { transport: () => hub.connect(), locks: deferred });
 
     leader.close();
     grant?.(); // the browser hands it over to a tab that is already gone
@@ -370,31 +370,31 @@ describe('leader election on Web Locks', () => {
   });
 });
 
-describe('detecting the platform lock manager', () => {
+describe("detecting the platform lock manager", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('picks up navigator.locks when the platform provides it', () => {
+  it("picks up navigator.locks when the platform provides it", () => {
     // The auto path in a secure context. Everything else in this file injects a
     // manager, so without this the real detection branch is never exercised.
     const locks = new FakeLockManager();
-    vi.stubGlobal('navigator', { locks });
+    vi.stubGlobal("navigator", { locks });
     const hub = new MemoryHub();
 
-    const leader = createLeader('wl-detect', { transport: () => hub.connect() });
+    const leader = createLeader("wl-detect", { transport: () => hub.connect() });
 
-    expect(leader.strategy).toBe('web-locks');
+    expect(leader.strategy).toBe("web-locks");
     leader.close();
   });
 
-  it('ignores a navigator whose locks cannot grant anything', () => {
+  it("ignores a navigator whose locks cannot grant anything", () => {
     // Some environments expose a stub. A `locks` without `request` is not a
     // lock manager, and treating it as one would break the election silently.
-    vi.stubGlobal('navigator', { locks: {} });
+    vi.stubGlobal("navigator", { locks: {} });
     const hub = new MemoryHub();
 
-    const leader = createLeader('wl-stub', { transport: () => hub.connect() });
+    const leader = createLeader("wl-stub", { transport: () => hub.connect() });
 
-    expect(leader.strategy).toBe('heartbeat');
+    expect(leader.strategy).toBe("heartbeat");
     leader.close();
   });
 });

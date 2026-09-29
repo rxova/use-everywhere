@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { createPresence } from '../presence.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { tick } from './helpers/tick.js';
+import { describe, expect, it } from "vitest";
+import { createPresence } from "../presence.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { tick } from "./helpers/tick.js";
 
 /**
  * Presence answered "who is here" and nothing about *who* they are. Metadata is
@@ -11,50 +11,50 @@ import { tick } from './helpers/tick.js';
 let n = 0;
 const uniqueName = () => `pm-${++n}`;
 
-describe('presence metadata', () => {
-  it('reaches peers on the first announcement', async () => {
+describe("presence metadata", () => {
+  it("reaches peers on the first announcement", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
     const named = createPresence(name, {
       transport: () => hub.connect(),
-      metadata: { display: 'Ada' },
+      metadata: { display: "Ada" },
     });
     await tick();
 
     expect(watcher.getPeers()).toHaveLength(1);
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: 'Ada' });
+    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" });
 
     watcher.close();
     named.close();
   });
 
-  it('updates peers when it changes', async () => {
+  it("updates peers when it changes", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
     const named = createPresence(name, {
       transport: () => hub.connect(),
-      metadata: { display: 'Ada' },
+      metadata: { display: "Ada" },
     });
     await tick();
 
-    named.setMetadata({ display: 'Ada Lovelace' });
+    named.setMetadata({ display: "Ada Lovelace" });
     await tick();
 
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: 'Ada Lovelace' });
+    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada Lovelace" });
 
     watcher.close();
     named.close();
   });
 
-  it('says nothing when set to the value it already had', async () => {
+  it("says nothing when set to the value it already had", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
     const named = createPresence(name, {
       transport: () => hub.connect(),
-      metadata: { display: 'Ada' },
+      metadata: { display: "Ada" },
     });
     await tick();
     let notifications = 0;
@@ -62,7 +62,7 @@ describe('presence metadata', () => {
 
     // A fresh object with the same contents, which is what a hook passes on
     // every render. Comparing by reference would announce and re-render forever.
-    named.setMetadata({ display: 'Ada' });
+    named.setMetadata({ display: "Ada" });
     await tick();
 
     expect(notifications).toBe(0);
@@ -71,13 +71,13 @@ describe('presence metadata', () => {
     named.close();
   });
 
-  it('survives the heartbeats that carry none', async () => {
+  it("survives the heartbeats that carry none", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
     const named = createPresence(name, {
       transport: () => hub.connect(),
-      metadata: { display: 'Ada' },
+      metadata: { display: "Ada" },
       heartbeatMs: 10,
     });
     await tick();
@@ -86,13 +86,13 @@ describe('presence metadata', () => {
     // already knows instead of blanking the peer on every heartbeat.
     await new Promise((r) => setTimeout(r, 40));
 
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: 'Ada' });
+    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" });
 
     watcher.close();
     named.close();
   });
 
-  it('leaves a peer that published none without any', async () => {
+  it("leaves a peer that published none without any", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
@@ -106,13 +106,13 @@ describe('presence metadata', () => {
   });
 });
 
-describe('includeSelf', () => {
-  it('puts this client in its own roster, from the first read', () => {
+describe("includeSelf", () => {
+  it("puts this client in its own roster, from the first read", () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
       transport: () => hub.connect(),
       includeSelf: true,
-      metadata: { display: 'me' },
+      metadata: { display: "me" },
     });
 
     // Present before anyone else turns up: an avatar list that starts empty and
@@ -120,12 +120,12 @@ describe('includeSelf', () => {
     const roster = presence.getPeers();
     expect(roster).toHaveLength(1);
     expect(roster[0]?.id).toBe(presence.clientId);
-    expect(roster[0]?.metadata).toEqual({ display: 'me' });
+    expect(roster[0]?.metadata).toEqual({ display: "me" });
 
     presence.close();
   });
 
-  it('is off by default, because the question is who else is here', async () => {
+  it("is off by default, because the question is who else is here", async () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), { transport: () => hub.connect() });
     await tick();
@@ -135,21 +135,21 @@ describe('includeSelf', () => {
     presence.close();
   });
 
-  it('carries this client own metadata changes into its own entry', async () => {
+  it("carries this client own metadata changes into its own entry", async () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
       transport: () => hub.connect(),
       includeSelf: true,
     });
 
-    presence.setMetadata({ display: 'renamed' });
+    presence.setMetadata({ display: "renamed" });
 
-    expect(presence.getPeers()[0]?.metadata).toEqual({ display: 'renamed' });
+    expect(presence.getPeers()[0]?.metadata).toEqual({ display: "renamed" });
 
     presence.close();
   });
 
-  it('lists self alongside real peers', async () => {
+  it("lists self alongside real peers", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const mine = createPresence(name, { transport: () => hub.connect(), includeSelf: true });

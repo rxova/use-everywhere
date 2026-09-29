@@ -1,6 +1,6 @@
 ---
-title: 'useChannel'
-description: 'Get the typed event channel for a name — how tabs tell each other that something just happened.'
+title: "useChannel"
+description: "Get the typed event channel for a name — how tabs tell each other that something just happened."
 sidebar:
   order: 3
 ---
@@ -13,15 +13,15 @@ something _is_. You'll almost always use it together with
 (announce).
 
 ```tsx
-import { useChannel } from 'use-everywhere';
+import { useChannel } from "use-everywhere";
 
 type AuthEvents = {
-  'logged-out': undefined;
-  'session-renewed': { expiresAt: number };
+  "logged-out": undefined;
+  "session-renewed": { expiresAt: number };
 };
 
 function Session() {
-  const channel = useChannel<AuthEvents>('auth');
+  const channel = useChannel<AuthEvents>("auth");
   // …pass it to useOnMessage / useSend
 }
 ```
@@ -44,8 +44,8 @@ it once, export it, and every `post` and every handler is checked against it:
 
 ```ts title="events.ts"
 export type ShopEvents = {
-  'cart-updated': { items: number };
-  'logged-out': undefined; // events with no payload use undefined
+  "cart-updated": { items: number };
+  "logged-out": undefined; // events with no payload use undefined
 };
 ```
 

@@ -1,6 +1,6 @@
 ---
-title: 'Version skew & the wire contract'
-description: 'Every deploy puts two versions of your app on one origin at once. The wire contract that keeps them talking to each other.'
+title: "Version skew & the wire contract"
+description: "Every deploy puts two versions of your app on one origin at once. The wire contract that keeps them talking to each other."
 sidebar:
   order: 3
 ---
@@ -44,10 +44,10 @@ tab, window, or worker on this origin — normal during a rolling deploy. …
 In production, ask directly:
 
 ```ts
-import { getWireSkew, WIRE_VERSION } from '@use-everywhere/core';
+import { getWireSkew, WIRE_VERSION } from "@use-everywhere/core";
 
-if (getWireSkew('app').length > 0) {
-  showBanner('A new version is available. Reload to keep your tabs in sync.');
+if (getWireSkew("app").length > 0) {
+  showBanner("A new version is available. Reload to keep your tabs in sync.");
 }
 ```
 

@@ -16,5 +16,5 @@
  * // a and b are now two simulated tabs on one bus.
  * ```
  */
-export { MemoryHub } from './transport/memory-hub.js';
-export { MemoryTransport } from './transport/memory-transport.js';
+export { MemoryHub } from "./transport/memory-hub.js";
+export { MemoryTransport } from "./transport/memory-transport.js";

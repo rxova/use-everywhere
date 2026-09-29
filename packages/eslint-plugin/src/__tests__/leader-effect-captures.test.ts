@@ -1,7 +1,7 @@
-import { leaderEffectCaptures } from '../rules/leader-effect-captures.js';
-import { ruleTester } from './rule-tester.js';
+import { leaderEffectCaptures } from "../rules/leader-effect-captures.js";
+import { ruleTester } from "./rule-tester.js";
 
-ruleTester.run('leader-effect-captures', leaderEffectCaptures, {
+ruleTester.run("leader-effect-captures", leaderEffectCaptures, {
   valid: [
     // Module scope and imports outlive every render.
     {
@@ -39,47 +39,47 @@ ruleTester.run('leader-effect-captures', leaderEffectCaptures, {
   invalid: [
     {
       code: `function Chat({ roomId }) {\n  useLeaderEffect(() => connect(roomId));\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'roomId' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "roomId" } }],
     },
     {
       code: `function Chat({ roomId }) {\n  const url = \`wss://x/\${roomId}\`;\n  useLeaderEffect(function () { connect(url); });\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'url' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "url" } }],
     },
     {
       code: `function Chat() {\n  const [open] = useState(false);\n  useLeaderEffect(() => { if (open) connect(); });\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'open' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "open" } }],
     },
     // Nested scopes still capture, and one binding is reported once.
     {
       code: `function useSocket(roomId) {\n  useLeaderEffect(() => {\n    [1].forEach(() => connect(roomId));\n    return () => close(roomId);\n  });\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'roomId' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "roomId" } }],
     },
     // Two captures, two reports.
     {
       code: `function Chat({ roomId, token }) {\n  useLeaderEffect(() => connect(roomId, token));\n  return null;\n}`,
       errors: [
-        { messageId: 'staleCapture', data: { name: 'roomId' } },
-        { messageId: 'staleCapture', data: { name: 'token' } },
+        { messageId: "staleCapture", data: { name: "roomId" } },
+        { messageId: "staleCapture", data: { name: "token" } },
       ],
     },
     // Declared without an initialiser, and destructured from something that is
     // not a hook: neither shape can vouch for stability.
     {
       code: `function Chat() {\n  let socket;\n  useLeaderEffect(() => socket?.close());\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'socket' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "socket" } }],
     },
     {
       code: `function Chat({ pair }) {\n  const [, second] = pair;\n  useLeaderEffect(() => connect(second));\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'second' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "second" } }],
     },
     {
       code: `function Chat({ key }) {\n  const socket = sockets[key]();\n  useLeaderEffect(() => socket.close());\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'socket' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "socket" } }],
     },
     // A function declared in the component body closes over the same renders.
     {
       code: `function Chat({ roomId }) {\n  const start = () => connect(roomId);\n  useLeaderEffect(() => start());\n  return null;\n}`,
-      errors: [{ messageId: 'staleCapture', data: { name: 'start' } }],
+      errors: [{ messageId: "staleCapture", data: { name: "start" } }],
     },
   ],
 });

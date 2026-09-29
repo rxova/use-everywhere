@@ -1,8 +1,8 @@
-import { getBus } from './bus.js';
-import type { Channel, ChannelOptions, ReplyMap } from './channel.types.js';
-import type { MessageMap, MessageMeta } from './common.types.js';
-import { newMsgId } from './ids.js';
-import { createGate } from './schema.js';
+import { getBus } from "./bus.js";
+import type { Channel, ChannelOptions, ReplyMap } from "./channel.types.js";
+import type { MessageMap, MessageMeta } from "./common.types.js";
+import { newMsgId } from "./ids.js";
+import { createGate } from "./schema.js";
 
 /** Typed pub/sub over the same-origin bus. */
 export function createChannel<M extends MessageMap, R extends ReplyMap<M> = Record<never, never>>(
@@ -27,7 +27,7 @@ export function createChannel<M extends MessageMap, R extends ReplyMap<M> = Reco
   };
 
   const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'event') return;
+    if (wire.scope !== "event") return;
     const meta: MessageMeta = { clientId: wire.clientId, kind: wire.kind, self: false };
 
     if (wire.replyTo !== undefined) {
@@ -44,7 +44,7 @@ export function createChannel<M extends MessageMap, R extends ReplyMap<M> = Reco
     if (responder) {
       bus.post({
         v: 1,
-        scope: 'event',
+        scope: "event",
         type: wire.type,
         payload: responder(wire.payload, meta),
         clientId: bus.clientId,
@@ -71,7 +71,7 @@ export function createChannel<M extends MessageMap, R extends ReplyMap<M> = Reco
     gate?.assert(type, payload);
     bus.post({
       v: 1,
-      scope: 'event',
+      scope: "event",
       type,
       payload,
       clientId: bus.clientId,

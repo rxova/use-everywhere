@@ -1,4 +1,4 @@
-import { MemoryTransport } from './memory-transport.js';
+import { MemoryTransport } from "./memory-transport.js";
 
 /**
  * In-memory hub for tests: N transports attached to one hub, each post is

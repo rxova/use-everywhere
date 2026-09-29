@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
-import type { LeaderSnapshot } from '@use-everywhere/core';
-import { DEFAULT_NAME, getLeader } from './registry.js';
-import type { UseLeaderOptions } from './use-leader.types.js';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import type { LeaderSnapshot } from "@use-everywhere/core";
+import { DEFAULT_NAME, getLeader } from "./registry.js";
+import type { UseLeaderOptions } from "./use-leader.types.js";
 
 const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: false });
 

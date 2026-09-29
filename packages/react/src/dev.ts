@@ -1,4 +1,4 @@
-import { createDevWarner, isDevelopment } from '@rxova/ts-utils';
+import { createDevWarner, isDevelopment } from "@rxova/ts-utils";
 
 // The same shared warner core uses, `createDevWarner` from @rxova/ts-utils,
 // inlined at build time. React keeps its own instance rather than importing
@@ -6,8 +6,8 @@ import { createDevWarner, isDevelopment } from '@rxova/ts-utils';
 // development-only diagnostic is not worth widening a package's 1.0 API surface
 // for. The trailing slash keeps the link exactly as core prints it.
 const warner = createDevWarner({
-  prefix: 'use-everywhere',
-  docsUrl: 'https://rxova.org/packages/use-everywhere/errors/',
+  prefix: "use-everywhere",
+  docsUrl: "https://rxova.org/packages/use-everywhere/errors/",
 });
 
 /**
@@ -45,12 +45,12 @@ export function warnOnInitialMismatch(storeName: string, key: string, initial: u
   const first = seenInitials.get(id);
   // Reference equality is the wrong test for object initials — an inline `{}`
   // is a new reference every render — so only primitives are compared.
-  const comparable = (v: unknown) => v === null || typeof v !== 'object';
+  const comparable = (v: unknown) => v === null || typeof v !== "object";
   if (comparable(first) && comparable(initial) && !Object.is(first, initial)) {
     devWarn(
-      'UE2001',
+      "UE2001",
       `useSharedState('${key}') was called with different initial values (${String(first)} and ${String(initial)}). ` +
-        'The first registration wins, so the second is ignored. Define the default once — createStoreHooks, or a shared constant.',
+        "The first registration wins, so the second is ignored. Define the default once — createStoreHooks, or a shared constant.",
     );
   }
 }

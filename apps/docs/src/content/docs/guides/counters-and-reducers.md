@@ -1,6 +1,6 @@
 ---
-title: 'Counters and reducers'
-description: 'Shared state converges last-writer-wins per key, which is wrong for a counter. How to model increments and reducers so concurrent writes are not lost.'
+title: "Counters and reducers"
+description: "Shared state converges last-writer-wins per key, which is wrong for a counter. How to model increments and reducers so concurrent writes are not lost."
 sidebar:
   order: 10
 ---
@@ -12,7 +12,7 @@ For an _accumulating_ write it is exactly wrong:
 
 ```tsx
 // Two tabs, at the same moment. Both read 4. Both write 5.
-const [count, setCount] = useSharedState('count', 0);
+const [count, setCount] = useSharedState("count", 0);
 setCount((n) => n + 1);
 ```
 
@@ -25,7 +25,7 @@ increment, so two concurrent results overwrite each other. A reducer ships the
 **increment**, and two increments are two entries in a list every tab replays.
 
 ```tsx
-import { useSharedReducer } from 'use-everywhere';
+import { useSharedReducer } from "use-everywhere";
 
 const [count, dispatch] = useSharedReducer((n, action) => n + action.by, 0);
 

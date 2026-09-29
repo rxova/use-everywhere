@@ -1,13 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BusWire } from '../bus.types.js';
-import { createLeader } from '../leader.js';
-import type { LeaderOptions } from '../leader.types.js';
-import { MemoryHub } from '../transport/memory-hub.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { BusWire } from "../bus.types.js";
+import { createLeader } from "../leader.js";
+import type { LeaderOptions } from "../leader.types.js";
+import { MemoryHub } from "../transport/memory-hub.js";
 
 const HEARTBEAT = 1000;
 const LEASE = 3000;
 
-describe('createLeader', () => {
+describe("createLeader", () => {
   let hub: MemoryHub;
 
   beforeEach(() => {
@@ -26,10 +26,10 @@ describe('createLeader', () => {
   // (Node 24 does expose it; Node 22 does not, so the suite would pass on one
   // and fail on the other.)
   const tab = (name: string, options: LeaderOptions = {}) =>
-    createLeader(name, { strategy: 'heartbeat', transport: () => hub.connect(), ...options });
+    createLeader(name, { strategy: "heartbeat", transport: () => hub.connect(), ...options });
 
-  it('leads on its own after one heartbeat, not a whole lease', async () => {
-    const a = tab('lone');
+  it("leads on its own after one heartbeat, not a whole lease", async () => {
+    const a = tab("lone");
     expect(a.getSnapshot()).toEqual({ leaderId: null, isLeader: false });
 
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
@@ -38,12 +38,12 @@ describe('createLeader', () => {
     a.close();
   });
 
-  it('a joiner adopts the incumbent instead of stealing the seat', async () => {
-    const a = tab('sticky');
+  it("a joiner adopts the incumbent instead of stealing the seat", async () => {
+    const a = tab("sticky");
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
     expect(a.getSnapshot().isLeader).toBe(true);
 
-    const b = tab('sticky');
+    const b = tab("sticky");
     // The incumbent answers the joiner's hello at once, so no lease elapses.
     await vi.advanceTimersByTimeAsync(0);
 
@@ -59,11 +59,11 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('the joiner sees exactly one transition — no leaderless flash, no churn', async () => {
-    const a = tab('churn');
+  it("the joiner sees exactly one transition — no leaderless flash, no churn", async () => {
+    const a = tab("churn");
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
-    const b = tab('churn');
+    const b = tab("churn");
     const seen: Array<string | null> = [];
     b.subscribe(() => seen.push(b.getSnapshot().leaderId));
 
@@ -75,8 +75,8 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('keeps the snapshot referentially stable across heartbeats', async () => {
-    const a = tab('stable');
+  it("keeps the snapshot referentially stable across heartbeats", async () => {
+    const a = tab("stable");
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
     const first = a.getSnapshot();
 
@@ -88,9 +88,9 @@ describe('createLeader', () => {
     a.close();
   });
 
-  it('two tabs starting together converge on exactly one leader', async () => {
-    const a = tab('race');
-    const b = tab('race');
+  it("two tabs starting together converge on exactly one leader", async () => {
+    const a = tab("race");
+    const b = tab("race");
 
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
@@ -109,34 +109,34 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('breaks a genuinely crossing claim by clientId', async () => {
+  it("breaks a genuinely crossing claim by clientId", async () => {
     // Claims only cross when neither client has heard the other yet. Post one
     // by hand at the incumbent's own counter, with a clientId that beats it:
     // newer() must hand over the seat.
-    const incumbent = tab('tiebreak');
+    const incumbent = tab("tiebreak");
     const rogue = hub.connect();
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
     expect(incumbent.getSnapshot().isLeader).toBe(true);
 
     rogue.post({
       v: 1,
-      scope: 'leader',
-      type: 'claim',
-      term: [1, 'zzz-rogue'], // same counter as the incumbent's [1, clientId]
-      clientId: 'zzz-rogue',
-      kind: 'tab',
+      scope: "leader",
+      type: "claim",
+      term: [1, "zzz-rogue"], // same counter as the incumbent's [1, clientId]
+      clientId: "zzz-rogue",
+      kind: "tab",
     });
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(incumbent.getSnapshot()).toEqual({ leaderId: 'zzz-rogue', isLeader: false });
+    expect(incumbent.getSnapshot()).toEqual({ leaderId: "zzz-rogue", isLeader: false });
 
     incumbent.close();
     rogue.close();
   });
 
-  it('hands the seat to a survivor when the leader closes', async () => {
-    const a = tab('closing');
-    const b = tab('closing');
+  it("hands the seat to a survivor when the leader closes", async () => {
+    const a = tab("closing");
+    const b = tab("closing");
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
     const leader = a.getSnapshot().isLeader ? a : b;
@@ -154,24 +154,24 @@ describe('createLeader', () => {
     follower.close();
   });
 
-  it('fails over on the lease when a leader crashes without resigning', async () => {
-    const name = 'silent';
+  it("fails over on the lease when a leader crashes without resigning", async () => {
+    const name = "silent";
     // A raw peer that claims the seat and then never speaks again.
     const ghost = hub.connect();
     const survivor = tab(name);
 
     const claim: BusWire = {
       v: 1,
-      scope: 'leader',
-      type: 'claim',
-      term: [9, 'zzz-ghost'],
-      clientId: 'zzz-ghost',
-      kind: 'tab',
+      scope: "leader",
+      type: "claim",
+      term: [9, "zzz-ghost"],
+      clientId: "zzz-ghost",
+      kind: "tab",
     };
     ghost.post(claim);
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(survivor.getSnapshot().leaderId).toBe('zzz-ghost');
+    expect(survivor.getSnapshot().leaderId).toBe("zzz-ghost");
 
     // Silence past the lease: the survivor takes over with a strictly higher term.
     await vi.advanceTimersByTimeAsync(LEASE + HEARTBEAT);
@@ -182,9 +182,9 @@ describe('createLeader', () => {
     ghost.close();
   });
 
-  it('hands over instantly on resign, and the resigner does not reclaim', async () => {
-    const a = tab('resign');
-    const b = tab('resign');
+  it("hands over instantly on resign, and the resigner does not reclaim", async () => {
+    const a = tab("resign");
+    const b = tab("resign");
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
     const leader = a.getSnapshot().isLeader ? a : b;
@@ -202,9 +202,9 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('an ineligible client never claims, and the seat stays empty', async () => {
-    const a = tab('ineligible', { eligible: false });
-    const b = tab('ineligible', { eligible: false });
+  it("an ineligible client never claims, and the seat stays empty", async () => {
+    const a = tab("ineligible", { eligible: false });
+    const b = tab("ineligible", { eligible: false });
 
     await vi.advanceTimersByTimeAsync(LEASE * 3);
 
@@ -215,9 +215,9 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('an ineligible client still follows an eligible leader', async () => {
-    const leader = tab('mixed');
-    const bystander = tab('mixed', { eligible: false });
+  it("an ineligible client still follows an eligible leader", async () => {
+    const leader = tab("mixed");
+    const bystander = tab("mixed", { eligible: false });
 
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 2);
 
@@ -231,8 +231,8 @@ describe('createLeader', () => {
     bystander.close();
   });
 
-  it('setEligible(true) lets a standby take an empty seat', async () => {
-    const a = tab('enable', { eligible: false });
+  it("setEligible(true) lets a standby take an empty seat", async () => {
+    const a = tab("enable", { eligible: false });
     await vi.advanceTimersByTimeAsync(LEASE * 2);
     expect(a.getSnapshot().leaderId).toBeNull();
 
@@ -243,9 +243,9 @@ describe('createLeader', () => {
     a.close();
   });
 
-  it('setEligible(false) makes a sitting leader stand down for someone else', async () => {
-    const a = tab('disable');
-    const b = tab('disable', { eligible: false });
+  it("setEligible(false) makes a sitting leader stand down for someone else", async () => {
+    const a = tab("disable");
+    const b = tab("disable", { eligible: false });
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 2);
     expect(a.getSnapshot().isLeader).toBe(true);
 
@@ -261,8 +261,8 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('setEligible is a no-op when the value does not change', async () => {
-    const a = tab('noop');
+  it("setEligible is a no-op when the value does not change", async () => {
+    const a = tab("noop");
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
     const snapshot = a.getSnapshot();
 
@@ -273,8 +273,8 @@ describe('createLeader', () => {
     a.close();
   });
 
-  it('re-asserts against a stale claim rather than yielding the seat', async () => {
-    const name = 'stale';
+  it("re-asserts against a stale claim rather than yielding the seat", async () => {
+    const name = "stale";
     const incumbent = tab(name);
     const rogue = hub.connect();
     const heard: BusWire[] = [];
@@ -287,25 +287,25 @@ describe('createLeader', () => {
     // A claim with a term the incumbent already beats (counter 1, lower clientId).
     rogue.post({
       v: 1,
-      scope: 'leader',
-      type: 'claim',
-      term: [1, '000-rogue'],
-      clientId: '000-rogue',
-      kind: 'tab',
+      scope: "leader",
+      type: "claim",
+      term: [1, "000-rogue"],
+      clientId: "000-rogue",
+      kind: "tab",
     });
     await vi.advanceTimersByTimeAsync(0);
 
     expect(incumbent.getSnapshot().isLeader).toBe(true);
-    const reassert = heard.find((w) => w.scope === 'leader' && w.type === 'heartbeat');
+    const reassert = heard.find((w) => w.scope === "leader" && w.type === "heartbeat");
     expect(reassert).toBeDefined();
 
     incumbent.close();
     rogue.close();
   });
 
-  it('resigning when not the leader changes nothing', async () => {
-    const a = tab('not-leader');
-    const b = tab('not-leader');
+  it("resigning when not the leader changes nothing", async () => {
+    const a = tab("not-leader");
+    const b = tab("not-leader");
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
     const follower = a.getSnapshot().isLeader ? b : a;
@@ -320,19 +320,19 @@ describe('createLeader', () => {
     b.close();
   });
 
-  it('ignores a resign from anyone who is not the leader', async () => {
-    const name = 'fake-resign';
+  it("ignores a resign from anyone who is not the leader", async () => {
+    const name = "fake-resign";
     const incumbent = tab(name);
     const rogue = hub.connect();
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
     rogue.post({
       v: 1,
-      scope: 'leader',
-      type: 'resign',
-      term: [1, 'nobody'],
-      clientId: 'nobody',
-      kind: 'tab',
+      scope: "leader",
+      type: "resign",
+      term: [1, "nobody"],
+      clientId: "nobody",
+      kind: "tab",
     });
     await vi.advanceTimersByTimeAsync(0);
 
@@ -342,13 +342,13 @@ describe('createLeader', () => {
     rogue.close();
   });
 
-  it('ignores non-leader traffic on the bus', async () => {
-    const name = 'other-scope';
+  it("ignores non-leader traffic on the bus", async () => {
+    const name = "other-scope";
     const a = tab(name);
     const rogue = hub.connect();
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
-    rogue.post({ v: 1, scope: 'presence', type: 'ping', clientId: 'x', kind: 'tab' });
+    rogue.post({ v: 1, scope: "presence", type: "ping", clientId: "x", kind: "tab" });
     await vi.advanceTimersByTimeAsync(0);
 
     expect(a.getSnapshot().isLeader).toBe(true);
@@ -356,23 +356,23 @@ describe('createLeader', () => {
     rogue.close();
   });
 
-  it('honours a custom kind without leaking leader timings onto the bus', async () => {
-    const a = tab('kinded', { kind: 'worker' });
+  it("honours a custom kind without leaking leader timings onto the bus", async () => {
+    const a = tab("kinded", { kind: "worker" });
     const rogue = hub.connect();
     const heard: BusWire[] = [];
     rogue.subscribe((data) => heard.push(data as BusWire));
 
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
-    const claim = heard.find((w) => w.scope === 'leader' && w.type === 'claim');
-    expect(claim?.kind).toBe('worker');
+    const claim = heard.find((w) => w.scope === "leader" && w.type === "claim");
+    expect(claim?.kind).toBe("worker");
 
     a.close();
     rogue.close();
   });
 
-  it('resigns on close and then falls silent', async () => {
-    const name = 'closed';
+  it("resigns on close and then falls silent", async () => {
+    const name = "closed";
     const a = tab(name);
     const rogue = hub.connect();
     const heard: BusWire[] = [];
@@ -384,28 +384,28 @@ describe('createLeader', () => {
 
     // Closing hands the seat over deliberately rather than making peers wait
     // out the lease.
-    expect(heard.some((w) => w.scope === 'leader' && w.type === 'resign')).toBe(true);
+    expect(heard.some((w) => w.scope === "leader" && w.type === "resign")).toBe(true);
 
     // And nothing more after that — no heartbeats from a dead engine.
     heard.length = 0;
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 5);
-    expect(heard.filter((w) => w.scope === 'leader')).toHaveLength(0);
+    expect(heard.filter((w) => w.scope === "leader")).toHaveLength(0);
 
     rogue.close();
   });
 
-  it('uses the shared registry bus when no transport is given', async () => {
+  it("uses the shared registry bus when no transport is given", async () => {
     // Every other test injects a transport, which bypasses the registry — this
     // is the branch real callers actually take.
-    const a = createLeader('registry-bus', { strategy: 'heartbeat' });
+    const a = createLeader("registry-bus", { strategy: "heartbeat" });
     await vi.advanceTimersByTimeAsync(HEARTBEAT);
 
     expect(a.getSnapshot()).toEqual({ leaderId: a.clientId, isLeader: true });
     a.close();
   });
 
-  it('does not claim after close, even if made eligible again', async () => {
-    const a = tab('closed-eligible', { eligible: false });
+  it("does not claim after close, even if made eligible again", async () => {
+    const a = tab("closed-eligible", { eligible: false });
     a.close();
 
     a.setEligible(true);
@@ -414,9 +414,9 @@ describe('createLeader', () => {
     expect(a.getSnapshot().isLeader).toBe(false);
   });
 
-  it('setEligible(false) on a follower leaves the leader alone', async () => {
-    const leader = tab('standby');
-    const follower = tab('standby');
+  it("setEligible(false) on a follower leaves the leader alone", async () => {
+    const leader = tab("standby");
+    const follower = tab("standby");
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
     const sitting = leader.getSnapshot().isLeader ? leader : follower;
@@ -432,9 +432,9 @@ describe('createLeader', () => {
     follower.close();
   });
 
-  it('a follower ignores a stale claim from a third party', async () => {
-    const incumbent = tab('third-party');
-    const follower = tab('third-party');
+  it("a follower ignores a stale claim from a third party", async () => {
+    const incumbent = tab("third-party");
+    const follower = tab("third-party");
     const rogue = hub.connect();
     await vi.advanceTimersByTimeAsync(HEARTBEAT * 3);
 
@@ -444,11 +444,11 @@ describe('createLeader', () => {
     // follower must neither adopt it nor renew its lease against it.
     rogue.post({
       v: 1,
-      scope: 'leader',
-      type: 'claim',
-      term: [1, '000-rogue'],
-      clientId: '000-rogue',
-      kind: 'tab',
+      scope: "leader",
+      type: "claim",
+      term: [1, "000-rogue"],
+      clientId: "000-rogue",
+      kind: "tab",
     });
     await vi.advanceTimersByTimeAsync(0);
 
@@ -459,8 +459,8 @@ describe('createLeader', () => {
     rogue.close();
   });
 
-  it('drops a subscriber that unsubscribed', async () => {
-    const a = tab('unsub');
+  it("drops a subscriber that unsubscribed", async () => {
+    const a = tab("unsub");
     let calls = 0;
     const off = a.subscribe(() => calls++);
     off();
@@ -473,11 +473,11 @@ describe('createLeader', () => {
   });
 });
 
-describe('waitForLeadership, on the heartbeat strategy', () => {
-  it('resolves once the seat is won, and immediately when it is already held', async () => {
+describe("waitForLeadership, on the heartbeat strategy", () => {
+  it("resolves once the seat is won, and immediately when it is already held", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
-    const leader = createLeader('wfl', { strategy: 'heartbeat', transport: () => hub.connect() });
+    const leader = createLeader("wfl", { strategy: "heartbeat", transport: () => hub.connect() });
     try {
       let seated = false;
       const waiting = leader.waitForLeadership().then(() => (seated = true));
@@ -495,16 +495,16 @@ describe('waitForLeadership, on the heartbeat strategy', () => {
     }
   });
 
-  it('rejects rather than hanging when the tab is torn down first', async () => {
+  it("rejects rather than hanging when the tab is torn down first", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
-    const incumbent = createLeader('wfl-closed', {
-      strategy: 'heartbeat',
+    const incumbent = createLeader("wfl-closed", {
+      strategy: "heartbeat",
       transport: () => hub.connect(),
     });
     await vi.advanceTimersByTimeAsync(1000);
-    const follower = createLeader('wfl-closed', {
-      strategy: 'heartbeat',
+    const follower = createLeader("wfl-closed", {
+      strategy: "heartbeat",
       transport: () => hub.connect(),
     });
     await vi.advanceTimersByTimeAsync(100);

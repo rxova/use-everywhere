@@ -8,14 +8,14 @@ pnpm add -D @use-everywhere/test-utils
 ```
 
 ```ts
-import { createScenario } from '@use-everywhere/test-utils';
+import { createScenario } from "@use-everywhere/test-utils";
 
-it('two tabs converge', async () => {
+it("two tabs converge", async () => {
   const browser = createScenario();
-  const cartA = browser.tab().store('cart', { items: 0 });
-  const cartB = browser.tab().store('cart', { items: 0 });
+  const cartA = browser.tab().store("cart", { items: 0 });
+  const cartB = browser.tab().store("cart", { items: 0 });
 
-  cartA.set('items', 3);
+  cartA.set("items", 3);
   await browser.settle();
 
   expect(cartB.getSnapshot().items).toBe(3);
@@ -32,8 +32,8 @@ one of them says goodbye. Both are one call here:
 const browser = createScenario();
 const a = browser.tab();
 const b = browser.tab();
-const first = a.leader('app');
-const second = b.leader('app');
+const first = a.leader("app");
+const second = b.leader("app");
 
 a.crash(); // the wire is cut mid-sentence: no goodbye, no resignation
 await browser.settle();

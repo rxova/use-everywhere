@@ -1,6 +1,6 @@
-import { RuleTester, type Linter } from 'eslint';
-import { describe, it } from 'vitest';
-import tseslint from 'typescript-eslint';
+import { RuleTester, type Linter } from "eslint";
+import { describe, it } from "vitest";
+import tseslint from "typescript-eslint";
 
 // RuleTester looks for `describe`/`it` on itself before falling back to running
 // cases inline. Wiring vitest's in means a failing case reports as one named
@@ -21,8 +21,8 @@ export const ruleTester = new RuleTester({
     // object is the same one ESLint loads at runtime.
     parser: tseslint.parser as unknown as Linter.Parser,
     parserOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
+      ecmaVersion: "latest",
+      sourceType: "module",
       ecmaFeatures: { jsx: true },
     },
   },

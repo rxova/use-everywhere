@@ -1,6 +1,6 @@
 ---
-title: 'Cross-origin payments'
-description: 'Build a checkout that opens a payment window on another domain, hands it typed data and awaits a receipt — validated by origin, brand and nonce.'
+title: "Cross-origin payments"
+description: "Build a checkout that opens a payment window on another domain, hands it typed data and awaits a receipt — validated by origin, brand and nonce."
 sidebar:
   order: 3
 ---
@@ -33,29 +33,29 @@ result the whole flow produces.
 ## The opener side (the shop)
 
 ```tsx title="Checkout.tsx (on shop.example.com)"
-import { useEffect } from 'react';
-import { openWindow, useWindowResult } from 'use-everywhere';
-import type { ToPayment, FromPayment, Receipt } from './payment-contract';
+import { useEffect } from "react";
+import { openWindow, useWindowResult } from "use-everywhere";
+import type { ToPayment, FromPayment, Receipt } from "./payment-contract";
 
-function Checkout({ order }: { order: ToPayment['order'] }) {
+function Checkout({ order }: { order: ToPayment["order"] }) {
   const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
-    openWindow('https://pay.example.com/checkout', {
-      peerOrigin: 'https://pay.example.com', // required — '*' throws
-      features: 'popup,width=440,height=640',
+    openWindow("https://pay.example.com/checkout", {
+      peerOrigin: "https://pay.example.com", // required — '*' throws
+      features: "popup,width=440,height=640",
     }),
   );
 
   // Send the order as soon as the handshake lands. (Posting earlier is fine
   // too — posts queue while the child loads.)
   useEffect(() => {
-    if (pay.status === 'connected') pay.post('order', order);
+    if (pay.status === "connected") pay.post("order", order);
   }, [pay.status]);
 
-  if (pay.status === 'done') return <ReceiptView receipt={pay.result} />;
-  if (pay.status === 'closed-early') return <p>Window closed — try again.</p>;
+  if (pay.status === "done") return <ReceiptView receipt={pay.result} />;
+  if (pay.status === "closed-early") return <p>Window closed — try again.</p>;
 
   return (
-    <button onClick={pay.open} disabled={pay.status !== 'idle'}>
+    <button onClick={pay.open} disabled={pay.status !== "idle"}>
       Pay in secure window
     </button>
   );
@@ -74,23 +74,23 @@ works whatever renders that page. Note it names _the shop's_ origin: each
 side declares exactly who it will talk to.
 
 ```tsx title="PaymentPage.tsx (on pay.example.com)"
-import { useEffect, useState } from 'react';
-import { connectToOpener } from '@use-everywhere/core';
-import type { ToPayment, FromPayment, Receipt } from './payment-contract';
+import { useEffect, useState } from "react";
+import { connectToOpener } from "@use-everywhere/core";
+import type { ToPayment, FromPayment, Receipt } from "./payment-contract";
 
 // Create the connection once, at module level. (It throws when the page is
 // opened directly, without an opener — catch that for users who bookmark
 // the URL and show a "return to the shop" screen.)
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
-  peerOrigin: 'https://shop.example.com',
+  peerOrigin: "https://shop.example.com",
 });
 
 function PaymentPage() {
-  const [order, setOrder] = useState<ToPayment['order'] | null>(null);
-  useEffect(() => conn.on('order', setOrder), []); // on() returns its unsubscribe
+  const [order, setOrder] = useState<ToPayment["order"] | null>(null);
+  useEffect(() => conn.on("order", setOrder), []); // on() returns its unsubscribe
 
   const chargeCard = async () => {
-    conn.post('progress', { step: 'charging' });
+    conn.post("progress", { step: "charging" });
     const receipt = await submitToPaymentProcessor(); // your payment logic
     conn.finish(receipt); // resolves the opener's result → status 'done'
     conn.close();

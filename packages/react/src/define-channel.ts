@@ -1,7 +1,7 @@
-import type { ChannelOptions, MessageMap, MessageMeta } from '@use-everywhere/core';
-import { configureChannel, getChannel } from './registry.js';
-import { useChannel, useOnMessage, useSend } from './use-on-message.js';
-import type { ChannelHooks } from './define-channel.types.js';
+import type { ChannelOptions, MessageMap, MessageMeta } from "@use-everywhere/core";
+import { configureChannel, getChannel } from "./registry.js";
+import { useChannel, useOnMessage, useSend } from "./use-on-message.js";
+import type { ChannelHooks } from "./define-channel.types.js";
 
 /**
  * Bind a channel name and message map once, at module level, and get fully

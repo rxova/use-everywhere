@@ -1,5 +1,5 @@
 ---
-title: 'useSend'
+title: "useSend"
 description: "A channel's post function with stable identity: the announce half of the typed cross-tab event system."
 sidebar:
   order: 5
@@ -11,22 +11,22 @@ never-changing send function to child components, callbacks, and effects
 without memoizing anything.
 
 ```tsx
-import { useChannel, useSend } from 'use-everywhere';
+import { useChannel, useSend } from "use-everywhere";
 
-type ShopEvents = { 'cart-updated': { items: number } };
+type ShopEvents = { "cart-updated": { items: number } };
 
 function AddToCart({ items }: { items: number }) {
-  const channel = useChannel<ShopEvents>('shop');
+  const channel = useChannel<ShopEvents>("shop");
   const send = useSend(channel);
 
-  return <button onClick={() => send('cart-updated', { items: items + 1 })}>Add to cart</button>;
+  return <button onClick={() => send("cart-updated", { items: items + 1 })}>Add to cart</button>;
 }
 ```
 
 ## Signature
 
 ```ts
-function useSend<M extends MessageMap>(channel: Channel<M>): Channel<M>['post'];
+function useSend<M extends MessageMap>(channel: Channel<M>): Channel<M>["post"];
 // i.e. <K extends keyof M & string>(type: K, payload: M[K]) => void
 ```
 
@@ -49,14 +49,14 @@ itself explicitly first:
 ```tsx title="CartBadge.tsx"
 function CartBadge() {
   const [items, setItems] = useState(0);
-  const channel = useChannel<ShopEvents>('shop');
+  const channel = useChannel<ShopEvents>("shop");
   const send = useSend(channel);
 
-  useOnMessage(channel, 'cart-updated', (p) => setItems(p.items)); // other tabs
+  useOnMessage(channel, "cart-updated", (p) => setItems(p.items)); // other tabs
 
   const addToCart = () => {
     setItems(items + 1); // 1. this tab, explicitly
-    send('cart-updated', { items: items + 1 }); // 2. every other tab
+    send("cart-updated", { items: items + 1 }); // 2. every other tab
   };
 
   return <button onClick={addToCart}>Cart ({items})</button>;

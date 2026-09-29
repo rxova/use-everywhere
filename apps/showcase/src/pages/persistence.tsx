@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
-import { createStoreHooks, localStorageAdapter, useHydrated } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
+import { useEffect, useState } from "react";
+import { createStoreHooks, localStorageAdapter, useHydrated } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
 
-const KEY = 'use-everywhere:showcase-settings';
+const KEY = "use-everywhere:showcase-settings";
 
 /**
  * Module scope, before anything renders — which is the rule, and the reason the
  * lint plugin has a rule about it. Registering after the store exists would
  * hand back a store with no persistence and warn (UE2002).
  */
-const settings = createStoreHooks<{ nickname: string; density: 'cosy' | 'compact' }>(
-  'showcase-settings',
+const settings = createStoreHooks<{ nickname: string; density: "cosy" | "compact" }>(
+  "showcase-settings",
   { persist: localStorageAdapter(KEY), persistDebounceMs: 150 },
 );
 
 export function PersistencePage() {
-  const [nickname, setNickname] = settings.useSharedState('nickname', '');
-  const [density, setDensity] = settings.useSharedState('density', 'cosy');
-  const ready = useHydrated({ store: 'showcase-settings' });
+  const [nickname, setNickname] = settings.useSharedState("nickname", "");
+  const [density, setDensity] = settings.useSharedState("density", "cosy");
+  const ready = useHydrated({ store: "showcase-settings" });
   const [disk, setDisk] = useState<string | null>(null);
 
   // Read straight from localStorage rather than mirroring the store: the point
@@ -42,7 +42,7 @@ export function PersistencePage() {
         </>
       }
     >
-      <Card title="A store bound to localStorage" aside={ready ? 'hydrated' : 'restoring…'}>
+      <Card title="A store bound to localStorage" aside={ready ? "hydrated" : "restoring…"}>
         <div className="row">
           <input
             type="text"
@@ -53,11 +53,11 @@ export function PersistencePage() {
           />
         </div>
         <div className="row">
-          {(['cosy', 'compact'] as const).map((option) => (
+          {(["cosy", "compact"] as const).map((option) => (
             <button
               key={option}
               type="button"
-              className={density === option ? 'primary' : ''}
+              className={density === option ? "primary" : ""}
               onClick={() => setDensity(option)}
             >
               {option}
@@ -80,8 +80,8 @@ export function PersistencePage() {
       </Card>
 
       <Card title="What is actually on disk" aside={`localStorage['${KEY}']`}>
-        <pre style={{ margin: 0, fontSize: 12, overflowX: 'auto', color: 'var(--ink-soft)' }}>
-          {disk ? JSON.stringify(JSON.parse(disk), null, 2) : '(nothing written yet)'}
+        <pre style={{ margin: 0, fontSize: 12, overflowX: "auto", color: "var(--ink-soft)" }}>
+          {disk ? JSON.stringify(JSON.parse(disk), null, 2) : "(nothing written yet)"}
         </pre>
         <p className="hint">
           Note the <code>versions</code> alongside the state. That is what makes a restore safe: a

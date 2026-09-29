@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 /**
  * The code beside every demo, and the same code that is running above it.
@@ -20,7 +20,7 @@ export function Code({ children }: { children: string }) {
   return (
     <div className="code">
       <button type="button" className="ghost code__copy" onClick={copy}>
-        {copied ? 'copied' : 'copy'}
+        {copied ? "copied" : "copy"}
       </button>
       <pre>{children.trim()}</pre>
     </div>

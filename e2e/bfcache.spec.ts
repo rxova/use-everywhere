@@ -1,7 +1,7 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from "@playwright/test";
 
-const draft = (page: Page) => page.getByTestId('draft');
-const leaderId = (page: Page) => page.getByTestId('leader-id');
+const draft = (page: Page) => page.getByTestId("draft");
+const leaderId = (page: Page) => page.getByTestId("leader-id");
 
 const settled = (page: Page) => expect(leaderId(page)).not.toBeEmpty({ timeout: 10_000 });
 
@@ -19,45 +19,45 @@ const settled = (page: Page) => expect(leaderId(page)).not.toBeEmpty({ timeout: 
  * the run also exercises the `pageshow`/`persisted` path directly; the unit
  * suite pins that handler deterministically.
  */
-test.describe('returning to a page after navigating away', () => {
-  test('the returning tab converges on what changed while it was gone', async ({ context }) => {
+test.describe("returning to a page after navigating away", () => {
+  test("the returning tab converges on what changed while it was gone", async ({ context }) => {
     const traveller = await context.newPage();
-    await traveller.goto('/');
-    await draft(traveller).fill('before leaving');
+    await traveller.goto("/");
+    await draft(traveller).fill("before leaving");
 
     const stayer = await context.newPage();
-    await stayer.goto('/');
-    await expect(draft(stayer)).toHaveValue('before leaving');
+    await stayer.goto("/");
+    await expect(draft(stayer)).toHaveValue("before leaving");
 
     // Away. Same origin, so the page stays eligible for the cache.
-    await traveller.goto('/payment.html');
-    await expect(traveller.getByText('Secure payment')).toBeVisible();
+    await traveller.goto("/payment.html");
+    await expect(traveller.getByText("Secure payment")).toBeVisible();
 
     // While it is away, the other tab moves the world on.
-    await draft(stayer).fill('changed while you were out');
+    await draft(stayer).fill("changed while you were out");
 
     await traveller.goBack();
 
     // The guarantee: back in the app, this tab is not living in the past.
-    await expect(draft(traveller)).toHaveValue('changed while you were out', { timeout: 10_000 });
+    await expect(draft(traveller)).toHaveValue("changed while you were out", { timeout: 10_000 });
 
     await traveller.close();
     await stayer.close();
   });
 
-  test('a returning tab rejoins the election instead of holding a phantom seat', async ({
+  test("a returning tab rejoins the election instead of holding a phantom seat", async ({
     context,
   }) => {
     const traveller = await context.newPage();
-    await traveller.goto('/');
+    await traveller.goto("/");
     await settled(traveller);
 
     const stayer = await context.newPage();
-    await stayer.goto('/');
+    await stayer.goto("/");
     await settled(stayer);
 
-    await traveller.goto('/payment.html');
-    await expect(traveller.getByText('Secure payment')).toBeVisible();
+    await traveller.goto("/payment.html");
+    await expect(traveller.getByText("Secure payment")).toBeVisible();
     await traveller.goBack();
     await settled(traveller);
 
@@ -72,9 +72,9 @@ test.describe('returning to a page after navigating away', () => {
     const driving = await Promise.all(
       [traveller, stayer].map((p) =>
         p
-          .getByTestId('leader-status')
+          .getByTestId("leader-status")
           .textContent()
-          .then((s) => s?.includes('driving') ?? false),
+          .then((s) => s?.includes("driving") ?? false),
       ),
     );
     expect(driving.filter(Boolean)).toHaveLength(1);

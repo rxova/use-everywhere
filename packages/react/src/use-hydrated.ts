@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { DEFAULT_NAME, getStore } from './registry.js';
-import type { UseSharedStateOptions } from './use-shared-state.types.js';
+import { useEffect, useState } from "react";
+import { DEFAULT_NAME, getStore } from "./registry.js";
+import type { UseSharedStateOptions } from "./use-shared-state.types.js";
 
 /**
  * Whether a persisted store has finished restoring.
@@ -30,7 +30,7 @@ import type { UseSharedStateOptions } from './use-shared-state.types.js';
  * and this simply flips to `true` in the commit after mount.
  */
 export function useHydrated(options?: UseSharedStateOptions): boolean {
-  const store = getStore(options?.store ?? DEFAULT_NAME, options?.scope ?? 'everywhere');
+  const store = getStore(options?.store ?? DEFAULT_NAME, options?.scope ?? "everywhere");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

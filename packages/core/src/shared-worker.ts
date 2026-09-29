@@ -31,12 +31,12 @@
  * a handler nothing will ever call again.
  */
 
-import type { Transport } from './transport/transport.types.js';
+import type { Transport } from "./transport/transport.types.js";
 
 export interface RelayPort {
   postMessage(data: unknown): void;
   start?: () => void;
-  addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
+  addEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
 }
 
 export interface RelayScope {
@@ -93,7 +93,7 @@ export function startRelay(scope: RelayScope): Relay {
    * force it to carry a no-op `addEventListener` that only ever satisfies a
    * type.
    */
-  type Sink = Pick<RelayPort, 'postMessage'>;
+  type Sink = Pick<RelayPort, "postMessage">;
 
   const ports = new Set<Sink>();
   const local = new Set<Sink>();
@@ -121,7 +121,7 @@ export function startRelay(scope: RelayScope): Relay {
     if (!port) return;
     ports.add(port);
 
-    port.addEventListener('message', (message) => fanOut(port, message.data));
+    port.addEventListener("message", (message) => fanOut(port, message.data));
     port.start?.();
   };
 
@@ -153,7 +153,7 @@ export function startRelay(scope: RelayScope): Relay {
       local.add(seat);
 
       return {
-        kind: 'shared-worker',
+        kind: "shared-worker",
         post: (data) => {
           if (!closed) fanOut(seat, data);
         },
@@ -180,6 +180,6 @@ export function startRelay(scope: RelayScope): Relay {
  * inert rather than a `ReferenceError`.
  */
 export const relay: Relay | undefined =
-  typeof self !== 'undefined' && 'onconnect' in self
+  typeof self !== "undefined" && "onconnect" in self
     ? startRelay(self as unknown as RelayScope)
     : undefined;

@@ -1,6 +1,6 @@
 ---
-title: 'no-dynamic-name'
-description: 'Requires a bus name to be a string literal or a module-scope constant, so a channel identity cannot change between renders.'
+title: "no-dynamic-name"
+description: "Requires a bus name to be a string literal or a module-scope constant, so a channel identity cannot change between renders."
 sidebar:
   order: 3
 ---
@@ -37,9 +37,9 @@ moment the call ran.
 ## Correct
 
 ```ts
-createStoreHooks('cart');
+createStoreHooks("cart");
 
-const CART = 'cart';
+const CART = "cart";
 createSharedStore(CART, {});
 ```
 
@@ -48,10 +48,10 @@ imported binding counts without being followed:
 
 ```ts
 // names.ts
-export const CART = 'cart';
+export const CART = "cart";
 
 // anywhere.ts
-import { CART } from './names';
+import { CART } from "./names";
 const cart = createStoreHooks(CART);
 ```
 

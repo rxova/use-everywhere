@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
-import { DEFAULT_NAME } from '@use-everywhere/core';
-import { Panel } from './panel.js';
-import type { InspectorProps } from './inspector.types.js';
-import { STYLES } from './styles.js';
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { DEFAULT_NAME } from "@use-everywhere/core";
+import { Panel } from "./panel.js";
+import type { InspectorProps } from "./inspector.types.js";
+import { STYLES } from "./styles.js";
 
 /**
  * A floating panel showing what this tab is saying and hearing on the bus:
@@ -32,7 +32,7 @@ import { STYLES } from './styles.js';
  */
 export function Inspector({
   name = DEFAULT_NAME,
-  position = 'bottom-right',
+  position = "bottom-right",
   limit = 50,
   defaultOpen = false,
   leaseMs = 3000,
@@ -45,7 +45,7 @@ export function Inspector({
   // StrictMode's double-invoked lifecycles make routine rather than exotic.
   const attach = (host: HTMLDivElement | null) => {
     if (!host || root) return;
-    setRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
+    setRoot(host.shadowRoot ?? host.attachShadow({ mode: "open" }));
   };
 
   return (

@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { BusWire } from '../bus.types.js';
-import { createPresence } from '../presence.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { tick } from './helpers/tick.js';
+import { describe, expect, it, vi } from "vitest";
+import type { BusWire } from "../bus.types.js";
+import { createPresence } from "../presence.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { tick } from "./helpers/tick.js";
 
 /**
  * Presence behaviour nothing was checking, found by the mutation run: the wires
@@ -20,16 +20,16 @@ const recorder = (hub: MemoryHub) => {
 };
 
 const hellos = (seen: BusWire[]) =>
-  seen.filter((w) => w.scope === 'presence' && w.type === 'hello');
+  seen.filter((w) => w.scope === "presence" && w.type === "hello");
 
-describe('what setMetadata puts on the wire', () => {
-  it('announces once when the value changes', async () => {
+describe("what setMetadata puts on the wire", () => {
+  it("announces once when the value changes", async () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), { transport: () => hub.connect() });
     const rec = recorder(hub);
     await tick();
 
-    presence.setMetadata({ display: 'Ada' });
+    presence.setMetadata({ display: "Ada" });
     await tick();
 
     expect(hellos(rec.seen)).toHaveLength(1);
@@ -37,11 +37,11 @@ describe('what setMetadata puts on the wire', () => {
     rec.close();
   });
 
-  it('puts nothing on the wire when the value is unchanged', async () => {
+  it("puts nothing on the wire when the value is unchanged", async () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
       transport: () => hub.connect(),
-      metadata: { display: 'Ada' },
+      metadata: { display: "Ada" },
     });
     const rec = recorder(hub);
     await tick();
@@ -49,7 +49,7 @@ describe('what setMetadata puts on the wire', () => {
     // A fresh object with the same contents, which is what a hook passes every
     // render. Asserted on the *wire*, not on the roster: an extra announcement
     // that happens to change nobody's roster is still traffic on every tab.
-    presence.setMetadata({ display: 'Ada' });
+    presence.setMetadata({ display: "Ada" });
     await tick();
 
     expect(hellos(rec.seen)).toHaveLength(0);
@@ -58,8 +58,8 @@ describe('what setMetadata puts on the wire', () => {
   });
 });
 
-describe('a peer that published nothing', () => {
-  it('carries no metadata key at all, rather than an undefined one', async () => {
+describe("a peer that published nothing", () => {
+  it("carries no metadata key at all, rather than an undefined one", async () => {
     const hub = new MemoryHub();
     const name = uniqueName();
     const watcher = createPresence(name, { transport: () => hub.connect() });
@@ -71,13 +71,13 @@ describe('a peer that published nothing', () => {
     // `'metadata' in peer` rather than `peer.metadata === undefined`: an
     // explicit undefined would serialise onto the wire and read back as a peer
     // that announced "nothing", which is not the same as never announcing.
-    expect(peer && 'metadata' in peer).toBe(false);
+    expect(peer && "metadata" in peer).toBe(false);
 
     watcher.close();
     anonymous.close();
   });
 
-  it('is listed as itself with no metadata key when includeSelf is on', () => {
+  it("is listed as itself with no metadata key when includeSelf is on", () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
       transport: () => hub.connect(),
@@ -86,12 +86,12 @@ describe('a peer that published nothing', () => {
 
     const self = presence.getPeers()[0];
     expect(self?.id).toBe(presence.clientId);
-    expect(self && 'metadata' in self).toBe(false);
+    expect(self && "metadata" in self).toBe(false);
 
     presence.close();
   });
 
-  it('does not announce a roster before anyone joins when includeSelf is off', async () => {
+  it("does not announce a roster before anyone joins when includeSelf is off", async () => {
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), { transport: () => hub.connect() });
     let notifications = 0;
@@ -105,8 +105,8 @@ describe('a peer that published nothing', () => {
   });
 });
 
-describe('the probe boundary', () => {
-  it('drops a peer only once the grace period has fully elapsed', async () => {
+describe("the probe boundary", () => {
+  it("drops a peer only once the grace period has fully elapsed", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
@@ -116,10 +116,10 @@ describe('the probe boundary', () => {
     });
     hub.connect().post({
       v: 1,
-      scope: 'presence',
-      type: 'hello',
-      clientId: 'ghost',
-      kind: 'tab',
+      scope: "presence",
+      type: "hello",
+      clientId: "ghost",
+      kind: "tab",
     } satisfies BusWire);
     await vi.advanceTimersByTimeAsync(1);
     expect(presence.getPeers()).toHaveLength(1);
@@ -136,7 +136,7 @@ describe('the probe boundary', () => {
     vi.useRealTimers();
   });
 
-  it('keeps a peer that answers the probe', async () => {
+  it("keeps a peer that answers the probe", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
     const wire = hub.connect();
@@ -148,10 +148,10 @@ describe('the probe boundary', () => {
     const speak = () =>
       wire.post({
         v: 1,
-        scope: 'presence',
-        type: 'ping',
-        clientId: 'alive',
-        kind: 'tab',
+        scope: "presence",
+        type: "ping",
+        clientId: "alive",
+        kind: "tab",
       } satisfies BusWire);
 
     speak();
@@ -168,8 +168,8 @@ describe('the probe boundary', () => {
   });
 });
 
-describe('the roster at the moment of creation', () => {
-  it('announces once when includeSelf is on, so the first read is not empty', () => {
+describe("the roster at the moment of creation", () => {
+  it("announces once when includeSelf is on, so the first read is not empty", () => {
     const hub = new MemoryHub();
     let notifications = 0;
     const presence = createPresence(uniqueName(), {
@@ -186,7 +186,7 @@ describe('the roster at the moment of creation', () => {
     presence.close();
   });
 
-  it('drops a peer the instant the grace period is met, not a tick later', async () => {
+  it("drops a peer the instant the grace period is met, not a tick later", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {
@@ -196,10 +196,10 @@ describe('the roster at the moment of creation', () => {
     });
     hub.connect().post({
       v: 1,
-      scope: 'presence',
-      type: 'hello',
-      clientId: 'ghost',
-      kind: 'tab',
+      scope: "presence",
+      type: "hello",
+      clientId: "ghost",
+      kind: "tab",
     } satisfies BusWire);
     await vi.advanceTimersByTimeAsync(1);
 
@@ -218,8 +218,8 @@ describe('the roster at the moment of creation', () => {
   });
 });
 
-describe('close', () => {
-  it('is idempotent, and stops the prune timer', async () => {
+describe("close", () => {
+  it("is idempotent, and stops the prune timer", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
     const presence = createPresence(uniqueName(), {

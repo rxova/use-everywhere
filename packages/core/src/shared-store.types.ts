@@ -1,6 +1,6 @@
-import type { CommonOptions, MessageMeta, Version } from './common.types.js';
-import type { PersistOptions } from './persist.types.js';
-import type { SchemaOptions } from './schema.types.js';
+import type { CommonOptions, MessageMeta, Version } from "./common.types.js";
+import type { PersistOptions } from "./persist.types.js";
+import type { SchemaOptions } from "./schema.types.js";
 
 export interface SharedStoreOptions<S = Record<string, unknown>>
   extends CommonOptions, SchemaOptions<S> {

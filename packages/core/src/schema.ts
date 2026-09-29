@@ -1,5 +1,5 @@
-import { devWarn } from './dev.js';
-import type { InvalidPayload, OnInvalid, SchemaMap, StandardSchemaV1 } from './schema.types.js';
+import { devWarn } from "./dev.js";
+import type { InvalidPayload, OnInvalid, SchemaMap, StandardSchemaV1 } from "./schema.types.js";
 
 /**
  * Run one payload through one schema, synchronously.
@@ -21,9 +21,9 @@ function validate(
   schema: StandardSchemaV1<unknown, unknown>,
   payload: unknown,
 ): { ok: true; value: unknown } | { ok: false; issues: string[] } {
-  const props = schema['~standard'];
+  const props = schema["~standard"];
   const result = props.validate(payload);
-  if (typeof (result as Promise<unknown>).then === 'function') {
+  if (typeof (result as Promise<unknown>).then === "function") {
     return { ok: false, issues: [`the "${props.vendor}" schema validates asynchronously`] };
   }
   const sync = result as Exclude<typeof result, Promise<unknown>>;
@@ -49,7 +49,7 @@ export function createGate(
   if (!schemas) return undefined;
 
   /** The issues, or `undefined` when the payload is fine. */
-  const check = (key: string, payload: unknown, direction: 'in' | 'out') => {
+  const check = (key: string, payload: unknown, direction: "in" | "out") => {
     const schema = schemas[key];
     if (!schema) return undefined;
     const result = validate(schema, payload);
@@ -59,26 +59,26 @@ export function createGate(
     // Terse, with the explanation behind the link — a warning earns its length
     // in a console, not in prose. The NODE_ENV guard around the call is what
     // keeps this string out of production bundles; see env.d.ts.
-    else if (process.env.NODE_ENV !== 'production') {
+    else if (process.env.NODE_ENV !== "production") {
       devWarn(
-        'UE1003',
+        "UE1003",
         `${name}/${key}: ${direction}bound payload rejected by its schema — ` +
-          `${result.issues.join('; ')}. https://rxova.org/packages/use-everywhere/guides/validating-payloads/`,
+          `${result.issues.join("; ")}. https://rxova.org/packages/use-everywhere/guides/validating-payloads/`,
       );
     }
     return result.issues;
   };
 
   return {
-    accepts: (key, payload) => !check(key, payload, 'in'),
+    accepts: (key, payload) => !check(key, payload, "in"),
     assert(key, payload) {
-      const issues = check(key, payload, 'out');
+      const issues = check(key, payload, "out");
       // Thrown here rather than at each call site so there is one message
       // rather than two near-identical ones — and so no caller can forget that
       // an outbound refusal is meant to be loud.
       if (issues) {
         throw new TypeError(
-          `use-everywhere: ${name}/${key} — the value does not match its schema, so nothing was sent or applied. ${issues.join('; ')}`,
+          `use-everywhere: ${name}/${key} — the value does not match its schema, so nothing was sent or applied. ${issues.join("; ")}`,
         );
       }
     },

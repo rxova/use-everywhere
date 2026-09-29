@@ -155,8 +155,8 @@ LeaderOptions`, and `SharedWorkerTransportOptions` was already re-exported — b
   `useChannel` gains the optional reply-map type parameter:
 
   ```tsx
-  const channel = useChannel<Requests, Replies>('app');
-  useAnswer(channel, 'config:get', () => ({ theme }));
+  const channel = useChannel<Requests, Replies>("app");
+  useAnswer(channel, "config:get", () => ({ theme }));
   const ask = useAsk(channel);
   ```
 
@@ -168,10 +168,10 @@ LeaderOptions`, and `SharedWorkerTransportOptions` was already re-exported — b
 
   ```ts
   // checkout/bus.ts
-  export const checkout = createNamespace('checkout');
+  export const checkout = createNamespace("checkout");
 
   // anywhere in the checkout app
-  const [items, setItems] = checkout.useSharedState('items', []);
+  const [items, setItems] = checkout.useSharedState("items", []);
   ```
 
   It carries the full surface — `useSharedState`, `usePeers`, `useClientId`, `useLeader`, `useIsLeader`, `useLeaderEffect`, `defineStore`, `defineChannel`, `getSharedStore` — plus the core factories underneath, for code outside React.
@@ -187,8 +187,8 @@ LeaderOptions`, and `SharedWorkerTransportOptions` was already re-exported — b
   Channels had no options plumbing at all, so the seam core just gained was unreachable from React. `defineChannel` now mirrors `defineStore`: options are registered at module scope and applied when the channel is first needed, so declaring a schema still constructs nothing on import.
 
   ```ts
-  const cart = defineChannel<{ 'item:add': Item }>('cart', {
-    schema: { 'item:add': itemSchema },
+  const cart = defineChannel<{ "item:add": Item }>("cart", {
+    schema: { "item:add": itemSchema },
   });
   ```
 
@@ -201,12 +201,12 @@ LeaderOptions`, and `SharedWorkerTransportOptions` was already re-exported — b
 - [#56](https://github.com/rxova/use-everywhere/pull/56) [`f8ec259`](https://github.com/rxova/use-everywhere/commit/f8ec259b395dcf87d83a4894d575962b0ac1e1ad) - `defineStore` takes the new persistence options, and `useHydrated` gates UI on the restore.
 
   ```tsx
-  const settings = defineStore('settings', {
-    persist: localStorageAdapter('app:settings'),
+  const settings = defineStore("settings", {
+    persist: localStorageAdapter("app:settings"),
     persistVersion: 2,
     migrate: (state, from) =>
       from < 2 ? { ...state, fullName: `${state.first} ${state.last}` } : state,
-    onRestoreError: ({ reason }) => telemetry.warn('persist.restore', { reason }),
+    onRestoreError: ({ reason }) => telemetry.warn("persist.restore", { reason }),
   });
   ```
 

@@ -1,6 +1,6 @@
 ---
-title: 'Testing'
-description: 'Test cross-tab behaviour in one process — a scenario DSL, an in-memory bus, fake windows and fake Web Locks. No Playwright required.'
+title: "Testing"
+description: "Test cross-tab behaviour in one process — a scenario DSL, an in-memory bus, fake windows and fake Web Locks. No Playwright required."
 sidebar:
   order: 6
 ---
@@ -23,14 +23,14 @@ pnpm add -D @use-everywhere/test-utils
 ```
 
 ```ts
-import { createScenario } from '@use-everywhere/test-utils';
+import { createScenario } from "@use-everywhere/test-utils";
 
-it('two tabs converge', async () => {
+it("two tabs converge", async () => {
   const browser = createScenario();
-  const cartA = browser.tab().store('cart', { items: 0 });
-  const cartB = browser.tab().store('cart', { items: 0 });
+  const cartA = browser.tab().store("cart", { items: 0 });
+  const cartB = browser.tab().store("cart", { items: 0 });
 
-  cartA.set('items', 3);
+  cartA.set("items", 3);
   await browser.settle();
 
   expect(cartB.getSnapshot().items).toBe(3);
@@ -68,23 +68,23 @@ It lives on the `testing` subpath, so a simulation harness never lands in your
 production bundle:
 
 ```ts
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { MemoryHub } from "@use-everywhere/core/testing";
 // or, from the React package:
-import { MemoryHub } from 'use-everywhere/testing';
+import { MemoryHub } from "use-everywhere/testing";
 ```
 
 ```ts
-import { createSharedStore } from '@use-everywhere/core';
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { createSharedStore } from "@use-everywhere/core";
+import { MemoryHub } from "@use-everywhere/core/testing";
 
-it('two tabs converge', async () => {
+it("two tabs converge", async () => {
   const hub = new MemoryHub();
   const options = { transport: () => hub.connect() };
 
-  const tabA = createSharedStore('checkout', { step: 0 }, options);
-  const tabB = createSharedStore('checkout', { step: 0 }, options);
+  const tabA = createSharedStore("checkout", { step: 0 }, options);
+  const tabB = createSharedStore("checkout", { step: 0 }, options);
 
-  tabA.set('step', 2);
+  tabA.set("step", 2);
   await new Promise((r) => setTimeout(r, 0)); // drain delivery microtasks
 
   expect(tabB.getSnapshot().step).toBe(2);
@@ -107,25 +107,25 @@ For component tests, let the component use the hooks as-is and create the
 BroadcastChannel; jsdom does not):
 
 ```tsx
-import { BroadcastChannelTransport, createSharedStore } from 'use-everywhere';
-import { render, screen, act } from '@testing-library/react';
+import { BroadcastChannelTransport, createSharedStore } from "use-everywhere";
+import { render, screen, act } from "@testing-library/react";
 
 function otherTab() {
   return createSharedStore(
-    'use-everywhere', // the default store name the hooks use
+    "use-everywhere", // the default store name the hooks use
     { count: 0 },
     { transport: (name) => new BroadcastChannelTransport(name) },
   );
 }
 
-it('updates when another tab writes', async () => {
+it("updates when another tab writes", async () => {
   render(<Counter />); // uses useSharedState('count', 0)
   const peer = otherTab();
 
-  act(() => peer.set('count', 41));
+  act(() => peer.set("count", 41));
   await act(() => new Promise((r) => setTimeout(r, 0)));
 
-  expect(screen.getByText('41')).toBeInTheDocument();
+  expect(screen.getByText("41")).toBeInTheDocument();
   peer.close();
 });
 ```
@@ -159,11 +159,11 @@ const conn = connectToOpener({
   peerOrigin: SHOP_ORIGIN,
   opener: fakeOpener,
   localWindow: fakeChild,
-  cid: new URL(capturedUrl).searchParams.get('ue-cid')!,
+  cid: new URL(capturedUrl).searchParams.get("ue-cid")!,
 });
 
-conn.finish({ receiptId: 'r-1' });
-await expect(opened.result).resolves.toEqual({ receiptId: 'r-1' });
+conn.finish({ receiptId: "r-1" });
+await expect(opened.result).resolves.toEqual({ receiptId: "r-1" });
 ```
 
 This is exactly how the library tests slow-loading children (queueing),
@@ -188,7 +188,7 @@ past a lease is describing the **heartbeat** election, so say so — otherwise t
 same file asserts two different things depending on where it runs.
 
 ```ts
-createLeader('feed', { strategy: 'heartbeat', transport: () => hub.connect() });
+createLeader("feed", { strategy: "heartbeat", transport: () => hub.connect() });
 ```
 
 To exercise the Web Locks path deterministically, inject a lock manager with
@@ -196,13 +196,13 @@ To exercise the Web Locks path deterministically, inject a lock manager with
 :::
 
 ```ts
-import { createLeader } from '@use-everywhere/core';
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { createLeader } from "@use-everywhere/core";
+import { MemoryHub } from "@use-everywhere/core/testing";
 
-it('a joiner adopts the incumbent instead of stealing the seat', async () => {
+it("a joiner adopts the incumbent instead of stealing the seat", async () => {
   vi.useFakeTimers();
   const hub = new MemoryHub();
-  const tab = () => createLeader('feed', { strategy: 'heartbeat', transport: () => hub.connect() });
+  const tab = () => createLeader("feed", { strategy: "heartbeat", transport: () => hub.connect() });
 
   const first = tab();
   await vi.advanceTimersByTimeAsync(1000); // one heartbeat: it leads
@@ -222,8 +222,8 @@ path. A real crash is silence. `createScenario` has that as one call:
 ```ts
 const browser = createScenario();
 const a = browser.tab();
-const survivor = browser.tab().leader('feed');
-a.leader('feed');
+const survivor = browser.tab().leader("feed");
+a.leader("feed");
 
 await browser.settle();
 a.crash(); // no goodbye, and the lock the dead tab held is reclaimed
@@ -239,14 +239,14 @@ says nothing:
 const ghost = hub.connect();
 ghost.post({
   v: 1,
-  scope: 'leader',
-  type: 'claim',
-  term: [9, 'ghost'],
-  clientId: 'ghost',
-  kind: 'tab',
+  scope: "leader",
+  type: "claim",
+  term: [9, "ghost"],
+  clientId: "ghost",
+  kind: "tab",
 });
 await vi.advanceTimersByTimeAsync(0);
-expect(survivor.getSnapshot().leaderId).toBe('ghost');
+expect(survivor.getSnapshot().leaderId).toBe("ghost");
 
 await vi.advanceTimersByTimeAsync(4000); // past the 3s lease
 expect(survivor.getSnapshot().isLeader).toBe(true);
@@ -267,7 +267,7 @@ Persistence takes an adapter, and an adapter is just three methods — so hand i
 a `Map` and assert on exactly what hit the disk:
 
 ```ts
-import { createSharedStore, webStorageAdapter, type StorageLike } from '@use-everywhere/core';
+import { createSharedStore, webStorageAdapter, type StorageLike } from "@use-everywhere/core";
 
 const map = new Map<string, string>();
 const storage: StorageLike = {
@@ -281,26 +281,26 @@ Seed it to test **restore**. Note that the stored versions are what make the
 outcome deterministic — a counter of 3 beats a live tab still at 1:
 
 ```ts
-map.set('k', JSON.stringify({ v: 1, state: { theme: 'dark' }, versions: { theme: [3, 'old'] } }));
+map.set("k", JSON.stringify({ v: 1, state: { theme: "dark" }, versions: { theme: [3, "old"] } }));
 
 const store = createSharedStore(
-  'settings',
+  "settings",
   {},
   {
     transport: () => hub.connect(),
-    persist: { adapter: webStorageAdapter(storage, 'k') },
+    persist: { adapter: webStorageAdapter(storage, "k") },
   },
 );
 
-expect(store.getSnapshot().theme).toBe('dark'); // synchronous: there on the first read
+expect(store.getSnapshot().theme).toBe("dark"); // synchronous: there on the first read
 ```
 
 Read it back to test **write-through**, remembering the debounce:
 
 ```ts
-store.set('theme', 'neon');
+store.set("theme", "neon");
 await vi.advanceTimersByTimeAsync(150); // past debounceMs
-expect(JSON.parse(map.get('k')!).state).toEqual({ theme: 'neon' });
+expect(JSON.parse(map.get("k")!).state).toEqual({ theme: "neon" });
 ```
 
 A key that was only ever _registered_ — someone's `initial`, never written — is
@@ -316,9 +316,9 @@ Playwright specs (`pnpm e2e`).
 The one rule is **one browser context**:
 
 ```ts
-test('exactly one tab drives', async ({ context }) => {
+test("exactly one tab drives", async ({ context }) => {
   const tabs = [await context.newPage(), await context.newPage(), await context.newPage()];
-  for (const tab of tabs) await tab.goto('/');
+  for (const tab of tabs) await tab.goto("/");
   // …
 });
 ```
@@ -340,7 +340,7 @@ falls back to a no-op transport when `BroadcastChannel` does not exist — so
 values. A one-line test keeps you honest:
 
 ```tsx
-expect(renderToString(<Widget />)).toContain('initial-value');
+expect(renderToString(<Widget />)).toContain("initial-value");
 ```
 
 ## Where to next

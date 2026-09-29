@@ -1,19 +1,19 @@
-import { useSharedReducer, useSharedState } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
+import { useSharedReducer, useSharedState } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
 
-type Action = { type: 'add'; by: number };
+type Action = { type: "add"; by: number };
 
 const total = (state: { total: number }, action: Action) => ({
   total: state.total + action.by,
 });
 
 export function ReducerPage() {
-  const [lossy, setLossy] = useSharedState('lossy-counter', 0);
+  const [lossy, setLossy] = useSharedState("lossy-counter", 0);
   const [ordered, dispatch] = useSharedReducer<{ total: number }, Action>(
     total,
     { total: 0 },
-    { name: 'showcase-votes' },
+    { name: "showcase-votes" },
   );
 
   const hammer = (fn: () => void) => {
@@ -64,7 +64,7 @@ export function ReducerPage() {
         </ol>
         <p className="hint">
           Two presses, one increment. The state converged perfectly — every tab agrees on 5 — but
-          one of the two intentions is simply gone, because{' '}
+          one of the two intentions is simply gone, because{" "}
           <strong>what crossed the wire was the total, not the act of adding</strong>. Totals
           overwrite each other. That is what a register is for, and it is the right answer for
           "which theme is selected"; it is the wrong one for "how many".
@@ -74,22 +74,22 @@ export function ReducerPage() {
       <Card title="useSharedReducer — an operation log" aside="loses nothing">
         <div className="row">
           <div className="big">{ordered.total}</div>
-          <button type="button" onClick={() => dispatch({ type: 'add', by: 1 })}>
+          <button type="button" onClick={() => dispatch({ type: "add", by: 1 })}>
             +1
           </button>
-          <button type="button" onClick={() => hammer(() => dispatch({ type: 'add', by: 1 }))}>
+          <button type="button" onClick={() => hammer(() => dispatch({ type: "add", by: 1 }))}>
             +1 × 10
           </button>
           <button
             type="button"
             className="ghost"
-            onClick={() => dispatch({ type: 'add', by: -ordered.total })}
+            onClick={() => dispatch({ type: "add", by: -ordered.total })}
           >
             reset
           </button>
         </div>
         <p className="hint">
-          Same race, reaches 20 every time. The difference is what travels: each press sends the{' '}
+          Same race, reaches 20 every time. The difference is what travels: each press sends the{" "}
           <strong>action</strong> — <code>{'{ type: "add", by: 1 }'}</code> — and never a total. Two
           actions arriving from two tabs are two different things to do, so both are kept and both
           are applied: 4 → 5 → 6.

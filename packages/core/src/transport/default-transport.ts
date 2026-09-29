@@ -1,11 +1,11 @@
-import { devWarn } from '../dev.js';
-import { BroadcastChannelTransport } from './broadcast-channel-transport.js';
-import { NoopTransport } from './noop-transport.js';
-import { StorageTransport } from './storage-transport.js';
-import type { Transport } from './transport.types.js';
+import { devWarn } from "../dev.js";
+import { BroadcastChannelTransport } from "./broadcast-channel-transport.js";
+import { NoopTransport } from "./noop-transport.js";
+import { StorageTransport } from "./storage-transport.js";
+import type { Transport } from "./transport.types.js";
 
 export function isBroadcastChannelAvailable(): boolean {
-  return typeof BroadcastChannel !== 'undefined';
+  return typeof BroadcastChannel !== "undefined";
 }
 
 /**
@@ -17,12 +17,12 @@ export function isBroadcastChannelAvailable(): boolean {
  * Safari's old private mode exposed the object and threw on every setItem.
  */
 export function isStorageEventAvailable(): boolean {
-  if (typeof addEventListener !== 'function') return false;
+  if (typeof addEventListener !== "function") return false;
   try {
     const storage = globalThis.localStorage;
     if (!storage) return false;
-    const probe = 'use-everywhere:probe';
-    storage.setItem(probe, '1');
+    const probe = "use-everywhere:probe";
+    storage.setItem(probe, "1");
     storage.removeItem(probe);
     return true;
   } catch {
@@ -43,19 +43,19 @@ export function defaultTransport(name: string): Transport {
   if (isBroadcastChannelAvailable()) return new BroadcastChannelTransport(name);
 
   if (isStorageEventAvailable()) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       devWarn(
-        'UE1009',
-        'no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.',
+        "UE1009",
+        "no BroadcastChannel; using the storage-event fallback. Values serialise as JSON, not structured clone — keep them JSON-shaped.",
       );
     }
     return new StorageTransport(name);
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     devWarn(
-      'UE1010',
-      'no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.',
+      "UE1010",
+      "no BroadcastChannel and no usable localStorage: nothing is shared between tabs. Storage is probably blocked.",
     );
   }
   return new NoopTransport();

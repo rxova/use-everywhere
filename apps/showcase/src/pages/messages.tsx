@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   useAnswer,
   useAsk,
@@ -8,10 +8,10 @@ import {
   useOnMessage,
   usePeers,
   useSend,
-} from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
-import { colorOf } from '../shell/Shell.js';
+} from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
+import { colorOf } from "../shell/Shell.js";
 
 /**
  * The message map is the contract: types and payloads, checked at compile time.
@@ -22,13 +22,13 @@ import { colorOf } from '../shell/Shell.js';
  */
 type Messages = {
   toast: { text: string };
-  'sign-out': { reason: string };
-  'who-has-focus': null;
+  "sign-out": { reason: string };
+  "who-has-focus": null;
 };
 
 /** Replies, keyed by the message they answer. Same rule. */
 type Replies = {
-  'who-has-focus': { clientId: string; focused: boolean };
+  "who-has-focus": { clientId: string; focused: boolean };
 };
 
 export function MessagesPage() {
@@ -38,43 +38,43 @@ export function MessagesPage() {
   // which is worth showing rather than letting the reader discover it as a
   // timeout they assume is a bug.
   const alone = usePeers().length === 0;
-  const channel = useChannel<Messages, Replies>('showcase-events');
+  const channel = useChannel<Messages, Replies>("showcase-events");
   const post = useSend(channel);
   const ask = useAsk(channel);
 
   const [received, setReceived] = useState<{ seq: number; text: string; who: string }[]>([]);
   const [signedOut, setSignedOut] = useState<string | null>(null);
-  const [answer, setAnswer] = useState<string>('');
-  const [draft, setDraft] = useState('Table 4 is ready');
+  const [answer, setAnswer] = useState<string>("");
+  const [draft, setDraft] = useState("Table 4 is ready");
 
-  useOnMessage(channel, 'toast', (payload, meta) => {
+  useOnMessage(channel, "toast", (payload, meta) => {
     setReceived((prev) =>
       [
-        { seq: prev.length, text: payload.text, who: meta.self ? 'you' : meta.clientId },
+        { seq: prev.length, text: payload.text, who: meta.self ? "you" : meta.clientId },
         ...prev,
       ].slice(0, 8),
     );
   });
 
-  useOnMessage(channel, 'sign-out', (payload) => setSignedOut(payload.reason));
+  useOnMessage(channel, "sign-out", (payload) => setSignedOut(payload.reason));
 
   // Only the leader answers. Without that gate the first reply to arrive wins,
   // which is fine for "any tab will do" and wrong for "the tab that owns this".
-  useAnswer(channel, 'who-has-focus', () => ({ clientId: self, focused: document.hasFocus() }), {
+  useAnswer(channel, "who-has-focus", () => ({ clientId: self, focused: document.hasFocus() }), {
     enabled: isLeader,
   });
 
   const askLeader = async () => {
-    setAnswer('…');
+    setAnswer("…");
     try {
-      const reply = await ask('who-has-focus', null, { timeoutMs: 1500 });
+      const reply = await ask("who-has-focus", null, { timeoutMs: 1500 });
       setAnswer(
-        `${reply.clientId === self ? 'this tab' : reply.clientId.slice(0, 6)} · ${
-          reply.focused ? 'focused' : 'in the background'
+        `${reply.clientId === self ? "this tab" : reply.clientId.slice(0, 6)} · ${
+          reply.focused ? "focused" : "in the background"
         }`,
       );
     } catch {
-      setAnswer('nobody answered in time');
+      setAnswer("nobody answered in time");
     }
   };
 
@@ -97,12 +97,12 @@ export function MessagesPage() {
             onChange={(event) => setDraft(event.target.value)}
             style={{ flex: 1 }}
           />
-          <button type="button" className="primary" onClick={() => post('toast', { text: draft })}>
+          <button type="button" className="primary" onClick={() => post("toast", { text: draft })}>
             broadcast
           </button>
           <button
             type="button"
-            onClick={() => post('toast', { text: draft }, { echo: true })}
+            onClick={() => post("toast", { text: draft }, { echo: true })}
             title="Deliver to this tab as well"
           >
             broadcast + echo
@@ -118,18 +118,18 @@ export function MessagesPage() {
               <li key={item.seq}>
                 <span
                   className="peer"
-                  style={{ background: item.who === 'you' ? 'var(--ink-soft)' : colorOf(item.who) }}
+                  style={{ background: item.who === "you" ? "var(--ink-soft)" : colorOf(item.who) }}
                 />
                 <span>{item.text}</span>
-                <span className="who">{item.who === 'you' ? 'you' : item.who.slice(0, 6)}</span>
+                <span className="who">{item.who === "you" ? "you" : item.who.slice(0, 6)}</span>
               </li>
             ))}
           </ul>
         )}
         <p className="hint">
           A post does <strong>not</strong> come back to the sender by default — same as a raw
-          `BroadcastChannel`, and the reason your own optimistic update does not run twice. Pass{' '}
-          <code>{'{ echo: true }'}</code> when one handler should serve every tab including this
+          `BroadcastChannel`, and the reason your own optimistic update does not run twice. Pass{" "}
+          <code>{"{ echo: true }"}</code> when one handler should serve every tab including this
           one.
         </p>
       </Card>
@@ -140,7 +140,7 @@ export function MessagesPage() {
             type="button"
             className="danger"
             onClick={() =>
-              post('sign-out', { reason: 'signed out in another tab' }, { echo: true })
+              post("sign-out", { reason: "signed out in another tab" }, { echo: true })
             }
           >
             sign out everywhere
@@ -161,13 +161,13 @@ export function MessagesPage() {
 
       <Card
         title="ask — a question with an answer"
-        aside={alone ? 'needs a second tab' : isLeader ? 'this tab answers' : 'the leader answers'}
+        aside={alone ? "needs a second tab" : isLeader ? "this tab answers" : "the leader answers"}
       >
         <div className="row">
           <button type="button" onClick={() => void askLeader()} disabled={alone}>
             ask who has focus
           </button>
-          <code>{alone ? 'open another tab to ask one' : answer || '—'}</code>
+          <code>{alone ? "open another tab to ask one" : answer || "—"}</code>
         </div>
         <p className="hint">
           <code>ask</code> returns a promise, and it asks <strong>the other tabs</strong> — a
@@ -194,7 +194,7 @@ const reply = await useAsk(channel)('who-has-focus', null, { timeoutMs: 1500 });
 
       <div className="note">
         <strong>Typed, and optionally validated.</strong> The message map is compile-time. For
-        payloads crossing a version boundary — a tab on last week's deploy — attach a{' '}
+        payloads crossing a version boundary — a tab on last week's deploy — attach a{" "}
         <code>schema</code> (Zod, Valibot, anything Standard Schema) and a message that no longer
         matches is dropped loudly instead of cast by faith.
       </div>

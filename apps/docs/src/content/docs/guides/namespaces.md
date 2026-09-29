@@ -1,6 +1,6 @@
 ---
-title: 'Namespaces for micro-frontends'
-description: 'A BroadcastChannel is global to the origin, so a bus name is an identity. How to namespace keys so independently deployed micro-frontends cannot collide.'
+title: "Namespaces for micro-frontends"
+description: "A BroadcastChannel is global to the origin, so a bus name is an identity. How to namespace keys so independently deployed micro-frontends cannot collide."
 sidebar:
   order: 8
 ---
@@ -14,9 +14,9 @@ Nothing warns about this, and nothing can: from the library's side it is
 indistinguishable from the case it exists to serve, two tabs sharing state.
 
 ```ts
-import { createNamespace } from 'use-everywhere';
+import { createNamespace } from "use-everywhere";
 
-export const checkout = createNamespace('checkout');
+export const checkout = createNamespace("checkout");
 ```
 
 Every name from that namespace is prefixed, so `checkout.useSharedState('items',
@@ -29,13 +29,13 @@ Call it **at module scope**, once per app, and export it:
 
 ```ts
 // checkout/bus.ts
-export const checkout = createNamespace('checkout');
+export const checkout = createNamespace("checkout");
 
 // checkout/Cart.tsx
-import { checkout } from './bus';
+import { checkout } from "./bus";
 
 function Cart() {
-  const [items, setItems] = checkout.useSharedState('items', []);
+  const [items, setItems] = checkout.useSharedState("items", []);
   const peers = checkout.usePeers();
   // …
 }
@@ -50,7 +50,7 @@ Options keep their meanings. A `store` or `name` you pass is a name _within_ the
 namespace:
 
 ```ts
-checkout.useSharedState('theme', 'dark', { store: 'settings' });
+checkout.useSharedState("theme", "dark", { store: "settings" });
 // bus "checkout:settings"
 ```
 
@@ -67,7 +67,7 @@ Three different words that all sound like "scope", kept deliberately distinct:
 They compose without interacting:
 
 ```ts
-checkout.useSharedState('draft', '', { scope: 'tab' });
+checkout.useSharedState("draft", "", { scope: "tab" });
 //        ^ the checkout app's bus     ^ but never leaves this tab
 ```
 
@@ -89,7 +89,7 @@ protocols they partition loudly. See
 `getTransportKind` want:
 
 ```ts
-observeBus(checkout.busName('settings'), (event) => console.log(event));
+observeBus(checkout.busName("settings"), (event) => console.log(event));
 // listens on "checkout:settings"
 ```
 

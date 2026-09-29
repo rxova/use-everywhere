@@ -1,7 +1,7 @@
-import { defineAtModuleScope } from '../rules/define-at-module-scope.js';
-import { ruleTester } from './rule-tester.js';
+import { defineAtModuleScope } from "../rules/define-at-module-scope.js";
+import { ruleTester } from "./rule-tester.js";
 
-ruleTester.run('define-at-module-scope', defineAtModuleScope, {
+ruleTester.run("define-at-module-scope", defineAtModuleScope, {
   valid: [
     {
       code: `import { createStoreHooks } from 'use-everywhere';\nconst cart = createStoreHooks('cart');`,
@@ -18,20 +18,20 @@ ruleTester.run('define-at-module-scope', defineAtModuleScope, {
   invalid: [
     {
       code: `function Cart() { const cart = createStoreHooks('cart'); return null; }`,
-      errors: [{ messageId: 'notModuleScope', data: { name: 'createStoreHooks' } }],
+      errors: [{ messageId: "notModuleScope", data: { name: "createStoreHooks" } }],
     },
     {
       code: `const useChat = () => defineChannel('chat');`,
-      errors: [{ messageId: 'notModuleScope' }],
+      errors: [{ messageId: "notModuleScope" }],
     },
     {
       code: `function setup() { return createNamespace('checkout'); }`,
-      errors: [{ messageId: 'notModuleScope' }],
+      errors: [{ messageId: "notModuleScope" }],
     },
     // Namespaced factories are the same call by another route.
     {
       code: `import { ns } from './ns';\nfunction Cart() { return ns.createStoreHooks('cart'); }`,
-      errors: [{ messageId: 'notModuleScope' }],
+      errors: [{ messageId: "notModuleScope" }],
     },
   ],
 });

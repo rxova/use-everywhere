@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { getSharedStore, useSharedState, type MessageMeta } from 'use-everywhere';
-import { colorOf } from '../origins.js';
+import { useEffect, useRef, useState } from "react";
+import { getSharedStore, useSharedState, type MessageMeta } from "use-everywhere";
+import { colorOf } from "../origins.js";
 
 interface Patch {
   seq: number;
@@ -20,7 +20,7 @@ function usePatchLog(limit = 6): Patch[] {
       const patch: Patch = {
         seq: seq.current++,
         key,
-        value: JSON.stringify(value)?.slice(0, 40) ?? 'undefined',
+        value: JSON.stringify(value)?.slice(0, 40) ?? "undefined",
         who: meta.clientId,
         kind: meta.kind,
         self: meta.self,
@@ -32,21 +32,21 @@ function usePatchLog(limit = 6): Patch[] {
 }
 
 export function SharedStateDemo() {
-  const [count, setCount] = useSharedState('count', 0);
-  const [note, setNote] = useSharedState('note', '');
-  const [workerTicks] = useSharedState('workerTicks', 0);
+  const [count, setCount] = useSharedState("count", 0);
+  const [note, setNote] = useSharedState("note", "");
+  const [workerTicks] = useSharedState("workerTicks", 0);
   const [workerOn, setWorkerOn] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const log = usePatchLog();
 
   const toggleWorker = () => {
     if (workerRef.current) {
-      workerRef.current.postMessage('stop');
+      workerRef.current.postMessage("stop");
       workerRef.current = null;
       setWorkerOn(false);
     } else {
-      workerRef.current = new Worker(new URL('../tick-worker.ts', import.meta.url), {
-        type: 'module',
+      workerRef.current = new Worker(new URL("../tick-worker.ts", import.meta.url), {
+        type: "module",
       });
       setWorkerOn(true);
     }
@@ -60,7 +60,7 @@ export function SharedStateDemo() {
     workerRef.current = null;
     setWorkerOn(false);
   };
-  useEffect(() => () => workerRef.current?.postMessage('stop'), []);
+  useEffect(() => () => workerRef.current?.postMessage("stop"), []);
 
   return (
     <>
@@ -91,7 +91,7 @@ export function SharedStateDemo() {
         <h2>useSharedState('workerTicks') — written by a Web Worker</h2>
         <div className="row">
           <button data-testid="toggle-worker" onClick={toggleWorker}>
-            {workerOn ? 'Stop worker' : 'Start worker'}
+            {workerOn ? "Stop worker" : "Start worker"}
           </button>
           {workerOn && (
             <button data-testid="kill-worker" onClick={killWorker}>
@@ -107,7 +107,7 @@ export function SharedStateDemo() {
           second. Square dots in the strip above are workers.
         </p>
         <p className="hint">
-          <strong>Stop</strong> asks it to shut down, so it says goodbye and its dot goes at once.{' '}
+          <strong>Stop</strong> asks it to shut down, so it says goodbye and its dot goes at once.{" "}
           <strong>Kill</strong> is <code>terminate()</code> — no goodbye, so the dot lingers for a
           few seconds until presence gives up on it. Both are correct; only one is instant.
         </p>
@@ -122,11 +122,11 @@ export function SharedStateDemo() {
             {log.map((p) => (
               <li key={p.seq}>
                 <span
-                  className={`dot${p.kind === 'worker' ? ' worker' : ''}`}
+                  className={`dot${p.kind === "worker" ? " worker" : ""}`}
                   style={{ background: colorOf(p.who), width: 9, height: 9 }}
                 />
                 <span className="k">{p.key}</span> = {p.value}
-                <span>· {p.self ? 'you' : `${p.kind} ${p.who}`}</span>
+                <span>· {p.self ? "you" : `${p.kind} ${p.who}`}</span>
               </li>
             ))}
           </ul>

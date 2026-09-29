@@ -1,6 +1,6 @@
 ---
-title: 'Persistence: versions, migrations, hydration'
-description: 'Persist shared state across reloads, and handle the version skew that comes with it: schema versions, migrations and hydration.'
+title: "Persistence: versions, migrations, hydration"
+description: "Persist shared state across reloads, and handle the version skew that comes with it: schema versions, migrations and hydration."
 sidebar:
   order: 9
 ---
@@ -18,8 +18,8 @@ invisible.
 ## Versioning your state's shape
 
 ```ts
-const settings = createStoreHooks('settings', {
-  persist: localStorageAdapter('app:settings'),
+const settings = createStoreHooks("settings", {
+  persist: localStorageAdapter("app:settings"),
   persistVersion: 2,
   migrate: (state, from) => {
     if (from < 2) return { ...state, fullName: `${state.first} ${state.last}` };
@@ -70,12 +70,12 @@ outranks a migration of stale disk.
 ### Handling failure
 
 ```ts
-createStoreHooks('settings', {
-  persist: localStorageAdapter('app:settings'),
+createStoreHooks("settings", {
+  persist: localStorageAdapter("app:settings"),
   persistVersion: 2,
   migrate,
   onRestoreError: ({ reason, found, expected }) => {
-    telemetry.warn('persist.restore', { reason, found, expected });
+    telemetry.warn("persist.restore", { reason, found, expected });
   },
 });
 ```
@@ -136,8 +136,8 @@ IndexedDB for everything large or not JSON-shaped.** Using both is normal —
 they are separate adapters on separate stores.
 
 ```ts
-createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
-createStoreHooks('workspace', { persist: indexedDbAdapter('workspace') });
+createStoreHooks("settings", { persist: localStorageAdapter("app:settings") });
+createStoreHooks("workspace", { persist: indexedDbAdapter("workspace") });
 ```
 
 Note that `indexedDbAdapter` takes **no serializer**, on purpose. IndexedDB

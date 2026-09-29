@@ -1,6 +1,6 @@
 ---
-title: 'ESLint plugin'
-description: 'eslint-plugin-use-everywhere catches the cross-tab mistakes types cannot: unstable bus names, non-cloneable values and captured leader effects.'
+title: "ESLint plugin"
+description: "eslint-plugin-use-everywhere catches the cross-tab mistakes types cannot: unstable bus names, non-cloneable values and captured leader effects."
 sidebar:
   order: 1
 ---
@@ -21,7 +21,7 @@ pnpm add -D eslint-plugin-use-everywhere
 
 ```js
 // eslint.config.js
-import useEverywhere from 'eslint-plugin-use-everywhere';
+import useEverywhere from "eslint-plugin-use-everywhere";
 
 export default [
   // …your config
@@ -53,7 +53,7 @@ means no `parserOptions.project`, no typed-linting cost, and no opinion about
 values it cannot see:
 
 ```ts
-useSharedState('cart', initialFromProps); // not judged — nothing to read
+useSharedState("cart", initialFromProps); // not judged — nothing to read
 ```
 
 They match on call names, including through a namespace

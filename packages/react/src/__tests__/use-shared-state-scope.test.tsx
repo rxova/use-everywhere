@@ -1,12 +1,12 @@
-import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { BroadcastChannelTransport, createSharedStore } from '@use-everywhere/core';
-import { useSharedState } from '../use-shared-state.js';
-import type { ShareScope } from '../use-shared-state.types.js';
+import { act, render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { BroadcastChannelTransport, createSharedStore } from "@use-everywhere/core";
+import { useSharedState } from "../use-shared-state.js";
+import type { ShareScope } from "../use-shared-state.types.js";
 
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
-function otherClient(name: string, kind: 'tab' | 'worker') {
+function otherClient(name: string, kind: "tab" | "worker") {
   return createSharedStore(
     name,
     { count: 0 },
@@ -15,7 +15,7 @@ function otherClient(name: string, kind: 'tab' | 'worker') {
 }
 
 function Counter({ store, scope }: { store: string; scope: ShareScope }) {
-  const [count, setCount] = useSharedState('count', 0, { store, scope });
+  const [count, setCount] = useSharedState("count", 0, { store, scope });
   return (
     <button data-testid="count" onClick={() => setCount((c) => c + 1)}>
       {count}
@@ -23,11 +23,11 @@ function Counter({ store, scope }: { store: string; scope: ShareScope }) {
   );
 }
 
-describe('useSharedState scope option', () => {
+describe("useSharedState scope option", () => {
   it("scope 'tab' shares between components but never across tabs", async () => {
     function Pair() {
-      const [a] = useSharedState('count', 0, { store: 's1', scope: 'tab' });
-      const [, setB] = useSharedState('count', 0, { store: 's1', scope: 'tab' });
+      const [a] = useSharedState("count", 0, { store: "s1", scope: "tab" });
+      const [, setB] = useSharedState("count", 0, { store: "s1", scope: "tab" });
       return (
         <>
           <span data-testid="a">{a}</span>
@@ -36,16 +36,16 @@ describe('useSharedState scope option', () => {
       );
     }
     render(<Pair />);
-    const peer = otherClient('s1', 'tab');
+    const peer = otherClient("s1", "tab");
     await flush();
 
-    act(() => peer.set('count', 99)); // another tab writes — must NOT arrive
+    act(() => peer.set("count", 99)); // another tab writes — must NOT arrive
     await flush();
-    expect(screen.getByTestId('a').textContent).toBe('0');
+    expect(screen.getByTestId("a").textContent).toBe("0");
 
-    act(() => screen.getByTestId('bump').click()); // same-tab sharing still works
+    act(() => screen.getByTestId("bump").click()); // same-tab sharing still works
     await flush();
-    expect(screen.getByTestId('a').textContent).toBe('5');
+    expect(screen.getByTestId("a").textContent).toBe("5");
 
     expect(peer.getSnapshot().count).toBe(99); // and nothing leaked out
     peer.close();
@@ -53,17 +53,17 @@ describe('useSharedState scope option', () => {
 
   it("scope 'tabs' accepts writes from tabs but ignores workers", async () => {
     render(<Counter store="s2" scope="tabs" />);
-    const worker = otherClient('s2', 'worker');
-    const tab = otherClient('s2', 'tab');
+    const worker = otherClient("s2", "worker");
+    const tab = otherClient("s2", "tab");
     await flush();
 
-    act(() => worker.set('count', 13));
+    act(() => worker.set("count", 13));
     await flush();
-    expect(screen.getByTestId('count').textContent).toBe('0');
+    expect(screen.getByTestId("count").textContent).toBe("0");
 
-    act(() => tab.set('count', 2));
+    act(() => tab.set("count", 2));
     await flush();
-    expect(screen.getByTestId('count').textContent).toBe('2');
+    expect(screen.getByTestId("count").textContent).toBe("2");
 
     worker.close();
     tab.close();
@@ -71,20 +71,20 @@ describe('useSharedState scope option', () => {
 
   it("scope 'everywhere' accepts writes from workers too", async () => {
     render(<Counter store="s3" scope="everywhere" />);
-    const worker = otherClient('s3', 'worker');
+    const worker = otherClient("s3", "worker");
     await flush();
 
-    act(() => worker.set('count', 8));
+    act(() => worker.set("count", 8));
     await flush();
 
-    expect(screen.getByTestId('count').textContent).toBe('8');
+    expect(screen.getByTestId("count").textContent).toBe("8");
     worker.close();
   });
 
-  it('scopes are independent namespaces for the same store name', async () => {
+  it("scopes are independent namespaces for the same store name", async () => {
     function Both() {
-      const [shared] = useSharedState('count', 0, { store: 's4', scope: 'everywhere' });
-      const [local] = useSharedState('count', 0, { store: 's4', scope: 'tab' });
+      const [shared] = useSharedState("count", 0, { store: "s4", scope: "everywhere" });
+      const [local] = useSharedState("count", 0, { store: "s4", scope: "tab" });
       return (
         <>
           <span data-testid="shared">{shared}</span>
@@ -93,14 +93,14 @@ describe('useSharedState scope option', () => {
       );
     }
     render(<Both />);
-    const peer = otherClient('s4', 'tab');
+    const peer = otherClient("s4", "tab");
     await flush();
 
-    act(() => peer.set('count', 3));
+    act(() => peer.set("count", 3));
     await flush();
 
-    expect(screen.getByTestId('shared').textContent).toBe('3');
-    expect(screen.getByTestId('local').textContent).toBe('0');
+    expect(screen.getByTestId("shared").textContent).toBe("3");
+    expect(screen.getByTestId("local").textContent).toBe("0");
     peer.close();
   });
 });

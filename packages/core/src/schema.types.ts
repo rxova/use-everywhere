@@ -10,7 +10,7 @@
  * Only the parts that are read here are declared. The full spec has more.
  */
 export interface StandardSchemaV1<Input = unknown, Output = Input> {
-  readonly '~standard': {
+  readonly "~standard": {
     readonly version: 1;
     readonly vendor: string;
     readonly validate: (
@@ -31,7 +31,7 @@ export interface InvalidPayload {
   /** Message type for a channel, key for a store. */
   readonly key: string;
   /** `'in'` — a peer sent it; `'out'` — this client tried to send it. */
-  readonly direction: 'in' | 'out';
+  readonly direction: "in" | "out";
   /** The value as it arrived. Not validated, so genuinely `unknown`. */
   readonly payload: unknown;
   /** One line per issue the schema reported, or a single line explaining a schema that could not be used. */

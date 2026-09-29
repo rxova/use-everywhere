@@ -12,7 +12,7 @@
  * point. The `expect` is only there to give vitest something to run — a type-only
  * file would be dropped from the suite entirely.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
 import type {
   LockManagerLike,
@@ -20,10 +20,10 @@ import type {
   SharedWorkerLike,
   SharedWorkerTransportOptions,
   UseLeaderOptions,
-} from '../index.js';
+} from "../index.js";
 
-describe('the core types React callers need', () => {
-  it('lets a lock manager be named, not just passed', () => {
+describe("the core types React callers need", () => {
+  it("lets a lock manager be named, not just passed", () => {
     // The shape `useLeader({ locks })` accepts. Minimal on purpose: the point is
     // that the type is nameable here, not that this is a usable fake.
     const locks = {
@@ -35,7 +35,7 @@ describe('the core types React callers need', () => {
     expect(options.locks).toBe(locks);
   });
 
-  it('lets a SharedWorker factory be typed from this package alone', () => {
+  it("lets a SharedWorker factory be typed from this package alone", () => {
     const port = {
       start: () => undefined,
       close: () => undefined,
@@ -46,7 +46,7 @@ describe('the core types React callers need', () => {
 
     const worker = { port } satisfies SharedWorkerLike;
     const options = {
-      url: 'https://example.test/relay.js',
+      url: "https://example.test/relay.js",
       factory: () => worker,
     } satisfies SharedWorkerTransportOptions;
 

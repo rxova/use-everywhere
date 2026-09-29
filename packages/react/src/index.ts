@@ -1,34 +1,34 @@
-export { useSharedState } from './use-shared-state.js';
-export { useSharedReducer } from './use-shared-reducer.js';
-export { useSharedSelector, shallowEqual } from './use-shared-selector.js';
-export type { UseSharedSelectorOptions } from './use-shared-selector.js';
-export type { UseSharedReducerOptions } from './use-shared-reducer.js';
-export type { ShareScope, UseSharedStateOptions } from './use-shared-state.types.js';
-export { getSharedStore, DEFAULT_NAME } from './registry.js';
-export type { AnyStore } from './registry.types.js';
-export { useChannel, useOnMessage, useSend, useAsk, useAnswer } from './use-on-message.js';
-export type { UseOnMessageOptions } from './use-on-message.js';
-export { defineChannel } from './define-channel.js';
-export type { ChannelHooks } from './define-channel.types.js';
-export { createStoreHooks } from './create-store-hooks.js';
-export type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
-export { usePeers, useClientId, usePresenceMetadata } from './use-peers.js';
-export type { UsePeersOptions } from './use-peers.js';
-export { useHydrated } from './use-hydrated.js';
-export { useLeader, useIsLeader, useLeaderEffect } from './use-leader.js';
-export type { UseLeaderOptions } from './use-leader.types.js';
-export { getLeader } from './registry.js';
+export { useSharedState } from "./use-shared-state.js";
+export { useSharedReducer } from "./use-shared-reducer.js";
+export { useSharedSelector, shallowEqual } from "./use-shared-selector.js";
+export type { UseSharedSelectorOptions } from "./use-shared-selector.js";
+export type { UseSharedReducerOptions } from "./use-shared-reducer.js";
+export type { ShareScope, UseSharedStateOptions } from "./use-shared-state.types.js";
+export { getSharedStore, DEFAULT_NAME } from "./registry.js";
+export type { AnyStore } from "./registry.types.js";
+export { useChannel, useOnMessage, useSend, useAsk, useAnswer } from "./use-on-message.js";
+export type { UseOnMessageOptions } from "./use-on-message.js";
+export { defineChannel } from "./define-channel.js";
+export type { ChannelHooks } from "./define-channel.types.js";
+export { createStoreHooks } from "./create-store-hooks.js";
+export type { CreateStoreHooksOptions, StoreHooks } from "./create-store-hooks.types.js";
+export { usePeers, useClientId, usePresenceMetadata } from "./use-peers.js";
+export type { UsePeersOptions } from "./use-peers.js";
+export { useHydrated } from "./use-hydrated.js";
+export { useLeader, useIsLeader, useLeaderEffect } from "./use-leader.js";
+export type { UseLeaderOptions } from "./use-leader.types.js";
+export { getLeader } from "./registry.js";
 // Shadows the core factory on purpose: a React app installs one package, and
 // the namespace it wants is the one that carries hooks.
-export { createNamespace } from './namespace.js';
-export type { ReactNamespace } from './namespace.js';
-export { useWindowResult } from './use-window-result.js';
+export { createNamespace } from "./namespace.js";
+export type { ReactNamespace } from "./namespace.js";
+export { useWindowResult } from "./use-window-result.js";
 export type {
   UseWindowResult,
   OpenedWindowStatus,
   OpenedWindowState,
   OpenedWindowControls,
-} from './use-window-result.types.js';
+} from "./use-window-result.types.js";
 
 // The core surface, enumerated rather than re-exported with `export *`, so a
 // React app still needs one dependency without this package's public API
@@ -67,7 +67,7 @@ export {
   isBroadcastChannelAvailable,
   isStorageEventAvailable,
   isSharedWorkerAvailable,
-} from '@use-everywhere/core';
+} from "@use-everywhere/core";
 export type {
   Namespace,
   Channel,
@@ -130,4 +130,4 @@ export type {
   PeerKind,
   Version,
   CommonOptions,
-} from '@use-everywhere/core';
+} from "@use-everywhere/core";

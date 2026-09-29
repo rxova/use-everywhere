@@ -26,20 +26,20 @@ Writes broadcast patches; replicas converge last-writer-wins; tabs opened
 later hydrate to the current value via a hello/snapshot handshake.
 
 ```ts
-import { createSharedStore } from '@use-everywhere/core';
+import { createSharedStore } from "@use-everywhere/core";
 
-const store = createSharedStore('checkout', { step: 0, payment: 'idle' });
+const store = createSharedStore("checkout", { step: 0, payment: "idle" });
 
 // Imperative writes through the proxy — they sync everywhere:
 store.state.step++;
 
 // Or explicit (supports functional updates):
-store.set('payment', 'processing');
-store.set('step', (prev) => prev + 1);
+store.set("payment", "processing");
+store.set("step", (prev) => prev + 1);
 
 // React to changes from any tab, worker, or this one:
 store.subscribe((key, value, meta) => {
-  console.log(`${String(key)} = ${value}`, meta.self ? '(me)' : `(peer ${meta.clientId})`);
+  console.log(`${String(key)} = ${value}`, meta.self ? "(me)" : `(peer ${meta.clientId})`);
 });
 
 // Immutable snapshot, replaced per change (useSyncExternalStore-compatible):
@@ -50,7 +50,7 @@ Options let you delimit what a store accepts — e.g. ignore writes coming from
 workers:
 
 ```ts
-createSharedStore('ui', { theme: 'light' }, { accept: (meta) => meta.kind !== 'worker' });
+createSharedStore("ui", { theme: "light" }, { accept: (meta) => meta.kind !== "worker" });
 ```
 
 ## Typed events
@@ -59,18 +59,18 @@ Fire-and-forget messages between contexts. No history: a tab that joins later
 never sees old events (use shared state for anything a late joiner must know).
 
 ```ts
-import { createChannel } from '@use-everywhere/core';
+import { createChannel } from "@use-everywhere/core";
 
-type AuthEvents = { 'logged-out': undefined; 'session-renewed': { expiresAt: number } };
+type AuthEvents = { "logged-out": undefined; "session-renewed": { expiresAt: number } };
 
-const channel = createChannel<AuthEvents>('auth');
+const channel = createChannel<AuthEvents>("auth");
 
-const off = channel.on('logged-out', (_payload, meta) => {
+const off = channel.on("logged-out", (_payload, meta) => {
   console.log(`tab ${meta.clientId} logged out`);
-  window.location.assign('/login');
+  window.location.assign("/login");
 });
 
-channel.post('logged-out', undefined); // delivered to every OTHER context
+channel.post("logged-out", undefined); // delivered to every OTHER context
 ```
 
 ## Presence
@@ -79,9 +79,9 @@ Who else is on this origin right now? Heartbeat-based, with instant goodbyes
 on clean tab closes and pruning (~5s) for crashed ones.
 
 ```ts
-import { createPresence } from '@use-everywhere/core';
+import { createPresence } from "@use-everywhere/core";
 
-const presence = createPresence('app');
+const presence = createPresence("app");
 presence.subscribe(() => {
   console.log(presence.getPeers()); // [{ id: 'p8m1q4', kind: 'tab', lastSeen: … }]
 });
@@ -94,19 +94,19 @@ page on domain B, and the payment page must report back.
 
 ```ts
 // On the opener (https://shop.example.com):
-import { openWindow } from '@use-everywhere/core';
+import { openWindow } from "@use-everywhere/core";
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
 const opened = openWindow<ToPayment, FromPayment, Receipt>(
-  'https://pay.example.com/checkout',
-  { peerOrigin: 'https://pay.example.com' }, // required — '*' throws
+  "https://pay.example.com/checkout",
+  { peerOrigin: "https://pay.example.com" }, // required — '*' throws
 );
 
-opened.post('order', { orderId: '48-291', amount: '$69.03' }); // queued until the child is ready
-opened.on('progress', ({ step }) => console.log('payment step:', step));
+opened.post("order", { orderId: "48-291", amount: "$69.03" }); // queued until the child is ready
+opened.on("progress", ({ step }) => console.log("payment step:", step));
 
 const receipt = await opened.result; // the child's finish() value
 // rejects with WindowClosedError if the user closes the window first
@@ -114,14 +114,14 @@ const receipt = await opened.result; // the child's finish() value
 
 ```ts
 // On the opened page (https://pay.example.com):
-import { connectToOpener } from '@use-everywhere/core';
+import { connectToOpener } from "@use-everywhere/core";
 
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
-  peerOrigin: 'https://shop.example.com',
+  peerOrigin: "https://shop.example.com",
 });
 
-conn.on('order', (order) => showOrderSummary(order)); // your UI code
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's `result`
+conn.on("order", (order) => showOrderSummary(order)); // your UI code
+conn.finish({ receiptId: "r-123", last4: "4242" }); // resolves the opener's `result`
 conn.close();
 ```
 
@@ -137,13 +137,13 @@ Every engine accepts an injected transport, so "many tabs" fits in one test —
 no browser required:
 
 ```ts
-import { createSharedStore, MemoryHub } from '@use-everywhere/core';
+import { createSharedStore, MemoryHub } from "@use-everywhere/core";
 
 const hub = new MemoryHub();
-const tabA = createSharedStore('t', { n: 0 }, { transport: () => hub.connect() });
-const tabB = createSharedStore('t', { n: 0 }, { transport: () => hub.connect() });
+const tabA = createSharedStore("t", { n: 0 }, { transport: () => hub.connect() });
+const tabB = createSharedStore("t", { n: 0 }, { transport: () => hub.connect() });
 
-tabA.set('n', 1);
+tabA.set("n", 1);
 await new Promise((r) => setTimeout(r, 0));
 tabB.getSnapshot().n; // 1
 ```

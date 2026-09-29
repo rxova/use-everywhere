@@ -6,4 +6,4 @@
  * import { MemoryHub } from 'use-everywhere/testing';
  * ```
  */
-export { MemoryHub, MemoryTransport } from '@use-everywhere/core/testing';
+export { MemoryHub, MemoryTransport } from "@use-everywhere/core/testing";

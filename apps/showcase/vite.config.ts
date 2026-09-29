@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 /**
  * The showcase ships to GitHub Pages under a repository path, so every asset
@@ -9,5 +9,5 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig({
   plugins: [react()],
-  base: process.env.SHOWCASE_BASE ?? '/',
+  base: process.env.SHOWCASE_BASE ?? "/",
 });

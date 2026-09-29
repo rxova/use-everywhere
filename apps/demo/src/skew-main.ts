@@ -1,4 +1,4 @@
-import { createPresence, createSharedStore, getWireSkew } from '@use-everywhere/core';
+import { createPresence, createSharedStore, getWireSkew } from "@use-everywhere/core";
 
 /**
  * The version-skew fixture: a real store on a real bus, plus a seam for
@@ -13,7 +13,7 @@ import { createPresence, createSharedStore, getWireSkew } from '@use-everywhere/
  * Its own bus name, so the ordinary demo tabs in the same suite are not dragged
  * into the skew ledger.
  */
-const NAME = 'skew-fixture';
+const NAME = "skew-fixture";
 
 const store = createSharedStore(NAME, { shared: 0 });
 const presence = createPresence(NAME);
@@ -24,13 +24,13 @@ const set = (id: string, value: string) => {
 };
 
 const render = () => {
-  set('client', presence.clientId);
-  set('value', String(store.getSnapshot().shared));
-  set('peers', String(presence.getPeers().length));
+  set("client", presence.clientId);
+  set("value", String(store.getSnapshot().shared));
+  set("peers", String(presence.getPeers().length));
   // Rendered on every tick rather than only on change: skew is observed as a
   // side effect of receiving a wire, so there is no event of its own to
   // subscribe to — which is exactly why getWireSkew is a query.
-  set('skew', getWireSkew(NAME).join(','));
+  set("skew", getWireSkew(NAME).join(","));
 };
 
 store.subscribe(render);
@@ -40,7 +40,7 @@ render();
 
 (globalThis as unknown as Record<string, unknown>).skew = {
   /** Write through the library, the way a peer on this generation would. */
-  bump: () => store.set('shared', (n) => n + 1),
+  bump: () => store.set("shared", (n) => n + 1),
   /**
    * Write as a peer on another generation would: same bus, same envelope
    * shape, different `v`. The version clock is deliberately huge, so if the
@@ -51,13 +51,13 @@ render();
     const channel = new BroadcastChannel(NAME);
     channel.postMessage({
       v,
-      scope: 'state',
-      type: 'patch',
-      key: 'shared',
+      scope: "state",
+      type: "patch",
+      key: "shared",
       value,
-      version: [9999, 'other-generation'],
+      version: [9999, "other-generation"],
       clientId: `generation-v${v}`,
-      kind: 'tab',
+      kind: "tab",
     });
     channel.close();
   },

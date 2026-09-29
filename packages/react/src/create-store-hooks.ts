@@ -1,6 +1,6 @@
-import { configureStore, getStore } from './registry.js';
-import type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
-import { useSharedState } from './use-shared-state.js';
+import { configureStore, getStore } from "./registry.js";
+import type { CreateStoreHooksOptions, StoreHooks } from "./create-store-hooks.types.js";
+import { useSharedState } from "./use-shared-state.js";
 
 /**
  * Bind a store name — and optionally persistence — once, at module level.
@@ -20,7 +20,7 @@ export function createStoreHooks<S extends Record<string, unknown> = Record<stri
   name: string,
   options: CreateStoreHooksOptions = {},
 ): StoreHooks<S> {
-  const scope = options.scope ?? 'everywhere';
+  const scope = options.scope ?? "everywhere";
 
   if (options.persist) {
     configureStore(name, scope, {

@@ -6,8 +6,8 @@
  * app follows the reader's light/dark preference for free, because every
  * neutral in the token set flips.
  */
-@import '@rxova/brand/fonts.css';
-@import '@rxova/brand/tokens.css';
+@import "@rxova/brand/fonts.css";
+@import "@rxova/brand/tokens.css";
 
 :root {
   --bg: var(--rx-bg);
@@ -31,7 +31,7 @@
   --tint: color-mix(in srgb, var(--rx-primary) 12%, var(--rx-bg));
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   --gold: var(--rx-accent-a);
   --bad: #ff6a5e;
 }
@@ -141,7 +141,7 @@ code {
   color: var(--ink);
 }
 
-.nav__link[aria-current='page'] {
+.nav__link[aria-current="page"] {
   background: var(--tint);
   color: var(--accent-soft);
 }
@@ -227,11 +227,11 @@ code {
   padding: 2px 9px;
 }
 
-.seg__btn:hover:not([aria-pressed='true']) {
+.seg__btn:hover:not([aria-pressed="true"]) {
   color: var(--ink);
 }
 
-.seg__btn[aria-pressed='true'] {
+.seg__btn[aria-pressed="true"] {
   background: var(--accent);
   color: var(--rx-bg);
 }
@@ -363,8 +363,8 @@ button.danger {
   border-color: color-mix(in srgb, var(--bad) 40%, var(--rx-rule));
 }
 
-input[type='text'],
-input[type='number'] {
+input[type="text"],
+input[type="number"] {
   background: var(--sunken);
   border: 1px solid var(--rx-rule-strong);
   color: var(--ink);
@@ -375,8 +375,8 @@ input[type='number'] {
   min-width: 0;
 }
 
-input[type='text']:focus,
-input[type='number']:focus {
+input[type="text"]:focus,
+input[type="number"]:focus {
   outline: none;
   border-color: var(--accent);
 }

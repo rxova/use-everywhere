@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   getTransportKind,
   getWireSkew,
   isBroadcastChannelAvailable,
   isStorageEventAvailable,
   WIRE_VERSION,
-} from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
+} from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
 
 export function TransportsPage() {
   const [kind, setKind] = useState<string | null>(null);
@@ -15,8 +15,8 @@ export function TransportsPage() {
 
   useEffect(() => {
     const read = () => {
-      setKind(getTransportKind('use-everywhere'));
-      setSkew(getWireSkew('use-everywhere'));
+      setKind(getTransportKind("use-everywhere"));
+      setSkew(getWireSkew("use-everywhere"));
     };
     read();
     const timer = setInterval(read, 700);
@@ -25,12 +25,12 @@ export function TransportsPage() {
 
   const rows: [string, string, boolean | null][] = [
     [
-      'BroadcastChannel',
-      'the real thing: structured clone, no polling',
+      "BroadcastChannel",
+      "the real thing: structured clone, no polling",
       isBroadcastChannelAvailable(),
     ],
-    ['storage event', 'fallback: JSON only, same-origin, still works', isStorageEventAvailable()],
-    ['none', 'nothing is shared — and it says so', null],
+    ["storage event", "fallback: JSON only, same-origin, still works", isStorageEventAvailable()],
+    ["none", "nothing is shared — and it says so", null],
   ];
 
   return (
@@ -45,9 +45,9 @@ export function TransportsPage() {
         </>
       }
     >
-      <Card title="What this tab is running on" aside={kind ?? 'no bus yet'}>
+      <Card title="What this tab is running on" aside={kind ?? "no bus yet"}>
         <div className="row">
-          <span className={`tag ${kind === 'none' ? 'tag--bad' : 'tag--on'}`}>{kind ?? '—'}</span>
+          <span className={`tag ${kind === "none" ? "tag--bad" : "tag--on"}`}>{kind ?? "—"}</span>
           <code>getTransportKind('use-everywhere')</code>
         </div>
         <table style={{ marginTop: 14 }}>
@@ -63,7 +63,7 @@ export function TransportsPage() {
               <tr key={name}>
                 <td>{name}</td>
                 <td>{meaning}</td>
-                <td>{available === null ? '—' : available ? 'yes' : 'no'}</td>
+                <td>{available === null ? "—" : available ? "yes" : "no"}</td>
               </tr>
             ))}
           </tbody>
@@ -84,7 +84,7 @@ export function TransportsPage() {
               no foreign versions seen on this bus
             </span>
           ) : (
-            <span className="tag tag--bad">also seen: v{skew.join(', v')}</span>
+            <span className="tag tag--bad">also seen: v{skew.join(", v")}</span>
           )}
         </div>
         <p className="hint">

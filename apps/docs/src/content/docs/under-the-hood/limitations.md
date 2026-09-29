@@ -1,6 +1,6 @@
 ---
-title: 'Limitations & FAQ'
-description: 'What use-everywhere deliberately does not do, and the questions that come up most — including why leader election is advisory rather than a lock.'
+title: "Limitations & FAQ"
+description: "What use-everywhere deliberately does not do, and the questions that come up most — including why leader election is advisory rather than a lock."
 sidebar:
   order: 4
 ---
@@ -19,9 +19,9 @@ gone; reopen and you start from initial values. Nothing touches
 **If you want it to survive**, say so:
 
 ```tsx
-import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from "use-everywhere";
 
-const settings = createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
+const settings = createStoreHooks("settings", { persist: localStorageAdapter("app:settings") });
 ```
 
 See [createStoreHooks](../hooks/create-store-hooks.md).
@@ -30,8 +30,8 @@ Do **not** hand-roll it with a write-through effect:
 
 ```tsx
 // Don't. This is subtly wrong.
-const [draft, setDraft] = useSharedState('draft', localStorage.getItem('draft') ?? '');
-useEffect(() => localStorage.setItem('draft', draft), [draft]);
+const [draft, setDraft] = useSharedState("draft", localStorage.getItem("draft") ?? "");
+useEffect(() => localStorage.setItem("draft", draft), [draft]);
 ```
 
 Two things break. Every tab runs that effect, so N tabs race to write the
@@ -54,8 +54,8 @@ Best-effort does not have to mean invisible. Every built-in adapter takes an
 `onError` callback, so you can measure how often it is failing for real users:
 
 ```ts
-localStorageAdapter('settings', {
-  onError: (error, operation) => telemetry.warn('persist', { operation, error }),
+localStorageAdapter("settings", {
+  onError: (error, operation) => telemetry.warn("persist", { operation, error }),
 });
 ```
 
@@ -122,7 +122,7 @@ are tunable on the core API — tighten them for a UI that must notice a peer
 leaving quickly:
 
 ```ts
-createPresence('my-app', { pruneAfterMs: 5000, probeGraceMs: 1000 });
+createPresence("my-app", { pruneAfterMs: 5000, probeGraceMs: 1000 });
 ```
 
 A peer that is genuinely gone still disappears, within `pruneAfterMs +
@@ -190,7 +190,7 @@ Redux.
 A value that cannot cross the wire **throws, and the write does not happen**:
 
 ```ts
-store.set('handlers', { onDone: () => {} });
+store.set("handlers", { onDone: () => {} });
 // TypeError: the value for key "handlers" cannot cross the wire
 // (structured clone failed); the write was not applied.
 ```

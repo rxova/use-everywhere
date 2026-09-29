@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 // Needs a page: the whole subject is what several copies of the library do when
 // they share one, and the rendezvous point is `globalThis`.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getBus } from '../bus.js';
-import { createLeader } from '../leader.js';
-import { createPresence } from '../presence.js';
-import { resetRendezvous } from '../rendezvous.js';
-import { createSharedStore } from '../shared-store.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getBus } from "../bus.js";
+import { createLeader } from "../leader.js";
+import { createPresence } from "../presence.js";
+import { resetRendezvous } from "../rendezvous.js";
+import { createSharedStore } from "../shared-store.js";
 
 /**
  * Two micro-frontends on one page, each having bundled its own copy of this
@@ -22,14 +22,14 @@ import { createSharedStore } from '../shared-store.js';
 async function secondCopy() {
   vi.resetModules();
   return {
-    bus: await import('../bus.js'),
-    store: await import('../shared-store.js'),
-    leader: await import('../leader.js'),
-    presence: await import('../presence.js'),
+    bus: await import("../bus.js"),
+    store: await import("../shared-store.js"),
+    leader: await import("../leader.js"),
+    presence: await import("../presence.js"),
   };
 }
 
-describe('two copies of the library on one page', () => {
+describe("two copies of the library on one page", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     resetRendezvous();
@@ -39,11 +39,11 @@ describe('two copies of the library on one page', () => {
     vi.resetModules();
   });
 
-  it('are one client, not two', async () => {
+  it("are one client, not two", async () => {
     const b = await secondCopy();
 
-    const mine = getBus('mi-identity');
-    const theirs = b.bus.getBus('mi-identity');
+    const mine = getBus("mi-identity");
+    const theirs = b.bus.getBus("mi-identity");
 
     // A second clientId here is a second presence dot for one page, and a
     // second candidate for a seat that is supposed to be per-page.
@@ -53,15 +53,15 @@ describe('two copies of the library on one page', () => {
     theirs.release();
   });
 
-  it('share state between them, synchronously', async () => {
+  it("share state between them, synchronously", async () => {
     const b = await secondCopy();
 
-    const mine = createSharedStore<{ n: number }>('mi-state', { n: 0 });
-    const theirs = b.store.createSharedStore('mi-state', { n: 0 }) as ReturnType<
+    const mine = createSharedStore<{ n: number }>("mi-state", { n: 0 });
+    const theirs = b.store.createSharedStore("mi-state", { n: 0 }) as ReturnType<
       typeof createSharedStore<{ n: number }>
     >;
 
-    mine.set('n', 7);
+    mine.set("n", 7);
 
     // No await. A sibling on this page sees the write in the same task, rather
     // than after a BroadcastChannel round trip — the difference between two
@@ -69,14 +69,14 @@ describe('two copies of the library on one page', () => {
     expect(theirs.getSnapshot().n).toBe(7);
 
     // And back the other way, so neither copy is privileged by load order.
-    theirs.set('n', 9);
+    theirs.set("n", 9);
     expect(mine.getSnapshot().n).toBe(9);
 
     mine.close();
     theirs.close();
   });
 
-  it('do not count each other as peers', async () => {
+  it("do not count each other as peers", async () => {
     // Real timers, and that is load-bearing: happy-dom's BroadcastChannel does
     // not deliver while timers are faked, so under fake timers two *separate*
     // buses would also report no peers and this would pass without proving
@@ -84,8 +84,8 @@ describe('two copies of the library on one page', () => {
     vi.useRealTimers();
     const b = await secondCopy();
 
-    const mine = createPresence('mi-peers');
-    const theirs = b.presence.createPresence('mi-peers');
+    const mine = createPresence("mi-peers");
+    const theirs = b.presence.createPresence("mi-peers");
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // One page, one entry. Seeing "1 other tab" while alone in the browser is
@@ -97,15 +97,15 @@ describe('two copies of the library on one page', () => {
     theirs.close();
   });
 
-  it('do not become their own peer when a sibling writes', async () => {
+  it("do not become their own peer when a sibling writes", async () => {
     // The regression that shipping local fan-out introduced, and that a devtool
     // rendering "Peers (1)" next to its own id is what caught: presence counts
     // any wire as proof of life, and a sibling's state patch now arrives
     // carrying *our* clientId, because a page is one client.
-    const presence = createPresence('mi-selfpeer');
-    const store = createSharedStore<{ n: number }>('mi-selfpeer', { n: 0 });
+    const presence = createPresence("mi-selfpeer");
+    const store = createSharedStore<{ n: number }>("mi-selfpeer", { n: 0 });
 
-    store.set('n', 1);
+    store.set("n", 1);
     await vi.advanceTimersByTimeAsync(50);
 
     expect(presence.getPeers()).toEqual([]);
@@ -114,11 +114,11 @@ describe('two copies of the library on one page', () => {
     store.close();
   });
 
-  it('elect one leader between them, not one each', async () => {
+  it("elect one leader between them, not one each", async () => {
     const b = await secondCopy();
 
-    const mine = createLeader('mi-leader', { strategy: 'heartbeat' });
-    const theirs = b.leader.createLeader('mi-leader', { strategy: 'heartbeat' });
+    const mine = createLeader("mi-leader", { strategy: "heartbeat" });
+    const theirs = b.leader.createLeader("mi-leader", { strategy: "heartbeat" });
     await vi.advanceTimersByTimeAsync(2_000);
 
     // Both hold it, because both *are* it: one client, one seat. What must not
@@ -132,11 +132,11 @@ describe('two copies of the library on one page', () => {
     theirs.close();
   });
 
-  it('release independently — one copy closing does not cut the other off', async () => {
+  it("release independently — one copy closing does not cut the other off", async () => {
     const b = await secondCopy();
 
-    const mine = createSharedStore<{ n: number }>('mi-refs', { n: 0 });
-    const theirs = b.store.createSharedStore('mi-refs', { n: 0 }) as ReturnType<
+    const mine = createSharedStore<{ n: number }>("mi-refs", { n: 0 });
+    const theirs = b.store.createSharedStore("mi-refs", { n: 0 }) as ReturnType<
       typeof createSharedStore<{ n: number }>
     >;
 
@@ -144,37 +144,37 @@ describe('two copies of the library on one page', () => {
     // surviving copy holding a dead transport that silently accepts writes.
     mine.close();
 
-    theirs.set('n', 3);
+    theirs.set("n", 3);
     expect(theirs.getSnapshot().n).toBe(3);
 
     theirs.close();
   });
 
-  it('rebuild the bus after the last copy has gone', async () => {
-    const first = getBus('mi-rebuild');
+  it("rebuild the bus after the last copy has gone", async () => {
+    const first = getBus("mi-rebuild");
     const firstId = first.clientId;
     first.release();
 
     // The table must drop a bus at refcount zero, or a page that tore
     // everything down would reattach to a closed transport.
-    const second = getBus('mi-rebuild');
+    const second = getBus("mi-rebuild");
     expect(second.clientId).not.toBe(firstId);
     second.release();
   });
 });
 
-describe('copies that cannot understand each other', () => {
+describe("copies that cannot understand each other", () => {
   beforeEach(() => resetRendezvous());
   afterEach(() => vi.restoreAllMocks());
 
-  it('say so, rather than partitioning in silence', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it("say so, rather than partitioning in silence", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     // A copy compiled against a future rendezvous shape got here first.
-    (globalThis as Record<symbol, unknown>)[Symbol.for('use-everywhere.rendezvous.census')] = {
+    (globalThis as Record<symbol, unknown>)[Symbol.for("use-everywhere.rendezvous.census")] = {
       protocols: [99],
     };
 
-    const bus = getBus('mi-skew');
+    const bus = getBus("mi-skew");
 
     // The two copies still sync over the bus — they just cost an extra presence
     // entry and lose synchronous delivery. That is a trade-off worth naming,

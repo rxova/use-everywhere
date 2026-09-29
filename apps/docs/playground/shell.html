@@ -88,22 +88,22 @@
     <div class="tabs" id="tabs"></div>
 
     <script>
-      const tabs = document.getElementById('tabs');
-      const openButton = document.getElementById('open');
-      const closeButton = document.getElementById('close');
+      const tabs = document.getElementById("tabs");
+      const openButton = document.getElementById("open");
+      const closeButton = document.getElementById("close");
 
       // Labels never repeat, even after a close: two frames called "B" in one
       // session would read as the same tab coming back, which is the one thing
       // this is meant to make legible.
       let next = 0;
-      const nameFor = (index) => String.fromCharCode(65 + (index % 26)) + (index > 25 ? index : '');
+      const nameFor = (index) => String.fromCharCode(65 + (index % 26)) + (index > 25 ? index : "");
 
       function open() {
-        const frame = document.createElement('div');
-        frame.className = 'frame';
-        const iframe = document.createElement('iframe');
+        const frame = document.createElement("div");
+        frame.className = "frame";
+        const iframe = document.createElement("iframe");
         iframe.src = `./tab.html?label=${encodeURIComponent(nameFor(next++))}`;
-        iframe.title = 'A simulated tab';
+        iframe.title = "A simulated tab";
         frame.append(iframe);
         tabs.append(frame);
         sync();
@@ -122,8 +122,8 @@
         openButton.disabled = tabs.childElementCount >= 6;
       }
 
-      openButton.addEventListener('click', open);
-      closeButton.addEventListener('click', close);
+      openButton.addEventListener("click", open);
+      closeButton.addEventListener("click", close);
 
       open();
       open();

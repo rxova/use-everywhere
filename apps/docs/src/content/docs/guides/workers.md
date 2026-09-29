@@ -1,6 +1,6 @@
 ---
-title: 'Workers'
-description: 'A Web Worker is another peer on the same bus. How to share state and messages with workers and SharedWorkers.'
+title: "Workers"
+description: "A Web Worker is another peer on the same bus. How to share state and messages with workers and SharedWorkers."
 sidebar:
   order: 4
 ---
@@ -19,16 +19,16 @@ directly.
 
 ```ts
 // tick-worker.ts
-import { createSharedStore } from '@use-everywhere/core';
+import { createSharedStore } from "@use-everywhere/core";
 
-const store = createSharedStore('use-everywhere', { workerTicks: 0 });
+const store = createSharedStore("use-everywhere", { workerTicks: 0 });
 
-setInterval(() => store.set('workerTicks', (t) => t + 1), 1000);
+setInterval(() => store.set("workerTicks", (t) => t + 1), 1000);
 ```
 
 ```tsx
 // any component, in any tab
-const [ticks] = useSharedState('workerTicks', 0);
+const [ticks] = useSharedState("workerTicks", 0);
 ```
 
 That is the entire thing. Same store name, same values, and the counter moves in
@@ -41,7 +41,7 @@ a worker announces itself as `'worker'` and tabs as `'tab'`:
 
 ```tsx
 const peers = usePeers();
-const workers = peers.filter((peer) => peer.kind === 'worker');
+const workers = peers.filter((peer) => peer.kind === "worker");
 ```
 
 Pass `kind` explicitly only when the inference is wrong for your setup — a worker
@@ -53,7 +53,7 @@ Sometimes a worker feeds data that only some views want. `scope: 'tabs'` accepts
 writes from tabs and windows and silently drops writes from workers:
 
 ```tsx
-useSharedState('draft', '', { scope: 'tabs' });
+useSharedState("draft", "", { scope: "tabs" });
 ```
 
 ## Leaving: the part that actually matters
@@ -74,7 +74,7 @@ onmessage = () => {
 
 ```ts
 // in the page
-worker.postMessage('stop');
+worker.postMessage("stop");
 ```
 
 **Terminated.** `worker.terminate()` stops the thread mid-instruction. Nothing
@@ -105,7 +105,7 @@ seconds of a dot that is already gone.
 ask nicely and terminate on a timer:
 
 ```ts
-worker.postMessage('stop');
+worker.postMessage("stop");
 setTimeout(() => worker.terminate(), 1000);
 ```
 
@@ -141,11 +141,11 @@ does that by joining its own relay as a peer — `relay.connect()` hands back a
 
 ```js
 // socket-worker.js
-import { relay } from 'use-everywhere/shared-worker';
-import { createSharedStore } from 'use-everywhere';
+import { relay } from "use-everywhere/shared-worker";
+import { createSharedStore } from "use-everywhere";
 
-const store = createSharedStore('feed', { tick: null }, { transport: () => relay.connect() });
-new WebSocket('wss://example.com/feed').onmessage = (e) => store.set('tick', JSON.parse(e.data));
+const store = createSharedStore("feed", { tick: null }, { transport: () => relay.connect() });
+new WebSocket("wss://example.com/feed").onmessage = (e) => store.set("tick", JSON.parse(e.data));
 ```
 
 See [When the worker owns the

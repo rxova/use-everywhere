@@ -24,7 +24,7 @@ coverage:
 # The comment is the point of the integration — a reviewer should see what the
 # branch did to coverage without leaving the pull request.
 comment:
-  layout: 'condensed_header, diff, flags, components'
+  layout: "condensed_header, diff, flags, components"
   require_changes: true
 
 # Flags mirror the packages, so a drop points at one of them rather than at
@@ -35,8 +35,8 @@ flag_management:
     carryforward: true
 
 ignore:
-  - 'apps/**'
-  - 'e2e/**'
-  - 'packages/benchmarks/**'
-  - '**/*.types.ts'
-  - '**/__tests__/**'
+  - "apps/**"
+  - "e2e/**"
+  - "packages/benchmarks/**"
+  - "**/*.types.ts"
+  - "**/__tests__/**"

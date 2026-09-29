@@ -1,17 +1,17 @@
-import type { BusOptions, Bus, BusWire, SharedBusCore } from './bus.types.js';
-import type { PeerKind } from './common.types.js';
-import type { TransportKind } from './transport/transport.types.js';
-import { emitBusEvent } from './debug.js';
-import { devWarn } from './dev.js';
-import { newClientId } from './ids.js';
-import { busTable } from './rendezvous.js';
-import { defaultTransport } from './transport/default-transport.js';
-import { foreignWireVersion, isBusWire, recordSkew } from './wire.js';
+import type { BusOptions, Bus, BusWire, SharedBusCore } from "./bus.types.js";
+import type { PeerKind } from "./common.types.js";
+import type { TransportKind } from "./transport/transport.types.js";
+import { emitBusEvent } from "./debug.js";
+import { devWarn } from "./dev.js";
+import { newClientId } from "./ids.js";
+import { busTable } from "./rendezvous.js";
+import { defaultTransport } from "./transport/default-transport.js";
+import { foreignWireVersion, isBusWire, recordSkew } from "./wire.js";
 
 export { isBusWire };
 
 export function defaultKind(): PeerKind {
-  return typeof document === 'undefined' ? 'worker' : 'tab';
+  return typeof document === "undefined" ? "worker" : "tab";
 }
 
 /**
@@ -28,7 +28,7 @@ export function defaultKind(): PeerKind {
  * could not — a post goes to the transport, and no transport loops back to the
  * context that made it.
  */
-const SHARED_WITHIN_CLIENT = new Set(['state', 'event', 'op']);
+const SHARED_WITHIN_CLIENT = new Set(["state", "event", "op"]);
 
 function createBusCore(name: string, options: BusOptions, onShutdown: () => void): SharedBusCore {
   const transport = (options.transport ?? defaultTransport)(name);
@@ -49,7 +49,7 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
 
   const post = (wire: BusWire, from: { listeners: Set<(wire: BusWire) => void> } | null) => {
     if (closed) return;
-    emitBusEvent(name, 'out', wire);
+    emitBusEvent(name, "out", wire);
     transport.post(wire);
     // Synchronous, and deliberately so: a sibling engine on this page should
     // see a write in the same task, not a BroadcastChannel round trip later.
@@ -70,43 +70,43 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
     }
     if (!isBusWire(data)) return;
     if (data.clientId === clientId) return;
-    emitBusEvent(name, 'in', data);
+    emitBusEvent(name, "in", data);
     // Introduce ourselves to joiners so they see existing peers immediately.
-    if (data.scope === 'presence' && data.type === 'hello') {
-      post({ v: 1, scope: 'presence', type: 'ping', clientId, kind }, null);
+    if (data.scope === "presence" && data.type === "hello") {
+      post({ v: 1, scope: "presence", type: "ping", clientId, kind }, null);
     }
     deliver(data, null);
   });
 
   // Presence heartbeat lives on the bus: hello on join, ping while alive, bye on leave.
-  post({ v: 1, scope: 'presence', type: 'hello', clientId, kind }, null);
+  post({ v: 1, scope: "presence", type: "hello", clientId, kind }, null);
   const heartbeat = setInterval(
-    () => post({ v: 1, scope: 'presence', type: 'ping', clientId, kind }, null),
+    () => post({ v: 1, scope: "presence", type: "ping", clientId, kind }, null),
     options.heartbeatMs ?? 2000,
   );
 
-  const sayBye = () => post({ v: 1, scope: 'presence', type: 'bye', clientId, kind }, null);
+  const sayBye = () => post({ v: 1, scope: "presence", type: "bye", clientId, kind }, null);
   // A tab restored from bfcache said `bye` on the way out and heard nothing
   // while cached; re-announce so peers re-add us and re-ping in reply.
   const onPageShow = (event: Event) => {
     if (!(event as { persisted?: boolean }).persisted) return;
-    post({ v: 1, scope: 'presence', type: 'hello', clientId, kind }, null);
+    post({ v: 1, scope: "presence", type: "hello", clientId, kind }, null);
   };
   // Coming back to the foreground: our timers were clamped while hidden, so
   // peers may have given up on us — and after a laptop wakes, every tab is in
   // that position at once. Re-announcing costs one wire and re-registers us
   // immediately instead of waiting for the next (still slow) heartbeat.
   const onVisible = () => {
-    if (document.visibilityState === 'visible') {
-      post({ v: 1, scope: 'presence', type: 'hello', clientId, kind }, null);
+    if (document.visibilityState === "visible") {
+      post({ v: 1, scope: "presence", type: "hello", clientId, kind }, null);
     }
   };
   // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-  const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
+  const hasWindow = typeof document !== "undefined" && typeof addEventListener === "function";
   if (hasWindow) {
-    addEventListener('pagehide', sayBye);
-    addEventListener('pageshow', onPageShow);
-    addEventListener('visibilitychange', onVisible);
+    addEventListener("pagehide", sayBye);
+    addEventListener("pageshow", onPageShow);
+    addEventListener("visibilitychange", onVisible);
   }
 
   const shutdown = () => {
@@ -114,9 +114,9 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
     closed = true;
     clearInterval(heartbeat);
     if (hasWindow) {
-      removeEventListener('pagehide', sayBye);
-      removeEventListener('pageshow', onPageShow);
-      removeEventListener('visibilitychange', onVisible);
+      removeEventListener("pagehide", sayBye);
+      removeEventListener("pageshow", onPageShow);
+      removeEventListener("visibilitychange", onVisible);
     }
     unsubscribe();
     transport.close();
@@ -128,7 +128,7 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
     name,
     clientId,
     kind,
-    transportKind: transport.kind ?? 'custom',
+    transportKind: transport.kind ?? "custom",
     heartbeatMs: options.heartbeatMs ?? 2000,
     connect(): Bus {
       const handle = { listeners: new Set<(wire: BusWire) => void>() };
@@ -139,7 +139,7 @@ function createBusCore(name: string, options: BusOptions, onShutdown: () => void
         name,
         clientId,
         kind,
-        transportKind: transport.kind ?? 'custom',
+        transportKind: transport.kind ?? "custom",
         post: (wire) => post(wire, handle),
         subscribe(fn) {
           handle.listeners.add(fn);
@@ -203,16 +203,16 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
     // otherwise be silently ignored — an origin-wide setting set from the
     // wrong call site with no test failing.
     if (options.heartbeatMs !== undefined && options.heartbeatMs !== core.heartbeatMs) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== "production") {
         devWarn(
-          'UE1004',
+          "UE1004",
           `bus "${name}": heartbeatMs ignored — the first creator fixes bus options`,
         );
       }
     }
     if (options.kind !== undefined && options.kind !== core.kind) {
-      if (process.env.NODE_ENV !== 'production') {
-        devWarn('UE1005', `bus "${name}": kind ignored — the first creator fixes bus options`);
+      if (process.env.NODE_ENV !== "production") {
+        devWarn("UE1005", `bus "${name}": kind ignored — the first creator fixes bus options`);
       }
     }
   }

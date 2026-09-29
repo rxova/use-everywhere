@@ -20,14 +20,14 @@
  * moment the site is mounted under /packages/use-everywhere/.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, relative } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { join, dirname, relative } from "node:path";
 
-const SRC = 'docs';
-const DEST = 'src/content/docs';
+const SRC = "docs";
+const DEST = "src/content/docs";
 
 /** Docusaurus aside type -> Starlight equivalent. */
-const ASIDES = { info: 'note', warning: 'caution' };
+const ASIDES = { info: "note", warning: "caution" };
 
 /**
  * docs/api/** is TypeDoc output and is deliberately NOT migrated: it is
@@ -36,14 +36,14 @@ const ASIDES = { info: 'note', warning: 'caution' };
  * markdown containing bare generics (`Promise<void>`, `Map<string, T>`) that
  * Astro parses as HTML tags.
  */
-const SKIP = ['api'];
+const SKIP = ["api"];
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
     if (dir === SRC && SKIP.includes(entry)) continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walk(full, out);
-    else if (entry.endsWith('.md') || entry.endsWith('.mdx')) out.push(full);
+    else if (entry.endsWith(".md") || entry.endsWith(".mdx")) out.push(full);
   }
   return out;
 }
@@ -52,7 +52,7 @@ function parseFrontmatter(text) {
   const match = /^---\n([\s\S]*?)\n---\n?/.exec(text);
   if (!match) return { data: {}, body: text };
   const data = {};
-  for (const line of match[1].split('\n')) {
+  for (const line of match[1].split("\n")) {
     const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line.trim());
     if (kv) data[kv[1]] = kv[2].trim();
   }
@@ -60,14 +60,14 @@ function parseFrontmatter(text) {
 }
 
 /** Escape a title for a double-quoted YAML scalar. */
-const yamlString = (s) => `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+const yamlString = (s) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
 let lifted = 0;
 let asidesMapped = 0;
 let asideTitles = 0;
 
 for (const file of walk(SRC)) {
-  const raw = readFileSync(file, 'utf8');
+  const raw = readFileSync(file, "utf8");
   const { data, body: originalBody } = parseFrontmatter(raw);
   let body = originalBody;
 
@@ -76,7 +76,7 @@ for (const file of walk(SRC)) {
   const h1 = /^#\s+(.+?)\s*$/m.exec(body);
   if (!title && h1) {
     title = h1[1];
-    body = body.replace(h1[0], '').replace(/^\n+/, '');
+    body = body.replace(h1[0], "").replace(/^\n+/, "");
     lifted++;
   }
   if (!title) throw new Error(`${file}: no title and no H1 to lift`);
@@ -96,18 +96,18 @@ for (const file of walk(SRC)) {
     return rawTitle ? `:::${mapped}[${rawTitle}]` : `:::${mapped}`;
   });
 
-  const front = [`title: ${yamlString(title.replace(/`/g, ''))}`];
+  const front = [`title: ${yamlString(title.replace(/`/g, ""))}`];
   if (data.description) front.push(`description: ${data.description}`);
   if (data.sidebar_position) front.push(`sidebar:\n  order: ${data.sidebar_position}`);
   if (data.sidebar_label) front.push(`  label: ${data.sidebar_label}`);
 
   // The one page carrying `slug: /` becomes the site index. Starlight wants the
   // file at the collection root for that, so it is relocated rather than slugged.
-  const isIndex = data.slug === '/';
-  const target = isIndex ? join(DEST, 'index.md') : join(DEST, relative(SRC, file));
+  const isIndex = data.slug === "/";
+  const target = isIndex ? join(DEST, "index.md") : join(DEST, relative(SRC, file));
 
   mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, `---\n${front.join('\n')}\n---\n\n${body.trimStart()}`);
+  writeFileSync(target, `---\n${front.join("\n")}\n---\n\n${body.trimStart()}`);
 }
 
 console.log(`migrated ${walk(SRC).length} files`);

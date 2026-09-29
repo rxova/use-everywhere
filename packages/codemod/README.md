@@ -63,9 +63,9 @@ which is correct: `listen` is still `listen`.
 ## Programmatic use
 
 ```ts
-import { transform } from 'use-everywhere-codemod';
+import { transform } from "use-everywhere-codemod";
 
-const { source, changed, warnings } = transform(code, 'Cart.tsx');
+const { source, changed, warnings } = transform(code, "Cart.tsx");
 ```
 
 `run({ paths, dryRun, cwd })` is the same walk the command line performs.

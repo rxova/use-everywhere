@@ -50,17 +50,17 @@ Two transports behind one library: **BroadcastChannel** for same-origin, **postM
 **State, messages, and presence.** No Provider: a BroadcastChannel is already global to the origin, so identity is the channel name and the hooks share module-level singletons.
 
 ```tsx
-import { useState } from 'react';
-import { useSharedState, defineChannel, usePeers } from 'use-everywhere';
+import { useState } from "react";
+import { useSharedState, defineChannel, usePeers } from "use-everywhere";
 
-type ShopEvents = { 'cart-updated': { items: number } };
-const shop = defineChannel<ShopEvents>('shop'); // bind name + types once, at module level
+type ShopEvents = { "cart-updated": { items: number } };
+const shop = defineChannel<ShopEvents>("shop"); // bind name + types once, at module level
 
 function StatusBar() {
-  const [count, setCount] = useSharedState('count', 0); // exists in every tab
+  const [count, setCount] = useSharedState("count", 0); // exists in every tab
 
   const [cartItems, setCartItems] = useState(0);
-  shop.useOnMessage('cart-updated', (payload) => setCartItems(payload.items)); // fires when another tab posts
+  shop.useOnMessage("cart-updated", (payload) => setCartItems(payload.items)); // fires when another tab posts
 
   const peers = usePeers(); // who else is here
 
@@ -76,15 +76,15 @@ function StatusBar() {
 **One tab does the work.** The classic multi-tab bug is N tabs opening N sockets. `useLeaderEffect` runs an effect only in the elected tab, and moves it when that tab goes away.
 
 ```tsx
-import { useLeaderEffect, useIsLeader } from 'use-everywhere';
+import { useLeaderEffect, useIsLeader } from "use-everywhere";
 
 function LiveFeed() {
   useLeaderEffect(() => {
-    const socket = new WebSocket('wss://example.com/feed'); // exactly one, across all tabs
+    const socket = new WebSocket("wss://example.com/feed"); // exactly one, across all tabs
     return () => socket.close(); // runs if this tab loses the seat
   });
 
-  return <span>{useIsLeader() ? 'driving' : 'following'}</span>;
+  return <span>{useIsLeader() ? "driving" : "following"}</span>;
 }
 ```
 
@@ -93,14 +93,14 @@ Leadership is **advisory, not a distributed lock** — good for "don't open five
 **A window on another origin.** Open it, hand it typed data, await its result.
 
 ```tsx
-import { openWindow, useWindowResult } from 'use-everywhere';
+import { openWindow, useWindowResult } from "use-everywhere";
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
 type Receipt = { receiptId: string; last4: string };
 
 const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
-  openWindow('https://pay.example.com/checkout', { peerOrigin: 'https://pay.example.com' }),
+  openWindow("https://pay.example.com/checkout", { peerOrigin: "https://pay.example.com" }),
 );
 // pay.open() from a click handler; pay.status: idle → opening → connected → done
 // pay.result is the child's finish() value; closing early yields 'closed-early'.
@@ -109,13 +109,13 @@ const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
 On the opened page:
 
 ```ts
-import { connectToOpener } from 'use-everywhere';
+import { connectToOpener } from "use-everywhere";
 
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
-  peerOrigin: 'https://shop.example.com',
+  peerOrigin: "https://shop.example.com",
 });
-conn.on('order', (order) => showOrderSummary(order));
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay.result
+conn.on("order", (order) => showOrderSummary(order));
+conn.finish({ receiptId: "r-123", last4: "4242" }); // resolves the opener's pay.result
 ```
 
 ## Packages

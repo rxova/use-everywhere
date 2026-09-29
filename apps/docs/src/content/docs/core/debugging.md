@@ -1,6 +1,6 @@
 ---
-title: 'Debugging'
-description: 'Watch every message crossing the bus in both directions with observeBus and enableDebug — no React involved.'
+title: "Debugging"
+description: "Watch every message crossing the bus in both directions with observeBus and enableDebug — no React involved."
 sidebar:
   order: 5
 ---
@@ -8,7 +8,7 @@ sidebar:
 The bus will tell you everything crossing it, in both directions, without React.
 
 ```ts
-import { enableDebug, observeBus, getBusNames } from 'use-everywhere';
+import { enableDebug, observeBus, getBusNames } from "use-everywhere";
 
 const stop = enableDebug(); // log every wire on the default bus
 stop(); // and stop
@@ -24,8 +24,8 @@ stop(); // and stop
 ## observeBus
 
 ```ts
-const stop = observeBus('settings', ({ direction, wire }) => {
-  if (wire.scope === 'state' && wire.type === 'patch') {
+const stop = observeBus("settings", ({ direction, wire }) => {
+  if (wire.scope === "state" && wire.type === "patch") {
     console.log(direction, wire.key, wire.version);
   }
 });
@@ -59,7 +59,7 @@ bypass the registry, so they're not listed.
 
 ```ts
 enableDebug({
-  name: 'settings', // which bus (default: the shared one)
+  name: "settings", // which bus (default: the shared one)
   log: myLogger, // where to write (default: console.log)
 });
 ```

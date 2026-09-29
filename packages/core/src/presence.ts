@@ -1,6 +1,6 @@
-import { getBus } from './bus.js';
-import type { Peer } from './common.types.js';
-import type { Presence, PresenceOptions } from './presence.types.js';
+import { getBus } from "./bus.js";
+import type { Peer } from "./common.types.js";
+import type { Presence, PresenceOptions } from "./presence.types.js";
 
 /**
  * Tracks the other tabs/windows/workers on this bus. Any message from a peer
@@ -62,8 +62,8 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
   const announce = () =>
     bus.post({
       v: 1,
-      scope: 'presence',
-      type: 'hello',
+      scope: "presence",
+      type: "hello",
       clientId: bus.clientId,
       kind: bus.kind,
       ...(metadata === undefined ? {} : { metadata }),
@@ -74,14 +74,14 @@ export function createPresence(name: string, options: PresenceOptions = {}): Pre
     // because a page is one client. Counting it would put us in our own peer
     // list — "1 other tab" while alone in the browser.
     if (wire.clientId === bus.clientId) return;
-    if (wire.scope === 'presence' && wire.type === 'bye') {
+    if (wire.scope === "presence" && wire.type === "bye") {
       if (peers.delete(wire.clientId)) notify();
       return;
     }
     const existing = peers.get(wire.clientId);
     // Only a hello carries metadata, so a ping must leave what is already known
     // in place rather than blanking it on every heartbeat.
-    const announced = wire.scope === 'presence' ? wire.metadata : undefined;
+    const announced = wire.scope === "presence" ? wire.metadata : undefined;
     const next = announced === undefined ? existing?.metadata : announced;
     peers.set(wire.clientId, {
       id: wire.clientId,

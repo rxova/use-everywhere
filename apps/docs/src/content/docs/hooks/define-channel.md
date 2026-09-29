@@ -1,5 +1,5 @@
 ---
-title: 'defineChannel'
+title: "defineChannel"
 description: "Bind a channel's name and message map once at module level, and get typed useSend and useOnMessage hooks back."
 sidebar:
   order: 6
@@ -13,26 +13,26 @@ channel in one file, and every component gets two-line usage with no
 generics and no name strings to repeat.
 
 ```ts title="shop-channel.ts"
-import { defineChannel } from 'use-everywhere';
+import { defineChannel } from "use-everywhere";
 
-type ShopEvents = { 'cart-updated': { items: number } };
+type ShopEvents = { "cart-updated": { items: number } };
 
-export const shop = defineChannel<ShopEvents>('shop');
+export const shop = defineChannel<ShopEvents>("shop");
 ```
 
 ```tsx title="CartBadge.tsx"
-import { useState } from 'react';
-import { shop } from './shop-channel';
+import { useState } from "react";
+import { shop } from "./shop-channel";
 
 function CartBadge() {
   const [items, setItems] = useState(0);
   const send = shop.useSend();
 
-  shop.useOnMessage('cart-updated', (p) => setItems(p.items)); // other tabs
+  shop.useOnMessage("cart-updated", (p) => setItems(p.items)); // other tabs
 
   const addToCart = () => {
     setItems(items + 1); // 1. this tab, explicitly
-    send('cart-updated', { items: items + 1 }); // 2. every other tab
+    send("cart-updated", { items: items + 1 }); // 2. every other tab
   };
 
   return <button onClick={addToCart}>Cart ({items})</button>;
@@ -68,11 +68,11 @@ channel singleton the standalone hooks use, so all of these are on one wire
 and can be mixed freely:
 
 ```ts
-const bound = defineChannel<ShopEvents>('shop');
+const bound = defineChannel<ShopEvents>("shop");
 
-bound.get() === getChannel('shop'); // same instance
-useChannel<ShopEvents>('shop'); // same instance, in a component
-defineChannel<ShopEvents>('shop').get(); // same instance again
+bound.get() === getChannel("shop"); // same instance
+useChannel<ShopEvents>("shop"); // same instance, in a component
+defineChannel<ShopEvents>("shop").get(); // same instance again
 ```
 
 Two modules calling `defineChannel('shop')` independently talk to each other
