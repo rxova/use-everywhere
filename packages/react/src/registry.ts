@@ -15,17 +15,17 @@ import {
   type ReplyMap,
   type SharedReducer,
   type SharedStoreOptions,
-} from '@use-everywhere/core';
-import { devWarn } from './dev.js';
-import type { AnyStore } from './registry.types.js';
+} from "@use-everywhere/core";
+import { devWarn } from "./dev.js";
+import type { AnyStore } from "./registry.types.js";
 import {
   createServerChannel,
   createServerLeader,
   createServerReducer,
   createServerPresence,
   createServerStore,
-} from './server-stubs.js';
-import type { ShareScope } from './use-shared-state.types.js';
+} from "./server-stubs.js";
+import type { ShareScope } from "./use-shared-state.types.js";
 
 /**
  * A BroadcastChannel is already global to the origin — identity is the name
@@ -46,19 +46,19 @@ const storeConfig = new Map<string, SharedStoreOptions>();
  * no cache to invalidate — but reading it lazily keeps the bundler from
  * folding the branch away in a build that serves both.
  */
-const isServer = () => typeof window === 'undefined';
+const isServer = () => typeof window === "undefined";
 
 /** Per-scope store creation: what leaves this tab and what is let back in. */
 const scopeOptions: Record<ShareScope, SharedStoreOptions> = {
   everywhere: {},
-  tabs: { accept: (meta) => meta.kind !== 'worker' },
+  tabs: { accept: (meta) => meta.kind !== "worker" },
   tab: { transport: () => new NoopTransport() },
 };
 
 /** Imperative access to the store behind useSharedState (patch logs, non-React code). */
 export function getSharedStore(
   name: string = DEFAULT_NAME,
-  scope: ShareScope = 'everywhere',
+  scope: ShareScope = "everywhere",
 ): AnyStore {
   return getStore(name, scope);
 }
@@ -78,12 +78,12 @@ export function getSharedStore(
  */
 function configSignature(options: SharedStoreOptions | undefined): string {
   const persist = options?.persist;
-  if (!persist) return 'none';
+  if (!persist) return "none";
   // `version` is part of the signature and `migrate` is not, for the same
   // reason as the adapter: a hot edit rebuilds the function, but changing the
   // *version* is a deliberate statement that the store would be built
   // differently — and one worth being told about if it comes too late.
-  return `persist:${persist.keys?.join(',') ?? '*'}:${persist.debounceMs ?? 'default'}:v${persist.version ?? 0}`;
+  return `persist:${persist.keys?.join(",") ?? "*"}:${persist.debounceMs ?? "default"}:v${persist.version ?? 0}`;
 }
 
 export function configureStore(name: string, scope: ShareScope, options: SharedStoreOptions): void {
@@ -94,12 +94,12 @@ export function configureStore(name: string, scope: ShareScope, options: SharedS
     // on a change that alters nothing, so an identical redefinition is a no-op
     // and only a genuine conflict is reported.
     if (configSignature(storeConfig.get(key)) === configSignature(options)) return;
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       devWarn(
-        'UE2002',
+        "UE2002",
         `createStoreHooks('${name}') ran after that store was already created, with different options. ` +
-          'The live store keeps the configuration it was built with. Move createStoreHooks to module scope, ' +
-          'before any component reads the store.',
+          "The live store keeps the configuration it was built with. Move createStoreHooks to module scope, " +
+          "before any component reads the store.",
       );
     }
     return;
@@ -107,7 +107,7 @@ export function configureStore(name: string, scope: ShareScope, options: SharedS
   storeConfig.set(key, options);
 }
 
-export function getStore(name: string, scope: ShareScope = 'everywhere'): AnyStore {
+export function getStore(name: string, scope: ShareScope = "everywhere"): AnyStore {
   const key = `${scope} ${name}`;
   let store = stores.get(key);
   if (!store) {
@@ -159,12 +159,12 @@ const leaderOptions = new Map<string, LeaderOptions>();
 
 function warnOnLeaderOptionConflict(name: string, options: LeaderOptions): void {
   const first = leaderOptions.get(name);
-  for (const key of ['heartbeatMs', 'leaseMs'] as const) {
+  for (const key of ["heartbeatMs", "leaseMs"] as const) {
     const requested = options[key];
     if (requested !== undefined && requested !== first?.[key]) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== "production") {
         devWarn(
-          'UE2003',
+          "UE2003",
           `leader "${name}": ${key} ignored — the first useLeader/getLeader call fixes the election timings for this tab.`,
         );
       }
@@ -192,17 +192,17 @@ export function configureChannel<M extends MessageMap>(
     const before = Object.keys(channelConfig.get(name)?.schema ?? {}).sort();
     const after = Object.keys(options.schema ?? {}).sort();
     if (before.join() === after.join()) return;
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       devWarn(
-        'UE2004',
+        "UE2004",
         `defineChannel('${name}') ran after that channel was already created, with different options. ` +
-          'The live channel keeps the configuration it was built with. Move defineChannel to module scope, ' +
-          'before any component sends or receives on it.',
+          "The live channel keeps the configuration it was built with. Move defineChannel to module scope, " +
+          "before any component sends or receives on it.",
       );
     }
     return;
   }
-  channelConfig.set(name, options as ChannelOptions<MessageMap>);
+  channelConfig.set(name, options);
 }
 
 const reducers = new Map<string, SharedReducer<unknown, unknown>>();
@@ -228,11 +228,9 @@ export function getReducer<S, A>(
   const id = `${name} ${key}`;
   let existing = reducers.get(id);
   if (!existing) {
-    existing = (
-      isServer()
-        ? createServerReducer(initial)
-        : createSharedReducer(name, reducer, initial, { key, leader: getLeader(name) })
-    ) as SharedReducer<unknown, unknown>;
+    existing = isServer()
+      ? createServerReducer(initial)
+      : createSharedReducer(name, reducer, initial, { key, leader: getLeader(name) });
     reducers.set(id, existing);
   }
   return existing as unknown as SharedReducer<S, A>;

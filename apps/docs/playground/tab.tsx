@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { useEffect, useRef, useState } from "react";
+import { createRoot } from "react-dom/client";
 
 /**
  * One simulated tab in the docs playground.
@@ -55,16 +55,16 @@ class CuttableChannel extends window.BroadcastChannel {
   }
 }
 
-window.BroadcastChannel = CuttableChannel as typeof BroadcastChannel;
+window.BroadcastChannel = CuttableChannel;
 
-const { useLeader, usePeers, useSharedState } = await import('use-everywhere');
+const { useLeader, usePeers, useSharedState } = await import("use-everywhere");
 
-const BUS = 'ue-playground';
-const label = new URLSearchParams(location.search).get('label') ?? '?';
+const BUS = "ue-playground";
+const label = new URLSearchParams(location.search).get("label") ?? "?";
 
 function Tab() {
-  const [items, setItems] = useSharedState('items', 0, { store: BUS });
-  const [note, setNote] = useSharedState('note', '', { store: BUS });
+  const [items, setItems] = useSharedState("items", 0, { store: BUS });
+  const [note, setNote] = useSharedState("note", "", { store: BUS });
   const peers = usePeers({ name: BUS, includeSelf: true });
   // The heartbeat election, pinned rather than left on `auto`.
   //
@@ -76,7 +76,7 @@ function Tab() {
   // while they are still looking.
   const { isLeader, leaderId } = useLeader({
     name: BUS,
-    strategy: 'heartbeat',
+    strategy: "heartbeat",
     heartbeatMs: 400,
     leaseMs: 1600,
   });
@@ -97,11 +97,11 @@ function Tab() {
   };
 
   return (
-    <div className={`tab${dead ? ' tab--dead' : ''}`}>
+    <div className={`tab${dead ? " tab--dead" : ""}`}>
       <header className="tab__bar">
         <span className="tab__name">tab {label}</span>
-        <span className={`tab__seat${isLeader ? ' tab__seat--leader' : ''}`}>
-          {dead ? 'gone' : isLeader ? '♔ leader' : leaderId ? 'follower' : 'no leader'}
+        <span className={`tab__seat${isLeader ? " tab__seat--leader" : ""}`}>
+          {dead ? "gone" : isLeader ? "♔ leader" : leaderId ? "follower" : "no leader"}
         </span>
       </header>
 
@@ -140,4 +140,4 @@ function Tab() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<Tab />);
+createRoot(document.getElementById("root")!).render(<Tab />);

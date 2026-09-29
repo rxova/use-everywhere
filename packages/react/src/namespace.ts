@@ -2,24 +2,24 @@ import {
   createNamespace as createCoreNamespace,
   type MessageMap,
   type Namespace as CoreNamespace,
-} from '@use-everywhere/core';
-import { defineChannel } from './define-channel.js';
-import type { ChannelHooks } from './define-channel.types.js';
-import { createStoreHooks } from './create-store-hooks.js';
-import type { CreateStoreHooksOptions, StoreHooks } from './create-store-hooks.types.js';
-import type { ChannelOptions } from '@use-everywhere/core';
-import { getSharedStore } from './registry.js';
-import type { AnyStore } from './registry.types.js';
-import { useHydrated } from './use-hydrated.js';
-import { useClientId, usePeers, usePresenceMetadata } from './use-peers.js';
-import type { UsePeersOptions } from './use-peers.js';
-import { useIsLeader, useLeader, useLeaderEffect } from './use-leader.js';
-import type { UseLeaderOptions } from './use-leader.types.js';
-import { useSharedSelector } from './use-shared-selector.js';
-import type { UseSharedSelectorOptions } from './use-shared-selector.js';
-import { useSharedState } from './use-shared-state.js';
-import type { UseSharedStateOptions } from './use-shared-state.types.js';
-import type { Peer, LeaderSnapshot } from '@use-everywhere/core';
+} from "@use-everywhere/core";
+import { defineChannel } from "./define-channel.js";
+import type { ChannelHooks } from "./define-channel.types.js";
+import { createStoreHooks } from "./create-store-hooks.js";
+import type { CreateStoreHooksOptions, StoreHooks } from "./create-store-hooks.types.js";
+import type { ChannelOptions } from "@use-everywhere/core";
+import { getSharedStore } from "./registry.js";
+import type { AnyStore } from "./registry.types.js";
+import { useHydrated } from "./use-hydrated.js";
+import { useClientId, usePeers, usePresenceMetadata } from "./use-peers.js";
+import type { UsePeersOptions } from "./use-peers.js";
+import { useIsLeader, useLeader, useLeaderEffect } from "./use-leader.js";
+import type { UseLeaderOptions } from "./use-leader.types.js";
+import { useSharedSelector } from "./use-shared-selector.js";
+import type { UseSharedSelectorOptions } from "./use-shared-selector.js";
+import { useSharedState } from "./use-shared-state.js";
+import type { UseSharedStateOptions } from "./use-shared-state.types.js";
+import type { Peer, LeaderSnapshot } from "@use-everywhere/core";
 
 /**
  * The React half of a namespace: the same hooks, with every bus name prefixed.
@@ -34,7 +34,7 @@ export interface ReactNamespace extends CoreNamespace {
     options?: CreateStoreHooksOptions,
   ): StoreHooks<S>;
   defineChannel<M extends MessageMap>(name?: string, options?: ChannelOptions<M>): ChannelHooks<M>;
-  getSharedStore(name?: string, scope?: UseSharedStateOptions['scope']): AnyStore;
+  getSharedStore(name?: string, scope?: UseSharedStateOptions["scope"]): AnyStore;
   useSharedState<T>(
     key: string,
     initial: T,
@@ -76,6 +76,8 @@ export interface ReactNamespace extends CoreNamespace {
  */
 export function createNamespace(namespace: string): ReactNamespace {
   const core = createCoreNamespace(namespace);
+  // `busName` closes over the namespace and never reads `this`.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { busName } = core;
 
   return {

@@ -1,8 +1,8 @@
-import type { Rule, Scope } from 'eslint';
-import type { CallExpression, Expression, Node, SpreadElement, Super } from 'estree';
+import type { Rule, Scope } from "eslint";
+import type { CallExpression, Expression, Node, SpreadElement, Super } from "estree";
 
 /** Where the rule docs live, so every message can point at a page. */
-const DOCS_BASE = 'https://rxova.org/packages/use-everywhere/eslint';
+const DOCS_BASE = "https://rxova.org/packages/use-everywhere/eslint";
 
 export const docsUrl = (rule: string): string => `${DOCS_BASE}/${rule}/`;
 
@@ -18,11 +18,11 @@ export const docsUrl = (rule: string): string => `${DOCS_BASE}/${rule}/`;
  */
 export const calleeName = (node: CallExpression): string | null => {
   const callee: Expression | Super = node.callee;
-  if (callee.type === 'Identifier') return callee.name;
+  if (callee.type === "Identifier") return callee.name;
   if (
-    callee.type === 'MemberExpression' &&
+    callee.type === "MemberExpression" &&
     !callee.computed &&
-    callee.property.type === 'Identifier'
+    callee.property.type === "Identifier"
   ) {
     return callee.property.name;
   }
@@ -32,7 +32,7 @@ export const calleeName = (node: CallExpression): string | null => {
 /** The argument at `index`, or null when it is absent or spread. */
 export const argumentAt = (node: CallExpression, index: number): Expression | null => {
   const argument: Expression | SpreadElement | undefined = node.arguments[index];
-  if (!argument || argument.type === 'SpreadElement') return null;
+  if (!argument || argument.type === "SpreadElement") return null;
   return argument;
 };
 
@@ -44,6 +44,6 @@ export const argumentAt = (node: CallExpression, index: number): Expression | nu
  * exactly once, a call inside a component runs on every render.
  */
 export const atModuleScope = (context: Rule.RuleContext, node: Node): boolean => {
-  const scope: Scope.Scope = context.sourceCode.getScope(node as Rule.Node).variableScope;
-  return scope.type === 'module' || scope.type === 'global';
+  const scope: Scope.Scope = context.sourceCode.getScope(node).variableScope;
+  return scope.type === "module" || scope.type === "global";
 };

@@ -1,4 +1,4 @@
-import type { Persisted, PersistAdapter } from './persist.types.js';
+import type { Persisted, PersistAdapter } from "./persist.types.js";
 
 export interface IndexedDbAdapterOptions {
   /** Database name. Default 'use-everywhere'. */
@@ -8,14 +8,16 @@ export interface IndexedDbAdapterOptions {
    * quota. Persistence stays best-effort either way — this is the
    * observability seam, not a recovery path.
    */
-  onError?: (error: unknown, operation: 'read' | 'write' | 'remove') => void;
+  onError?: (error: unknown, operation: "read" | "write" | "remove") => void;
 }
 
-const STORE = 'state';
+const STORE = "state";
 
 const request = <T>(req: IDBRequest<T>): Promise<T> =>
   new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
+    // `error` is a DOMException whenever `onerror` fires; it is null only before the request settles.
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     req.onerror = () => reject(req.error);
   });
 
@@ -52,10 +54,10 @@ export function indexedDbAdapter(
   key: string,
   options: IndexedDbAdapterOptions = {},
 ): PersistAdapter {
-  const database = options.database ?? 'use-everywhere';
+  const database = options.database ?? "use-everywhere";
   let open: Promise<IDBDatabase> | undefined;
 
-  const report = (error: unknown, operation: 'read' | 'write' | 'remove') => {
+  const report = (error: unknown, operation: "read" | "write" | "remove") => {
     try {
       options.onError?.(error, operation);
     } catch {
@@ -75,10 +77,12 @@ export function indexedDbAdapter(
       // fixed at 1 — so the store never already exists and needs no guard.
       req.onupgradeneeded = () => req.result.createObjectStore(STORE);
       req.onsuccess = () => resolve(req.result);
+      // `error` is a DOMException whenever `onerror` fires; it is null only before the request settles.
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       req.onerror = () => reject(req.error);
       // Another tab holding an older version open blocks the upgrade. Failing
       // here beats hanging forever on a promise nothing will settle.
-      req.onblocked = () => reject(new Error('use-everywhere: IndexedDB upgrade blocked'));
+      req.onblocked = () => reject(new Error("use-everywhere: IndexedDB upgrade blocked"));
     }));
 
   const transact = async <T>(
@@ -92,25 +96,25 @@ export function indexedDbAdapter(
   return {
     async read() {
       try {
-        return (await transact('readonly', (store) => store.get(key))) as Persisted | undefined;
+        return (await transact("readonly", (store) => store.get(key))) as Persisted | undefined;
       } catch (error) {
         // Best-effort: a store that cannot restore is still a working store.
-        report(error, 'read');
+        report(error, "read");
         return undefined;
       }
     },
     async write(snapshot) {
       try {
-        await transact('readwrite', (store) => store.put(snapshot, key));
+        await transact("readwrite", (store) => store.put(snapshot, key));
       } catch (error) {
-        report(error, 'write');
+        report(error, "write");
       }
     },
     async remove() {
       try {
-        await transact('readwrite', (store) => store.delete(key));
+        await transact("readwrite", (store) => store.delete(key));
       } catch (error) {
-        report(error, 'remove');
+        report(error, "remove");
       }
     },
   };
