@@ -1,3 +1,3 @@
-import { mount } from './panel.js';
+import { mount } from "./panel.js";
 
-mount('b');
+mount("b");

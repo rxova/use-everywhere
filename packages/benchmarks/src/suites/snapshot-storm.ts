@@ -1,4 +1,4 @@
-import { BroadcastChannelTransport, createSharedStore } from '@use-everywhere/core';
+import { BroadcastChannelTransport, createSharedStore } from "@use-everywhere/core";
 
 /**
  * What it costs the Nth tab to join a bus that already has N-1 tabs on it.
@@ -37,7 +37,7 @@ const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(
 
 /** Open one more tab onto a bus that already has `tabs` on it, and count the answers. */
 async function joinCost(tabs: number): Promise<StormResult> {
-  const name = uniqueName('bench-storm');
+  const name = uniqueName("bench-storm");
   const options = { transport: (bus: string) => new BroadcastChannelTransport(bus) };
   const initial = Object.fromEntries(
     Array.from({ length: KEYS }, (_, index) => [`k${index}`, index]),
@@ -49,9 +49,9 @@ async function joinCost(tabs: number): Promise<StormResult> {
 
   const spy = new BroadcastChannel(name);
   let snapshots = 0;
-  spy.addEventListener('message', (event: MessageEvent) => {
+  spy.addEventListener("message", (event: MessageEvent) => {
     const message = event.data as { scope?: string; type?: string };
-    if (message.scope === 'state' && message.type === 'snapshot') snapshots += 1;
+    if (message.scope === "state" && message.type === "snapshot") snapshots += 1;
   });
 
   const started = performance.now();

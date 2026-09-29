@@ -1,19 +1,19 @@
-import { createNamespace, useSharedState } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
+import { createNamespace, useSharedState } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
 
 /**
  * Module scope, and two of them: this is what two independently deployed
  * micro-frontends would each do in their own bundle, without knowing about
  * each other.
  */
-const checkout = createNamespace('checkout');
-const inbox = createNamespace('inbox');
+const checkout = createNamespace("checkout");
+const inbox = createNamespace("inbox");
 
 export function NamespacesPage() {
-  const [checkoutTotal, setCheckoutTotal] = checkout.useSharedState('total', 0);
-  const [inboxTotal, setInboxTotal] = inbox.useSharedState('total', 0);
-  const [globalTotal, setGlobalTotal] = useSharedState('total', 0);
+  const [checkoutTotal, setCheckoutTotal] = checkout.useSharedState("total", 0);
+  const [inboxTotal, setInboxTotal] = inbox.useSharedState("total", 0);
+  const [globalTotal, setGlobalTotal] = useSharedState("total", 0);
 
   return (
     <Page

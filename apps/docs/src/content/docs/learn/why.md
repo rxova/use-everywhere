@@ -1,6 +1,6 @@
 ---
-title: 'Why this exists'
-description: 'Two tabs, one checkout, two charges. Why the browser needs multi-tab primitives that React and useState do not provide.'
+title: "Why this exists"
+description: "Two tabs, one checkout, two charges. Why the browser needs multi-tab primitives that React and useState do not provide."
 sidebar:
   order: 3
 ---
@@ -48,17 +48,17 @@ payment, that typically looks like this:
 ```js
 // 1. take a cross-tab lock so only one tab can pay
 async function tryPay() {
-  await navigator.locks.request('payment-48-291', { ifAvailable: true }, async (lock) => {
+  await navigator.locks.request("payment-48-291", { ifAvailable: true }, async (lock) => {
     if (!lock) return showBlocked();
-    broadcastStatus('processing');
+    broadcastStatus("processing");
     await chargeCard();
-    localStorage.setItem('paid-48-291', '1');
-    broadcastStatus('paid');
+    localStorage.setItem("paid-48-291", "1");
+    broadcastStatus("paid");
   });
 }
 
 // 2. hand-wire a channel to tell other tabs
-const bc = new BroadcastChannel('pay-48-291');
+const bc = new BroadcastChannel("pay-48-291");
 function broadcastStatus(s) {
   bc.postMessage({ s, tab: TAB_ID });
   applyStatus(s, TAB_ID); // BroadcastChannel doesn't echo to the sender
@@ -67,11 +67,11 @@ bc.onmessage = (e) => applyStatus(e.data.s, e.data.tab);
 
 // 3. late joiner? BroadcastChannel has no history,
 //    so ALSO check localStorage on load…
-if (localStorage.getItem('paid-48-291')) applyStatus('paid');
+if (localStorage.getItem("paid-48-291")) applyStatus("paid");
 
 // 4. …and listen for storage events as a fallback
-addEventListener('storage', (e) => {
-  if (e.key === 'paid-48-291') applyStatus('paid');
+addEventListener("storage", (e) => {
+  if (e.key === "paid-48-291") applyStatus("paid");
 });
 
 // 5. release / cleanup on unload, handle the lock holder

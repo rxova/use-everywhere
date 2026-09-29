@@ -1,6 +1,6 @@
 ---
-title: 'Security model'
-description: 'Two postures in one library: same-origin state on a shared bus, and cross-origin windows validated by origin, envelope brand and per-connection nonce.'
+title: "Security model"
+description: "Two postures in one library: same-origin state on a shared bus, and cross-origin windows validated by origin, envelope brand and per-connection nonce."
 sidebar:
   order: 2
 ---
@@ -77,8 +77,8 @@ meanwhile navigated somewhere unexpected.
 ### `peerOrigin` is required, `'*'` throws
 
 ```ts
-openWindow(url, { peerOrigin: 'https://pay.example.com' }); // ✅
-openWindow(url, { peerOrigin: '*' }); // ❌ throws
+openWindow(url, { peerOrigin: "https://pay.example.com" }); // ✅
+openWindow(url, { peerOrigin: "*" }); // ❌ throws
 ```
 
 The API is shaped so the insecure thing is not expressible. A wildcard would

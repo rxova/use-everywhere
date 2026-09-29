@@ -1,7 +1,7 @@
-import { getBus } from './bus.js';
-import { newMsgId } from './ids.js';
-import { createLeader } from './leader.js';
-import type { SharedReducer, SharedReducerOptions } from './shared-reducer.types.js';
+import { getBus } from "./bus.js";
+import { newMsgId } from "./ids.js";
+import { createLeader } from "./leader.js";
+import type { SharedReducer, SharedReducerOptions } from "./shared-reducer.types.js";
 
 /**
  * State that converges by *replaying actions in one order*, rather than by
@@ -53,7 +53,7 @@ export function createSharedReducer<S, A>(
   initial: S,
   options: SharedReducerOptions = {},
 ): SharedReducer<S, A> {
-  const key = options.key ?? 'default';
+  const key = options.key ?? "default";
   const bus = getBus(name, options);
   const clientId = bus.clientId;
   const leader =
@@ -101,7 +101,7 @@ export function createSharedReducer<S, A>(
   };
 
   const askForSnapshot = () =>
-    bus.post({ v: 1, scope: 'op', type: 'hello', key, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "op", type: "hello", key, clientId, kind: bus.kind });
 
   /**
    * Take a commit, from the wire or from this client's own sequencing.
@@ -130,8 +130,8 @@ export function createSharedReducer<S, A>(
     const at = lastIssued;
     bus.post({
       v: 1,
-      scope: 'op',
-      type: 'commit',
+      scope: "op",
+      type: "commit",
       key,
       action,
       opId,
@@ -156,25 +156,25 @@ export function createSharedReducer<S, A>(
   };
 
   const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'op' || wire.key !== key) return;
+    if (wire.scope !== "op" || wire.key !== key) return;
 
-    if (wire.type === 'propose') {
+    if (wire.type === "propose") {
       if (!leader.getSnapshot().isLeader) return;
       sequence(wire.action as A, wire.opId);
       return;
     }
 
-    if (wire.type === 'commit') {
+    if (wire.type === "commit") {
       receiveCommit(wire.seq, wire.action as A, wire.opId);
       return;
     }
 
-    if (wire.type === 'hello') {
+    if (wire.type === "hello") {
       if (seq === 0) return; // nothing worth sending
       bus.post({
         v: 1,
-        scope: 'op',
-        type: 'snapshot',
+        scope: "op",
+        type: "snapshot",
         key,
         state: committed,
         seq,
@@ -184,7 +184,7 @@ export function createSharedReducer<S, A>(
       return;
     }
 
-    if (wire.type === 'snapshot') {
+    if (wire.type === "snapshot") {
       if (wire.seq <= seq) return;
       committed = wire.state as S;
       seq = wire.seq;
@@ -211,7 +211,7 @@ export function createSharedReducer<S, A>(
     // be a message it never receives.
     if (leader.getSnapshot().isLeader) sequence(action, opId);
     else
-      bus.post({ v: 1, scope: 'op', type: 'propose', key, action, opId, clientId, kind: bus.kind });
+      bus.post({ v: 1, scope: "op", type: "propose", key, action, opId, clientId, kind: bus.kind });
   };
 
   // Late joiner: adopt whatever order already exists before dispatching into it.

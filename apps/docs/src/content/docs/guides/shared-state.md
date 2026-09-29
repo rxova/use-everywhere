@@ -1,6 +1,6 @@
 ---
-title: 'Shared state'
-description: 'Shared state beyond the counter: choosing how far a value travels, namespacing keys so features cannot collide, and watching two tabs converge.'
+title: "Shared state"
+description: "Shared state beyond the counter: choosing how far a value travels, namespacing keys so features cannot collide, and watching two tabs converge."
 sidebar:
   order: 1
 ---
@@ -14,7 +14,7 @@ that isn't React. If you want the raw API surface instead, that's
 Everything starts from one line:
 
 ```tsx
-const [note, setNote] = useSharedState('note', '');
+const [note, setNote] = useSharedState("note", "");
 ```
 
 `useState` with a bigger blast radius: the value lives in every tab, window,
@@ -26,9 +26,9 @@ Not every value should reach everywhere. The `scope` option delimits the
 blast radius:
 
 ```tsx
-useSharedState('draft', '', { scope: 'everywhere' }); // tabs + windows + workers (default)
-useSharedState('draft', '', { scope: 'tabs' }); // ignore writes from workers
-useSharedState('draft', '', { scope: 'tab' }); // this tab only
+useSharedState("draft", "", { scope: "everywhere" }); // tabs + windows + workers (default)
+useSharedState("draft", "", { scope: "tabs" }); // ignore writes from workers
+useSharedState("draft", "", { scope: "tab" }); // this tab only
 ```
 
 - **`everywhere`** — synced across every context on the origin. The default,
@@ -49,8 +49,8 @@ Keys live inside a named store (default `'use-everywhere'`). Give each
 feature area its own store and stop thinking about key collisions:
 
 ```tsx
-const [step] = useSharedState('step', 0, { store: 'checkout' });
-const [step2] = useSharedState('step', 0, { store: 'onboarding' }); // unrelated
+const [step] = useSharedState("step", 0, { store: "checkout" });
+const [step2] = useSharedState("step", 0, { store: "onboarding" }); // unrelated
 ```
 
 Sharing an origin with code you don't control (micro-frontends, embedded
@@ -112,13 +112,13 @@ Workers, plain modules, event handlers outside components — the core engine
 is the same one the hooks use:
 
 ```ts title="anywhere.ts"
-import { createSharedStore } from '@use-everywhere/core';
+import { createSharedStore } from "@use-everywhere/core";
 
-const store = createSharedStore('checkout', { step: 0 });
+const store = createSharedStore("checkout", { step: 0 });
 store.state.step++; // proxy writes sync everywhere
-store.set('step', (prev) => prev + 1); // functional updates too
+store.set("step", (prev) => prev + 1); // functional updates too
 store.subscribe((key, value, meta) => {
-  console.log(key, value, meta.clientId, meta.self ? '(me)' : '(other tab)');
+  console.log(key, value, meta.clientId, meta.self ? "(me)" : "(other tab)");
 });
 ```
 
@@ -126,9 +126,9 @@ And in React code, `getSharedStore(name, scope)` returns the exact store
 instance the hooks use — handy for patch logs and imperative writes:
 
 ```ts
-import { getSharedStore, DEFAULT_NAME } from 'use-everywhere';
+import { getSharedStore, DEFAULT_NAME } from "use-everywhere";
 
-getSharedStore(DEFAULT_NAME).set('count', 0); // resets every tab's counter
+getSharedStore(DEFAULT_NAME).set("count", 0); // resets every tab's counter
 ```
 
 ## Replace values, don't mutate them
@@ -139,7 +139,7 @@ bumps the key's version clock and broadcasts it. Reaching _inside_ a value
 and changing it in place does not:
 
 ```ts
-store.set('cart', { items: 2 }); // ✅ syncs — new value, new version
+store.set("cart", { items: 2 }); // ✅ syncs — new value, new version
 store.state.cart.items = 3; // ❌ silently local — no version bump, no broadcast
 ```
 
@@ -148,7 +148,7 @@ would version and broadcast it; the value just diverges between tabs. The fix
 is always the same — build the next value and assign it:
 
 ```ts
-const [cart, setCart] = useSharedState('cart', { items: 0 });
+const [cart, setCart] = useSharedState("cart", { items: 0 });
 setCart({ ...cart, items: cart.items + 1 }); // ✅ replace, never mutate
 ```
 
@@ -174,7 +174,7 @@ result differs. A selector that builds an object or array needs an equality
 function, because it returns a new reference every run:
 
 ```tsx
-import { shallowEqual } from 'use-everywhere';
+import { shallowEqual } from "use-everywhere";
 
 const who = useSharedSelector((s) => ({ first: s.first, last: s.last }), { equal: shallowEqual });
 ```
@@ -193,11 +193,11 @@ you never intended.
 `transaction` groups them:
 
 ```ts
-const store = getSharedStore('profile');
+const store = getSharedStore("profile");
 
 store.transaction(() => {
-  store.set('firstName', 'Ada');
-  store.set('lastName', 'Lovelace');
+  store.set("firstName", "Ada");
+  store.set("lastName", "Lovelace");
 });
 ```
 

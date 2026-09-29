@@ -1,6 +1,6 @@
 ---
-title: 'The version clock'
-description: 'How use-everywhere settles conflicts: a four-line per-key counter and client id giving last-writer-wins with a deterministic tie-break.'
+title: "The version clock"
+description: "How use-everywhere settles conflicts: a four-line per-key counter and client id giving last-writer-wins with a deterministic tie-break."
 sidebar:
   order: 3
 ---
@@ -67,7 +67,7 @@ You'd reach for it if you're merging your own versioned data — say, reconcilin
 what came off the bus against what came from your server:
 
 ```ts
-import { newer } from 'use-everywhere';
+import { newer } from "use-everywhere";
 
 if (newer(incoming.version, local.version)) {
   local = incoming;

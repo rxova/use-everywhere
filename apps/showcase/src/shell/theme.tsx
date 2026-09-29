@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import {
   DEFAULT_NAME,
   createStoreHooks,
   localStorageAdapter,
   useSharedState,
-} from 'use-everywhere';
+} from "use-everywhere";
 
-export type Theme = 'system' | 'light' | 'dark';
+export type Theme = "system" | "light" | "dark";
 
 /** Read before paint by the inline script in index.html, so the choice does not flash. */
-const THEME_KEY = 'use-everywhere:showcase-theme';
+const THEME_KEY = "use-everywhere:showcase-theme";
 
 /**
  * The theme lives in the default store, under the same `theme` key the shared
@@ -21,15 +21,15 @@ const THEME_KEY = 'use-everywhere:showcase-theme';
  */
 createStoreHooks(DEFAULT_NAME, {
   persist: localStorageAdapter(THEME_KEY),
-  persistKeys: ['theme'],
+  persistKeys: ["theme"],
 });
 
 export function useTheme() {
-  return useSharedState<Theme>('theme', 'system');
+  return useSharedState<Theme>("theme", "system");
 }
 
-const OPTIONS: readonly Theme[] = ['system', 'light', 'dark'];
-const LABEL: Record<Theme, string> = { system: 'auto', light: 'light', dark: 'dark' };
+const OPTIONS: readonly Theme[] = ["system", "light", "dark"];
+const LABEL: Record<Theme, string> = { system: "auto", light: "light", dark: "dark" };
 
 /**
  * Applies the shared choice to the document. `system` removes the attribute
@@ -42,8 +42,8 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'system') root.removeAttribute('data-theme');
-    else root.setAttribute('data-theme', theme);
+    if (theme === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
   }, [theme]);
 
   return (

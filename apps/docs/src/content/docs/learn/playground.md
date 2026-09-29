@@ -1,6 +1,6 @@
 ---
-title: 'Playground'
-description: 'Real clients in frames on one origin sharing one BroadcastChannel. Change the cart in one and watch the others converge.'
+title: "Playground"
+description: "Real clients in frames on one origin sharing one BroadcastChannel. Change the cart in one and watch the others converge."
 sidebar:
   order: 6
 ---
@@ -41,8 +41,8 @@ demonstration: peers have to notice, because nobody told them.
 Written with the hooks, which is what you would write:
 
 ```tsx
-const [items, setItems] = useSharedState('items', 0);
-const [note, setNote] = useSharedState('note', '');
+const [items, setItems] = useSharedState("items", 0);
+const [note, setNote] = useSharedState("note", "");
 const peers = usePeers({ includeSelf: true });
 const { isLeader } = useLeader();
 ```

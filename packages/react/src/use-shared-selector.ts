@@ -1,6 +1,6 @@
-import { useCallback, useRef, useSyncExternalStore } from 'react';
-import { DEFAULT_NAME, getStore } from './registry.js';
-import type { UseSharedStateOptions } from './use-shared-state.types.js';
+import { useCallback, useRef, useSyncExternalStore } from "react";
+import { DEFAULT_NAME, getStore } from "./registry.js";
+import type { UseSharedStateOptions } from "./use-shared-state.types.js";
 
 export interface UseSharedSelectorOptions extends UseSharedStateOptions {
   /**
@@ -46,7 +46,7 @@ export function useSharedSelector<S extends Record<string, unknown>, T>(
   selector: (state: S) => T,
   options?: UseSharedSelectorOptions,
 ): T {
-  const store = getStore(options?.store ?? DEFAULT_NAME, options?.scope ?? 'everywhere');
+  const store = getStore(options?.store ?? DEFAULT_NAME, options?.scope ?? "everywhere");
   const equal = options?.equal ?? Object.is;
 
   // Kept fresh without resubscribing, so a selector defined inline — which is
@@ -91,7 +91,7 @@ export function useSharedSelector<S extends Record<string, unknown>, T>(
 /** Shallow equality over an object or array, for selectors that build one. */
 export function shallowEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false;
   const left = a as Record<string, unknown>;
   const right = b as Record<string, unknown>;
   const keys = Object.keys(left);

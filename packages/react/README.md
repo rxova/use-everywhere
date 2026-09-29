@@ -22,10 +22,10 @@ Two transports behind one library:
 tabs hydrate to the current value; concurrent writes converge to one winner.
 
 ```tsx
-import { useSharedState } from 'use-everywhere';
+import { useSharedState } from "use-everywhere";
 
 function Counter() {
-  const [count, setCount] = useSharedState('count', 0);
+  const [count, setCount] = useSharedState("count", 0);
   return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
 }
 ```
@@ -33,9 +33,9 @@ function Counter() {
 The third argument delimits how far a value travels:
 
 ```tsx
-useSharedState('draft', '', { scope: 'everywhere' }); // tabs + windows + workers (default)
-useSharedState('draft', '', { scope: 'tabs' }); // ignore writes from workers
-useSharedState('draft', '', { scope: 'tab' }); // this tab only
+useSharedState("draft", "", { scope: "everywhere" }); // tabs + windows + workers (default)
+useSharedState("draft", "", { scope: "tabs" }); // ignore writes from workers
+useSharedState("draft", "", { scope: "tab" }); // this tab only
 ```
 
 ## Events: `defineChannel`
@@ -46,22 +46,22 @@ channel's name and message map once at module level; every component gets
 fully typed hooks with nothing to repeat:
 
 ```tsx
-import { defineChannel } from 'use-everywhere';
-import { useState } from 'react';
+import { defineChannel } from "use-everywhere";
+import { useState } from "react";
 
-type ShopEvents = { 'cart-updated': { items: number } };
-const shop = defineChannel<ShopEvents>('shop');
+type ShopEvents = { "cart-updated": { items: number } };
+const shop = defineChannel<ShopEvents>("shop");
 
 function CartBadge() {
   const [items, setItems] = useState(0);
   const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated'.
-  shop.useOnMessage('cart-updated', (payload) => setItems(payload.items));
+  shop.useOnMessage("cart-updated", (payload) => setItems(payload.items));
 
   const addToCart = () => {
     setItems(items + 1); // this tab
-    send('cart-updated', { items: items + 1 }); // every other tab
+    send("cart-updated", { items: items + 1 }); // every other tab
   };
 
   return <button onClick={addToCart}>Cart ({items})</button>;
@@ -75,7 +75,7 @@ module-level binding, for one-off use.
 ## Presence: `usePeers`
 
 ```tsx
-import { usePeers } from 'use-everywhere';
+import { usePeers } from "use-everywhere";
 
 function DuplicateTabWarning() {
   const peers = usePeers();
@@ -90,7 +90,7 @@ Open a window on another domain, exchange typed messages, and await its
 result — the whole lifecycle folded into render state.
 
 ```tsx
-import { openWindow, useWindowResult } from 'use-everywhere';
+import { openWindow, useWindowResult } from "use-everywhere";
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
@@ -98,17 +98,17 @@ type Receipt = { receiptId: string; last4: string };
 
 function PayButton() {
   const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
-    openWindow('https://pay.example.com/checkout', {
-      peerOrigin: 'https://pay.example.com', // required — '*' throws
+    openWindow("https://pay.example.com/checkout", {
+      peerOrigin: "https://pay.example.com", // required — '*' throws
     }),
   );
 
-  if (pay.status === 'done') return <p>Paid — receipt {pay.result.receiptId}</p>;
-  if (pay.status === 'closed-early') return <p>Payment window was closed.</p>;
+  if (pay.status === "done") return <p>Paid — receipt {pay.result.receiptId}</p>;
+  if (pay.status === "closed-early") return <p>Payment window was closed.</p>;
 
   return (
-    <button onClick={pay.open} disabled={pay.status !== 'idle'}>
-      {pay.status === 'idle' ? 'Pay in secure window' : 'Waiting for payment…'}
+    <button onClick={pay.open} disabled={pay.status !== "idle"}>
+      {pay.status === "idle" ? "Pay in secure window" : "Waiting for payment…"}
     </button>
   );
 }
@@ -117,13 +117,13 @@ function PayButton() {
 On the opened page (the other domain), use the core API:
 
 ```tsx
-import { connectToOpener } from 'use-everywhere';
+import { connectToOpener } from "use-everywhere";
 
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
-  peerOrigin: 'https://shop.example.com',
+  peerOrigin: "https://shop.example.com",
 });
-conn.on('order', (order) => setOrder(order)); // e.g. a useState setter
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's pay.result
+conn.on("order", (order) => setOrder(order)); // e.g. a useState setter
+conn.finish({ receiptId: "r-123", last4: "4242" }); // resolves the opener's pay.result
 ```
 
 Messages sent before the (possibly slow-loading) child connects are queued,

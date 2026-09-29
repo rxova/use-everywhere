@@ -3,7 +3,7 @@
  * not equivalent: `storage` is a fallback with lower fidelity than
  * `broadcast-channel`, and `none` means nothing is being shared at all.
  */
-export type TransportKind = 'broadcast-channel' | 'storage' | 'memory' | 'none' | (string & {});
+export type TransportKind = "broadcast-channel" | "storage" | "memory" | "none" | (string & {});
 
 /**
  * Minimal message bus. Implementations: BroadcastChannelTransport (same-origin),

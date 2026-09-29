@@ -1,6 +1,6 @@
 ---
-title: 'useSharedState'
-description: 'useState whose value lives in every tab, window and worker on your origin — converging everywhere without a server or a Provider.'
+title: "useSharedState"
+description: "useState whose value lives in every tab, window and worker on your origin — converging everywhere without a server or a Provider."
 sidebar:
   order: 2
 ---
@@ -11,10 +11,10 @@ within milliseconds, and a tab opened later hydrates to the current value
 instead of the initial one.
 
 ```tsx
-import { useSharedState } from 'use-everywhere';
+import { useSharedState } from "use-everywhere";
 
 function Counter() {
-  const [count, setCount] = useSharedState('count', 0);
+  const [count, setCount] = useSharedState("count", 0);
   return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
 }
 ```
@@ -51,8 +51,8 @@ Keys live inside a named store. Two features can both use a `'step'` key
 without ever colliding, as long as they use different stores:
 
 ```tsx
-const [step] = useSharedState('step', 0, { store: 'checkout' });
-const [step2] = useSharedState('step', 0, { store: 'onboarding' }); // unrelated value
+const [step] = useSharedState("step", 0, { store: "checkout" });
+const [step2] = useSharedState("step", 0, { store: "onboarding" }); // unrelated value
 ```
 
 If you don't control the whole origin (micro-frontends, embedded widgets),
@@ -62,9 +62,9 @@ interfere.
 ### `scope` — choosing the blast radius
 
 ```tsx
-useSharedState('draft', '', { scope: 'everywhere' }); // tabs + windows + workers (default)
-useSharedState('draft', '', { scope: 'tabs' }); // ignore writes coming from workers
-useSharedState('draft', '', { scope: 'tab' }); // this tab only
+useSharedState("draft", "", { scope: "everywhere" }); // tabs + windows + workers (default)
+useSharedState("draft", "", { scope: "tabs" }); // ignore writes coming from workers
+useSharedState("draft", "", { scope: "tab" }); // this tab only
 ```
 
 - **`everywhere`** — synced across every context on the origin.
@@ -83,24 +83,24 @@ One thing to internalize: **scope is part of the identity.** The same key in
 The duplicate-tab payment bug, solved with one hook:
 
 ```tsx title="PayButton.tsx"
-import { useSharedState } from 'use-everywhere';
+import { useSharedState } from "use-everywhere";
 
-type PayStatus = 'idle' | 'processing' | 'paid';
+type PayStatus = "idle" | "processing" | "paid";
 
 function PayButton() {
-  const [status, setStatus] = useSharedState<PayStatus>('pay-status', 'idle', {
-    store: 'checkout',
+  const [status, setStatus] = useSharedState<PayStatus>("pay-status", "idle", {
+    store: "checkout",
   });
 
   const pay = async () => {
-    setStatus('processing'); // every tab's button disables right now
+    setStatus("processing"); // every tab's button disables right now
     await chargeCard();
-    setStatus('paid'); // every tab shows the receipt state
+    setStatus("paid"); // every tab shows the receipt state
   };
 
   return (
-    <button onClick={pay} disabled={status !== 'idle'}>
-      {status === 'idle' ? 'Pay' : status === 'processing' ? 'Processing…' : 'Paid ✓'}
+    <button onClick={pay} disabled={status !== "idle"}>
+      {status === "idle" ? "Pay" : status === "processing" ? "Processing…" : "Paid ✓"}
     </button>
   );
 }
@@ -157,10 +157,10 @@ uses — handy for patch logs, event handlers outside components, or writes
 from non-React code:
 
 ```ts
-import { getSharedStore, DEFAULT_NAME } from 'use-everywhere';
+import { getSharedStore, DEFAULT_NAME } from "use-everywhere";
 
 const store = getSharedStore(DEFAULT_NAME);
-store.set('count', (prev) => (prev ?? 0) + 1);
+store.set("count", (prev) => (prev ?? 0) + 1);
 store.subscribe((key, value, meta) => console.log(key, value, meta.clientId));
 ```
 

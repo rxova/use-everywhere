@@ -1,8 +1,8 @@
 ---
-title: ''
+title: ""
 status: draft
 opened: YYYY-MM-DD
-target: '1.0'
+target: "1.0"
 ---
 
 ## Summary

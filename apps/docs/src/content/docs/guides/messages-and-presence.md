@@ -1,6 +1,6 @@
 ---
-title: 'Messages & presence'
-description: 'When to send a message instead of sharing state, and how to build live presence — who else is here, right now.'
+title: "Messages & presence"
+description: "When to send a message instead of sharing state, and how to build live presence — who else is here, right now."
 sidebar:
   order: 2
 ---
@@ -19,32 +19,32 @@ Declare it once, bind it to a name with
 language with nothing to repeat at call sites:
 
 ```ts title="shop-channel.ts"
-import { defineChannel } from 'use-everywhere';
+import { defineChannel } from "use-everywhere";
 
 export type ShopEvents = {
-  'cart-updated': { items: number };
-  'logged-out': undefined; // no payload
+  "cart-updated": { items: number };
+  "logged-out": undefined; // no payload
 };
 
-export const shop = defineChannel<ShopEvents>('shop');
+export const shop = defineChannel<ShopEvents>("shop");
 ```
 
 ## Build the cart badge
 
 ```tsx title="CartBadge.tsx"
-import { useState } from 'react';
-import { shop } from './shop-channel';
+import { useState } from "react";
+import { shop } from "./shop-channel";
 
 function CartBadge() {
   const [items, setItems] = useState(0);
   const send = shop.useSend();
 
   // Fires when any OTHER tab posts 'cart-updated' — never for our own posts.
-  shop.useOnMessage('cart-updated', (payload) => setItems(payload.items));
+  shop.useOnMessage("cart-updated", (payload) => setItems(payload.items));
 
   const addToCart = () => {
     setItems(items + 1); // 1. update this tab ourselves…
-    send('cart-updated', { items: items + 1 }); // 2. …then notify every other tab
+    send("cart-updated", { items: items + 1 }); // 2. …then notify every other tab
   };
 
   return <button onClick={addToCart}>Cart ({items})</button>;
@@ -85,15 +85,15 @@ Presence answers "who else has this open?" with zero setup — every bus
 already heartbeats:
 
 ```tsx title="PresenceStrip.tsx"
-import { usePeers, useClientId } from 'use-everywhere';
+import { usePeers, useClientId } from "use-everywhere";
 
 function PresenceStrip() {
   const peers = usePeers(); // everyone except me; re-renders on join/leave only
   const me = useClientId();
   return (
     <p>
-      me: {me.slice(0, 6)} · also here:{' '}
-      {peers.map((p) => `${p.kind} ${p.id.slice(0, 6)}`).join(', ') || 'nobody'}
+      me: {me.slice(0, 6)} · also here:{" "}
+      {peers.map((p) => `${p.kind} ${p.id.slice(0, 6)}`).join(", ") || "nobody"}
     </p>
   );
 }
@@ -135,9 +135,9 @@ Every message handler receives a `meta` argument with the sender's
 across features, and it lets you write UI like this:
 
 ```tsx
-shop.useOnMessage('logged-out', (_payload, meta) => {
+shop.useOnMessage("logged-out", (_payload, meta) => {
   toast(`Signed out by tab ${meta.clientId.slice(0, 6)}`);
-  window.location.assign('/login');
+  window.location.assign("/login");
 });
 ```
 
@@ -150,9 +150,9 @@ the same effect twice — and the two copies drift.
 `echo` collapses them into one path:
 
 ```tsx
-send('item:added', item, { echo: true });
+send("item:added", item, { echo: true });
 
-shop.useOnMessage('item:added', (item, meta) => {
+shop.useOnMessage("item:added", (item, meta) => {
   addToBadge(item); // runs here too, meta.self === true
 });
 ```
@@ -166,16 +166,16 @@ Declare what each type replies with, then `answer` in one place and `ask` from
 anywhere:
 
 ```tsx
-type Requests = { 'draft:get': null };
-type Replies = { 'draft:get': string };
+type Requests = { "draft:get": null };
+type Replies = { "draft:get": string };
 
-const channel = useChannel<Requests, Replies>('editor');
+const channel = useChannel<Requests, Replies>("editor");
 
 // In whichever component owns the answer:
-useAnswer(channel, 'draft:get', () => currentDraft);
+useAnswer(channel, "draft:get", () => currentDraft);
 
 // Anywhere else, in any tab:
-const draft = await useAsk(channel)('draft:get', null);
+const draft = await useAsk(channel)("draft:get", null);
 ```
 
 `ask` **rejects if nobody answers** within the timeout (5s by default) rather

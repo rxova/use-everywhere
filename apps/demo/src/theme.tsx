@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
+import { useEffect } from "react";
+import { createStoreHooks, localStorageAdapter } from "use-everywhere";
 
-type Theme = 'system' | 'light' | 'dark';
+type Theme = "system" | "light" | "dark";
 
 /** Read before paint by the inline script in index.html, so the choice does not flash. */
-const THEME_KEY = 'use-everywhere:demo-theme';
+const THEME_KEY = "use-everywhere:demo-theme";
 
 /**
  * A store of its own rather than the default one: the demos on this page are
@@ -12,12 +12,12 @@ const THEME_KEY = 'use-everywhere:demo-theme';
  * and binding their store to disk would quietly change what they demonstrate.
  * Chrome state is the exception — a theme is expected to survive a reload.
  */
-const ui = createStoreHooks<{ theme: Theme }>('ui', {
+const ui = createStoreHooks<{ theme: Theme }>("ui", {
   persist: localStorageAdapter(THEME_KEY),
 });
 
-const OPTIONS: readonly Theme[] = ['system', 'light', 'dark'];
-const LABEL: Record<Theme, string> = { system: 'auto', light: 'light', dark: 'dark' };
+const OPTIONS: readonly Theme[] = ["system", "light", "dark"];
+const LABEL: Record<Theme, string> = { system: "auto", light: "light", dark: "dark" };
 
 /**
  * The toggle is itself a demo: the choice is shared state, so flipping it here
@@ -28,12 +28,12 @@ const LABEL: Record<Theme, string> = { system: 'auto', light: 'light', dark: 'da
  * including when the OS flips while the page is open.
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = ui.useSharedState('theme', 'system');
+  const [theme, setTheme] = ui.useSharedState("theme", "system");
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'system') root.removeAttribute('data-theme');
-    else root.setAttribute('data-theme', theme);
+    if (theme === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
   }, [theme]);
 
   return (

@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { DEFAULT_NAME } from '../defaults.js';
-import { createNamespace } from '../namespace.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { tick } from './helpers/tick.js';
+import { describe, expect, it } from "vitest";
+import { DEFAULT_NAME } from "../defaults.js";
+import { createNamespace } from "../namespace.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { tick } from "./helpers/tick.js";
 
 /**
  * The collision this prevents is the quiet one. A BroadcastChannel is global to
@@ -27,16 +27,16 @@ function namedTransport() {
   };
 }
 
-describe('a namespace', () => {
-  it('prefixes the bus name, so two apps on the same bare name do not meet', async () => {
+describe("a namespace", () => {
+  it("prefixes the bus name, so two apps on the same bare name do not meet", async () => {
     const transport = namedTransport();
-    const checkout = createNamespace('checkout');
-    const search = createNamespace('search');
+    const checkout = createNamespace("checkout");
+    const search = createNamespace("search");
 
-    const theirs = checkout.createSharedStore('cart', { items: 0 }, { transport });
-    const ours = search.createSharedStore('cart', { items: 0 }, { transport });
+    const theirs = checkout.createSharedStore("cart", { items: 0 }, { transport });
+    const ours = search.createSharedStore("cart", { items: 0 }, { transport });
 
-    theirs.set('items', 5);
+    theirs.set("items", 5);
     await tick();
 
     // Same bare name, different namespaces: they resolve to different buses, so
@@ -47,12 +47,12 @@ describe('a namespace', () => {
     ours.close();
   });
 
-  it('still lets two copies of the same app meet', async () => {
+  it("still lets two copies of the same app meet", async () => {
     const transport = namedTransport();
-    const a = createNamespace('checkout').createSharedStore('cart', { items: 0 }, { transport });
-    const b = createNamespace('checkout').createSharedStore('cart', { items: 0 }, { transport });
+    const a = createNamespace("checkout").createSharedStore("cart", { items: 0 }, { transport });
+    const b = createNamespace("checkout").createSharedStore("cart", { items: 0 }, { transport });
 
-    a.set('items', 5);
+    a.set("items", 5);
     await tick();
 
     expect(b.getSnapshot().items).toBe(5);
@@ -61,34 +61,34 @@ describe('a namespace', () => {
     b.close();
   });
 
-  it('names the bus predictably, and falls back to the default name', () => {
-    const checkout = createNamespace('checkout');
+  it("names the bus predictably, and falls back to the default name", () => {
+    const checkout = createNamespace("checkout");
 
-    expect(checkout.name).toBe('checkout');
-    expect(checkout.busName('cart')).toBe('checkout:cart');
+    expect(checkout.name).toBe("checkout");
+    expect(checkout.busName("cart")).toBe("checkout:cart");
     // Omitting the name inside a namespace is safe in a way omitting it
     // globally is not: it still lands somewhere only this namespace uses.
     expect(checkout.busName()).toBe(`checkout:${DEFAULT_NAME}`);
   });
 
-  it('refuses an empty name rather than silently un-namespacing everything', () => {
-    expect(() => createNamespace('')).toThrow(/non-empty/);
+  it("refuses an empty name rather than silently un-namespacing everything", () => {
+    expect(() => createNamespace("")).toThrow(/non-empty/);
   });
 
-  it('covers every primitive, not a reduced subset', async () => {
+  it("covers every primitive, not a reduced subset", async () => {
     const transport = namedTransport();
-    const ns = createNamespace('ns-all');
+    const ns = createNamespace("ns-all");
 
-    const channel = ns.createChannel<{ ping: number }>('events', { transport });
-    const presence = ns.createPresence('events', { transport });
-    const leader = ns.createLeader('events', { strategy: 'heartbeat', transport });
-    const store = ns.createSharedStore('events', { a: 1 }, { transport });
+    const channel = ns.createChannel<{ ping: number }>("events", { transport });
+    const presence = ns.createPresence("events", { transport });
+    const leader = ns.createLeader("events", { strategy: "heartbeat", transport });
+    const store = ns.createSharedStore("events", { a: 1 }, { transport });
 
     const seen: number[] = [];
-    channel.on('ping', (n) => seen.push(n));
+    channel.on("ping", (n) => seen.push(n));
     // A second copy of the same app, reaching the same namespaced bus.
-    const peer = createNamespace('ns-all').createChannel<{ ping: number }>('events', { transport });
-    peer.post('ping', 3);
+    const peer = createNamespace("ns-all").createChannel<{ ping: number }>("events", { transport });
+    peer.post("ping", 3);
     await tick();
     expect(seen).toEqual([3]);
 

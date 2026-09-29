@@ -1,6 +1,6 @@
 ---
-title: 'Escape hatches'
-description: 'Reach into what the hooks are doing from non-React code, and the errors you can catch when you do.'
+title: "Escape hatches"
+description: "Reach into what the hooks are doing from non-React code, and the errors you can catch when you do."
 sidebar:
   order: 6
 ---
@@ -14,12 +14,12 @@ The hooks memoise one engine per name for the page. These hand you the _same_
 instance, not a new one:
 
 ```ts
-import { getSharedStore, getLeader, DEFAULT_NAME } from 'use-everywhere';
+import { getSharedStore, getLeader, DEFAULT_NAME } from "use-everywhere";
 
 getSharedStore(); // the store behind a bare useSharedState()
-getSharedStore('settings'); // …behind useSharedState(k, v, { store: 'settings' })
-getSharedStore('settings', 'tab'); // a different scope is a different store
-getLeader('feed'); // the Leader behind useLeader({ name: 'feed' })
+getSharedStore("settings"); // …behind useSharedState(k, v, { store: 'settings' })
+getSharedStore("settings", "tab"); // a different scope is a different store
+getLeader("feed"); // the Leader behind useLeader({ name: 'feed' })
 ```
 
 This is how you write to shared state from outside a component — an event
@@ -27,7 +27,7 @@ handler in a plain module, a service worker message, a Zustand middleware:
 
 ```ts
 // Nowhere near React. Every tab sees it.
-getSharedStore('session').set('loggedIn', false);
+getSharedStore("session").set("loggedIn", false);
 ```
 
 `DEFAULT_NAME` is the string the hooks default to (`'use-everywhere'`), exported
@@ -45,7 +45,7 @@ quietly handing you back a store that isn't persisted.
 Both are real classes, so `instanceof` works:
 
 ```ts
-import { WindowClosedError, HandshakeTimeoutError } from 'use-everywhere';
+import { WindowClosedError, HandshakeTimeoutError } from "use-everywhere";
 
 try {
   const receipt = await pay.result;
@@ -70,11 +70,11 @@ URL to carry the connection nonce. Exported because the child page may want to
 strip it before it ends up in analytics or a history entry:
 
 ```ts
-import { CID_PARAM } from 'use-everywhere';
+import { CID_PARAM } from "use-everywhere";
 
 const url = new URL(location.href);
 url.searchParams.delete(CID_PARAM);
-history.replaceState(null, '', url);
+history.replaceState(null, "", url);
 ```
 
 Don't try to _forge_ it. It's one of four things the child validates — origin,

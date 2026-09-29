@@ -1,10 +1,10 @@
-import { useClientId, usePeers } from 'use-everywhere';
-import { colorOf } from '../origins.js';
+import { useClientId, usePeers } from "use-everywhere";
+import { colorOf } from "../origins.js";
 
 export function PresenceStrip() {
   const peers = usePeers();
   const clientId = useClientId();
-  const workerCount = peers.filter((peer) => peer.kind === 'worker').length;
+  const workerCount = peers.filter((peer) => peer.kind === "worker").length;
 
   return (
     <div className="presence">
@@ -23,7 +23,7 @@ export function PresenceStrip() {
           peers.map((peer) => (
             <div
               key={peer.id}
-              className={`dot${peer.kind === 'worker' ? ' worker' : ''}`}
+              className={`dot${peer.kind === "worker" ? " worker" : ""}`}
               style={{ background: colorOf(peer.id) }}
               title={`${peer.kind} · ${peer.id}`}
             />

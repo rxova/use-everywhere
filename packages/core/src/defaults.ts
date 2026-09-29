@@ -3,4 +3,4 @@
  * global to the origin, so identity is the name string — everything that
  * omits a name lands on this one bus.
  */
-export const DEFAULT_NAME = 'use-everywhere';
+export const DEFAULT_NAME = "use-everywhere";

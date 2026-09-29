@@ -1,4 +1,4 @@
-import { createDevWarner } from '@rxova/ts-utils';
+import { createDevWarner } from "@rxova/ts-utils";
 
 // The warner is `createDevWarner` from @rxova/ts-utils, inlined at build time
 // like `deepFreeze` in dev-freeze.ts. It reads `isDevelopment()` on every call:
@@ -8,8 +8,8 @@ import { createDevWarner } from '@rxova/ts-utils';
 //
 // The trailing slash keeps the link exactly as before: `…/errors/#ue1001`.
 const warner = createDevWarner({
-  prefix: 'use-everywhere',
-  docsUrl: 'https://rxova.org/packages/use-everywhere/errors/',
+  prefix: "use-everywhere",
+  docsUrl: "https://rxova.org/packages/use-everywhere/errors/",
 });
 
 /**

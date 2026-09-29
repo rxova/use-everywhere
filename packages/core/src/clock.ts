@@ -1,4 +1,4 @@
-import type { Version } from './common.types.js';
+import type { Version } from "./common.types.js";
 
 /** Is `a` newer than `b`? Last-writer-wins; equal counters break ties by clientId. */
 export function newer(a: Version, b: Version | undefined): boolean {
@@ -18,8 +18,8 @@ export function isVersion(value: unknown): value is Version {
   return (
     Array.isArray(value) &&
     value.length === 2 &&
-    typeof value[0] === 'number' &&
+    typeof value[0] === "number" &&
     Number.isFinite(value[0]) &&
-    typeof value[1] === 'string'
+    typeof value[1] === "string"
   );
 }

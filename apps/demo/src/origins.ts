@@ -15,16 +15,16 @@
  * take DNS and IPv6 out of the question.
  */
 const ORIGIN_PAIRS: Record<string, string> = {
-  localhost: '127.0.0.1',
-  '127.0.0.1': 'localhost',
-  '127.0.0.2': '127.0.0.3',
-  '127.0.0.3': '127.0.0.2',
+  localhost: "127.0.0.1",
+  "127.0.0.1": "localhost",
+  "127.0.0.2": "127.0.0.3",
+  "127.0.0.3": "127.0.0.2",
 };
 
 export function otherOrigin(): string {
   const { protocol, hostname, port } = location;
-  const otherHost = ORIGIN_PAIRS[hostname] ?? '127.0.0.1';
-  return `${protocol}//${otherHost}${port ? `:${port}` : ''}`;
+  const otherHost = ORIGIN_PAIRS[hostname] ?? "127.0.0.1";
+  return `${protocol}//${otherHost}${port ? `:${port}` : ""}`;
 }
 
 /**

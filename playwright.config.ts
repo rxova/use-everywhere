@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * These are the assertions unit tests cannot make: a real BroadcastChannel,
@@ -14,15 +14,15 @@ import { defineConfig, devices } from '@playwright/test';
  * three as separate jobs so a WebKit failure is legible on its own.
  */
 export default defineConfig({
-  testDir: './e2e',
+  testDir: "./e2e",
   fullyParallel: false, // tabs share one origin; parallel specs would collide
   workers: 1,
   timeout: 30_000,
-  reporter: [['list']],
+  reporter: [["list"]],
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   use: {
     // Not Vite's default 5173. `reuseExistingServer` means a stray dev server
@@ -40,14 +40,14 @@ export default defineConfig({
     // server bound to one address family leaves the other refusing connections
     // — which showed up as the payment popup loading a dead page in CI while
     // passing locally. Two plain IPv4 loopback addresses remove the variable.
-    baseURL: 'http://127.0.0.2:5179',
-    trace: 'retain-on-failure',
+    baseURL: "http://127.0.0.2:5179",
+    trace: "retain-on-failure",
   },
   webServer: {
     // --host so the server answers on every loopback address, not just the one
     // `localhost` happens to resolve to.
-    command: 'pnpm --filter @use-everywhere/demo dev --port 5179 --strictPort --host 0.0.0.0',
-    url: 'http://127.0.0.2:5179',
+    command: "pnpm --filter @use-everywhere/demo dev --port 5179 --strictPort --host 0.0.0.0",
+    url: "http://127.0.0.2:5179",
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

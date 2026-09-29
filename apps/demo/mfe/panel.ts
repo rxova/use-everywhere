@@ -3,7 +3,7 @@ import {
   createPresence,
   createSharedStore,
   DEFAULT_NAME,
-} from '@use-everywhere/core';
+} from "@use-everywhere/core";
 
 /**
  * One micro-frontend's worth of the library, rendered into plain DOM.
@@ -18,10 +18,10 @@ import {
 // outside observer and report how many peers this page looks like from there.
 const NAME = DEFAULT_NAME;
 
-export function mount(prefix: 'a' | 'b'): void {
+export function mount(prefix: "a" | "b"): void {
   const presence = createPresence(NAME);
   const store = createSharedStore(NAME, { shared: 0 });
-  const leader = createLeader(NAME, { strategy: 'heartbeat' });
+  const leader = createLeader(NAME, { strategy: "heartbeat" });
 
   const set = (field: string, value: string) => {
     const el = document.getElementById(`${prefix}-${field}`);
@@ -29,10 +29,10 @@ export function mount(prefix: 'a' | 'b'): void {
   };
 
   const render = () => {
-    set('client', presence.clientId);
-    set('peers', String(presence.getPeers().length));
-    set('value', String(store.getSnapshot().shared));
-    set('leader', leader.getSnapshot().isLeader ? 'yes' : 'no');
+    set("client", presence.clientId);
+    set("peers", String(presence.getPeers().length));
+    set("value", String(store.getSnapshot().shared));
+    set("leader", leader.getSnapshot().isLeader ? "yes" : "no");
   };
 
   presence.subscribe(render);
@@ -44,6 +44,6 @@ export function mount(prefix: 'a' | 'b'): void {
   // in the same task is what proves delivery is synchronous rather than a
   // BroadcastChannel round trip.
   (globalThis as unknown as Record<string, unknown>)[`mfe_${prefix}`] = {
-    bump: () => store.set('shared', (n) => n + 1),
+    bump: () => store.set("shared", (n) => n + 1),
   };
 }

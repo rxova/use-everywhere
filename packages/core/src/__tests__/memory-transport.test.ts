@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { tick } from './helpers/tick.js';
+import { describe, expect, it } from "vitest";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { tick } from "./helpers/tick.js";
 
-describe('MemoryTransport', () => {
-  it('delivers to every other transport but never echoes to the sender', async () => {
+describe("MemoryTransport", () => {
+  it("delivers to every other transport but never echoes to the sender", async () => {
     const hub = new MemoryHub();
     const [a, b, c] = [hub.connect(), hub.connect(), hub.connect()];
     const got: Record<string, unknown[]> = { a: [], b: [], c: [] };
@@ -11,15 +11,15 @@ describe('MemoryTransport', () => {
     b.subscribe((d) => got.b!.push(d));
     c.subscribe((d) => got.c!.push(d));
 
-    a.post('hi');
+    a.post("hi");
     await tick();
 
     expect(got.a).toEqual([]);
-    expect(got.b).toEqual(['hi']);
-    expect(got.c).toEqual(['hi']);
+    expect(got.b).toEqual(["hi"]);
+    expect(got.c).toEqual(["hi"]);
   });
 
-  it('delivers structured clones, never references', async () => {
+  it("delivers structured clones, never references", async () => {
     const hub = new MemoryHub();
     const a = hub.connect();
     const b = hub.connect();
@@ -37,14 +37,14 @@ describe('MemoryTransport', () => {
     expect(got[0]).not.toBe(payload);
   });
 
-  it('throws on non-cloneable payloads at post time, even with nobody listening', () => {
+  it("throws on non-cloneable payloads at post time, even with nobody listening", () => {
     const hub = new MemoryHub();
     const a = hub.connect();
 
     expect(() => a.post({ cb: () => {} })).toThrow();
   });
 
-  it('posting after close is a silent no-op', async () => {
+  it("posting after close is a silent no-op", async () => {
     const hub = new MemoryHub();
     const a = hub.connect();
     const b = hub.connect();
@@ -52,13 +52,13 @@ describe('MemoryTransport', () => {
     b.subscribe((d) => got.push(d));
 
     a.close();
-    a.post('ghost');
+    a.post("ghost");
     await tick();
 
     expect(got).toEqual([]);
   });
 
-  it('stops delivering after close', async () => {
+  it("stops delivering after close", async () => {
     const hub = new MemoryHub();
     const a = hub.connect();
     const b = hub.connect();
@@ -66,7 +66,7 @@ describe('MemoryTransport', () => {
     b.subscribe((d) => got.push(d));
 
     b.close();
-    a.post('hi');
+    a.post("hi");
     await tick();
 
     expect(got).toEqual([]);

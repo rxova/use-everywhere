@@ -1,8 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { useClientId, usePeers } from 'use-everywhere';
-import { GROUPS, PAGES } from './pages.js';
-import { ThemeToggle } from './theme.js';
-import { hrefFor } from '../router.js';
+import { useEffect, useState, type ReactNode } from "react";
+import { useClientId, usePeers } from "use-everywhere";
+import { GROUPS, PAGES } from "./pages.js";
+import { ThemeToggle } from "./theme.js";
+import { hrefFor } from "../router.js";
 
 /**
  * A stable colour per client id, so the same tab is the same dot everywhere.
@@ -25,18 +25,18 @@ function PeerStrip() {
         <span
           key={peer.id}
           className={[
-            'peer',
-            peer.kind === 'worker' ? 'peer--worker' : '',
-            peer.id === self ? 'peer--self' : '',
+            "peer",
+            peer.kind === "worker" ? "peer--worker" : "",
+            peer.id === self ? "peer--self" : "",
           ]
             .filter(Boolean)
-            .join(' ')}
+            .join(" ")}
           style={{ background: colorOf(peer.id) }}
-          title={`${peer.id}${peer.id === self ? ' (this tab)' : ''} · ${peer.kind}`}
+          title={`${peer.id}${peer.id === self ? " (this tab)" : ""} · ${peer.kind}`}
         />
       ))}
       <span>
-        {peers.length} {peers.length === 1 ? 'tab' : 'tabs'}
+        {peers.length} {peers.length === 1 ? "tab" : "tabs"}
       </span>
     </div>
   );
@@ -63,7 +63,7 @@ function TopBar() {
       {hint ? <span className="tag">open a second tab and watch</span> : null}
       <span className="top__spacer" />
       <ThemeToggle />
-      <button type="button" className="primary" onClick={() => open(location.href, '_blank')}>
+      <button type="button" className="primary" onClick={() => open(location.href, "_blank")}>
         Open another tab
       </button>
       <a
@@ -84,7 +84,7 @@ function TopBar() {
 function Sidebar({ current }: { current: string }) {
   return (
     <nav className="side">
-      <a className="brand" href={hrefFor('shared-state')}>
+      <a className="brand" href={hrefFor("shared-state")}>
         use-everywhere<span>( )</span>
         <small>every feature, live in your tabs</small>
       </a>
@@ -96,7 +96,7 @@ function Sidebar({ current }: { current: string }) {
               key={page.slug}
               className="nav__link"
               href={hrefFor(page.slug)}
-              aria-current={page.slug === current ? 'page' : undefined}
+              aria-current={page.slug === current ? "page" : undefined}
             >
               <span className="nav__dot" />
               {page.title}

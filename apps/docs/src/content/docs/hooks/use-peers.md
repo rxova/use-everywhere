@@ -1,6 +1,6 @@
 ---
-title: 'usePeers'
-description: 'A live list of the other tabs, windows and workers open on your origin — the basis for presence UI.'
+title: "usePeers"
+description: "A live list of the other tabs, windows and workers open on your origin — the basis for presence UI."
 sidebar:
   order: 7
 ---
@@ -11,11 +11,11 @@ another tab" banners, presence dots, and "payment in progress in tab X"
 notices — without inventing your own heartbeat protocol.
 
 ```tsx
-import { usePeers } from 'use-everywhere';
+import { usePeers } from "use-everywhere";
 
 function DuplicateTabBanner() {
   const peers = usePeers();
-  const tabs = peers.filter((p) => p.kind === 'tab');
+  const tabs = peers.filter((p) => p.kind === "tab");
   if (tabs.length === 0) return null;
   return <p>This page is open in {tabs.length} other tab(s).</p>;
 }
@@ -78,9 +78,9 @@ Both numbers are tunable on the core API, which is where a presence engine can
 be constructed with options:
 
 ```ts
-import { createPresence } from '@use-everywhere/core';
+import { createPresence } from "@use-everywhere/core";
 
-const presence = createPresence('my-app', {
+const presence = createPresence("my-app", {
   pruneAfterMs: 5000, // silence before a peer is treated as suspect
   probeGraceMs: 1000, // how long it then has to answer
 });
@@ -95,10 +95,10 @@ is talking — nothing looks suspect, so no probes are sent.
 Combine peers with shared state to say _which_ tab holds a lock:
 
 ```tsx title="PaymentLockNotice.tsx"
-import { usePeers, useClientId, useSharedState } from 'use-everywhere';
+import { usePeers, useClientId, useSharedState } from "use-everywhere";
 
 function PaymentLockNotice() {
-  const [owner] = useSharedState<string | null>('pay-owner', null);
+  const [owner] = useSharedState<string | null>("pay-owner", null);
   const me = useClientId();
   const peers = usePeers();
 
@@ -107,7 +107,7 @@ function PaymentLockNotice() {
   return (
     <p>
       Payment in progress in tab {owner.slice(0, 6)}
-      {stillOpen ? '' : ' (that tab has closed)'}
+      {stillOpen ? "" : " (that tab has closed)"}
     </p>
   );
 }

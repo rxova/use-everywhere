@@ -1,4 +1,4 @@
-import type { WindowEventTarget, WindowLike } from '@use-everywhere/core';
+import type { WindowEventTarget, WindowLike } from "@use-everywhere/core";
 
 type Listener = (event: { data: unknown; origin: string; source: unknown }) => void;
 
@@ -40,11 +40,11 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
   /** Called by the peer: deliver a message event to this window's listeners. */
   postMessage(data: unknown, targetOrigin: string): void {
     // A browser drops a message whose targetOrigin does not match, silently.
-    if (targetOrigin !== '*' && targetOrigin !== this.origin) return;
+    if (targetOrigin !== "*" && targetOrigin !== this.origin) return;
     const from = this.peer;
     const deliver = (): void => {
       if (this.closed) return;
-      for (const fn of this.listeners.get('message') ?? []) {
+      for (const fn of this.listeners.get("message") ?? []) {
         fn({ data, origin: from?.origin ?? this.origin, source: from });
       }
     };
@@ -57,7 +57,7 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
    * unrelated widget on the same origin. The handshake must ignore it.
    */
   injectMessage(data: unknown, origin: string, source: unknown = {}): void {
-    for (const fn of this.listeners.get('message') ?? []) {
+    for (const fn of this.listeners.get("message") ?? []) {
       fn({ data, origin, source });
     }
   }
@@ -70,7 +70,7 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
   /** Close this window, firing `pagehide` the way a real one does. */
   close(): void {
     this.closed = true;
-    for (const fn of this.listeners.get('pagehide') ?? []) {
+    for (const fn of this.listeners.get("pagehide") ?? []) {
       fn({ data: undefined, origin: this.origin, source: this });
     }
   }

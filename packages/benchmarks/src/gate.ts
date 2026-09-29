@@ -11,7 +11,7 @@
  * runner, because a slow runner slows the baseline too.
  */
 
-type Comparison = 'at-most' | 'at-least';
+type Comparison = "at-most" | "at-least";
 
 export interface Budget {
   readonly metric: string;
@@ -32,7 +32,7 @@ export interface GateResult {
 }
 
 const passes = (value: number, budget: Budget): boolean =>
-  budget.comparison === 'at-most' ? value <= budget.limit : value >= budget.limit;
+  budget.comparison === "at-most" ? value <= budget.limit : value >= budget.limit;
 
 /**
  * Check every budget against the run.
@@ -54,10 +54,10 @@ export function checkBudgets(readings: readonly Reading[], budgets: readonly Bud
     }
     const verdict = passes(value, budget);
     ok &&= verdict;
-    const sign = budget.comparison === 'at-most' ? '≤' : '≥';
+    const sign = budget.comparison === "at-most" ? "≤" : "≥";
     lines.push(
-      `  ${verdict ? '✔' : '✖'} ${budget.metric}: ${value.toFixed(2)} ${sign} ${budget.limit}` +
-        (verdict ? '' : `\n      ${budget.because}`),
+      `  ${verdict ? "✔" : "✖"} ${budget.metric}: ${value.toFixed(2)} ${sign} ${budget.limit}` +
+        (verdict ? "" : `\n      ${budget.because}`),
     );
   }
 

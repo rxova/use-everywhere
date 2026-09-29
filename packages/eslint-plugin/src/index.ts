@@ -1,20 +1,20 @@
-import type { ESLint, Linter, Rule } from 'eslint';
-import { defineAtModuleScope } from './rules/define-at-module-scope.js';
-import { leaderEffectCaptures } from './rules/leader-effect-captures.js';
-import { noDynamicName } from './rules/no-dynamic-name.js';
-import { structuredCloneSafe } from './rules/structured-clone-safe.js';
+import type { ESLint, Linter, Rule } from "eslint";
+import { defineAtModuleScope } from "./rules/define-at-module-scope.js";
+import { leaderEffectCaptures } from "./rules/leader-effect-captures.js";
+import { noDynamicName } from "./rules/no-dynamic-name.js";
+import { structuredCloneSafe } from "./rules/structured-clone-safe.js";
 
 const rules: Record<string, Rule.RuleModule> = {
-  'define-at-module-scope': defineAtModuleScope,
-  'leader-effect-captures': leaderEffectCaptures,
-  'no-dynamic-name': noDynamicName,
-  'structured-clone-safe': structuredCloneSafe,
+  "define-at-module-scope": defineAtModuleScope,
+  "leader-effect-captures": leaderEffectCaptures,
+  "no-dynamic-name": noDynamicName,
+  "structured-clone-safe": structuredCloneSafe,
 };
 
 // No `version`: it is optional, and the alternatives are a literal that goes
 // stale the first time changesets bumps the package, or importing package.json
 // into the bundle. ESLint only uses it in cache keys and diagnostics.
-const meta = { name: 'eslint-plugin-use-everywhere' } as const;
+const meta = { name: "eslint-plugin-use-everywhere" } as const;
 
 /**
  * The four mistakes that are silent at runtime.
@@ -25,10 +25,10 @@ const meta = { name: 'eslint-plugin-use-everywhere' } as const;
  * rule cannot tell the difference, so it argues rather than blocks.
  */
 const recommendedRules: Linter.RulesRecord = {
-  'use-everywhere/define-at-module-scope': 'error',
-  'use-everywhere/no-dynamic-name': 'error',
-  'use-everywhere/structured-clone-safe': 'error',
-  'use-everywhere/leader-effect-captures': 'warn',
+  "use-everywhere/define-at-module-scope": "error",
+  "use-everywhere/no-dynamic-name": "error",
+  "use-everywhere/structured-clone-safe": "error",
+  "use-everywhere/leader-effect-captures": "warn",
 };
 
 const plugin: ESLint.Plugin = { meta, rules };
@@ -46,8 +46,8 @@ const plugin: ESLint.Plugin = { meta, rules };
  * after a `files` block of your own if the app mixes languages.
  */
 const recommended: Linter.Config = {
-  name: 'use-everywhere/recommended',
-  plugins: { 'use-everywhere': plugin },
+  name: "use-everywhere/recommended",
+  plugins: { "use-everywhere": plugin },
   rules: recommendedRules,
 };
 

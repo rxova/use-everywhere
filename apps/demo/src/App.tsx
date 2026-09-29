@@ -1,10 +1,10 @@
-import { Inspector } from 'use-everywhere/devtools';
-import { CheckoutDemo } from './demos/CheckoutDemo.js';
-import { LeaderDemo } from './demos/LeaderDemo.js';
-import { PersistDemo } from './demos/PersistDemo.js';
-import { PresenceStrip } from './demos/PresenceStrip.js';
-import { SharedStateDemo } from './demos/SharedStateDemo.js';
-import { ThemeToggle } from './theme.js';
+import { Inspector } from "use-everywhere/devtools";
+import { CheckoutDemo } from "./demos/CheckoutDemo.js";
+import { LeaderDemo } from "./demos/LeaderDemo.js";
+import { PersistDemo } from "./demos/PersistDemo.js";
+import { PresenceStrip } from "./demos/PresenceStrip.js";
+import { SharedStateDemo } from "./demos/SharedStateDemo.js";
+import { ThemeToggle } from "./theme.js";
 
 export function App() {
   return (

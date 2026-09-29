@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * The rolling-deploy case, end to end. Every deploy puts two generations of the
@@ -16,17 +16,17 @@ const text = (page: Page, id: string) => page.locator(`#${id}`);
 type SkewSeam = { bump(): void; postAs(v: number, value: number): void };
 
 const settled = async (page: Page) => {
-  await expect(text(page, 'client')).not.toBeEmpty({ timeout: 10_000 });
+  await expect(text(page, "client")).not.toBeEmpty({ timeout: 10_000 });
 };
 
 const open = async (page: Page) => {
-  await page.goto('/skew.html');
+  await page.goto("/skew.html");
   await settled(page);
   return page;
 };
 
-test.describe('two generations of the bundle on one origin', () => {
-  test('a foreign wire version cannot write to this one', async ({ context }) => {
+test.describe("two generations of the bundle on one origin", () => {
+  test("a foreign wire version cannot write to this one", async ({ context }) => {
     const listener = await open(await context.newPage());
     const other = await open(await context.newPage());
 
@@ -43,17 +43,17 @@ test.describe('two generations of the bundle on one origin', () => {
       (window as unknown as { skew: SkewSeam }).skew.bump();
     });
 
-    await expect(text(listener, 'value')).toHaveText('1', { timeout: 10_000 });
+    await expect(text(listener, "value")).toHaveText("1", { timeout: 10_000 });
 
     await listener.close();
     await other.close();
   });
 
-  test('reports the skew rather than hiding it', async ({ context }) => {
+  test("reports the skew rather than hiding it", async ({ context }) => {
     const listener = await open(await context.newPage());
     const other = await open(await context.newPage());
 
-    await expect(text(listener, 'skew')).toBeEmpty();
+    await expect(text(listener, "skew")).toBeEmpty();
 
     await other.evaluate(() => {
       const { skew } = window as unknown as { skew: SkewSeam };
@@ -63,30 +63,30 @@ test.describe('two generations of the bundle on one origin', () => {
 
     // Ascending and deduped: this is what a "reload for the latest version"
     // prompt would be gated on.
-    await expect(text(listener, 'skew')).toHaveText('2,3', { timeout: 10_000 });
+    await expect(text(listener, "skew")).toHaveText("2,3", { timeout: 10_000 });
 
     await listener.close();
     await other.close();
   });
 
-  test('still syncs with its own generation while skewed', async ({ context }) => {
+  test("still syncs with its own generation while skewed", async ({ context }) => {
     const listener = await open(await context.newPage());
     const other = await open(await context.newPage());
 
     await other.evaluate(() => {
       (window as unknown as { skew: SkewSeam }).skew.postAs(2, 500);
     });
-    await expect(text(listener, 'skew')).toHaveText('2', { timeout: 10_000 });
+    await expect(text(listener, "skew")).toHaveText("2", { timeout: 10_000 });
 
     // Partition is not degradation. Having heard from a generation it cannot
     // read, this tab must go on working normally with the one it can — peers
     // still counted, writes still shared.
-    await expect(text(listener, 'peers')).toHaveText('1', { timeout: 10_000 });
+    await expect(text(listener, "peers")).toHaveText("1", { timeout: 10_000 });
 
     await other.evaluate(() => {
       (window as unknown as { skew: SkewSeam }).skew.bump();
     });
-    await expect(text(listener, 'value')).toHaveText('1', { timeout: 10_000 });
+    await expect(text(listener, "value")).toHaveText("1", { timeout: 10_000 });
 
     await listener.close();
     await other.close();

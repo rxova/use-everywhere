@@ -1,6 +1,6 @@
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
-import { EXTENSIONS, transform, type TransformWarning } from './transform.js';
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
+import { EXTENSIONS, transform, type TransformWarning } from "./transform.js";
 
 export interface RunOptions {
   /** Files or directories to rewrite. A directory is walked; `node_modules` and dot-directories are skipped. */
@@ -23,7 +23,7 @@ export interface RunResult {
   readonly warnings: readonly FileWarning[];
 }
 
-const SKIPPED_DIRECTORIES = new Set(['node_modules']);
+const SKIPPED_DIRECTORIES = new Set(["node_modules"]);
 
 const hasKnownExtension = (path: string): boolean =>
   EXTENSIONS.some((extension) => path.endsWith(extension));
@@ -34,7 +34,7 @@ export function collectFiles(path: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(path, { withFileTypes: true })) {
     if (entry.isDirectory()) {
-      if (SKIPPED_DIRECTORIES.has(entry.name) || entry.name.startsWith('.')) continue;
+      if (SKIPPED_DIRECTORIES.has(entry.name) || entry.name.startsWith(".")) continue;
       found.push(...collectFiles(join(path, entry.name)));
     } else if (entry.isFile() && hasKnownExtension(entry.name)) {
       found.push(join(path, entry.name));
@@ -57,11 +57,11 @@ export function run({ paths, dryRun = false, cwd = process.cwd() }: RunOptions):
     for (const file of collectFiles(resolve(cwd, path))) {
       const name = relative(cwd, file);
       scanned.push(name);
-      const result = transform(readFileSync(file, 'utf8'), file);
+      const result = transform(readFileSync(file, "utf8"), file);
       for (const warning of result.warnings) warnings.push({ file: name, ...warning });
       if (!result.changed) continue;
       changed.push(name);
-      if (!dryRun) writeFileSync(file, result.source, 'utf8');
+      if (!dryRun) writeFileSync(file, result.source, "utf8");
     }
   }
 

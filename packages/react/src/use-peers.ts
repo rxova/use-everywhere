@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
-import type { Peer } from '@use-everywhere/core';
-import { DEFAULT_NAME, getPresence } from './registry.js';
-import { SERVER_CLIENT_ID } from './server-stubs.js';
+import { useCallback, useEffect, useSyncExternalStore } from "react";
+import type { Peer } from "@use-everywhere/core";
+import { DEFAULT_NAME, getPresence } from "./registry.js";
+import { SERVER_CLIENT_ID } from "./server-stubs.js";
 
 const NO_PEERS: readonly Peer[] = Object.freeze([]);
 

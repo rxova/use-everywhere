@@ -115,12 +115,12 @@
   **`ask(type, payload)` / `answer(type, responder)`** — request/response, which is what finally gives `msgId` a job. It was generated on every message and read by nothing: dead wire weight, or an unfinished feature, depending on how charitable you were feeling. A reply carries `replyTo: <the question's msgId>`, so it reaches the client that asked and nobody else — a bystander subscribed to that message type sees the question and not the answer.
 
   ```ts
-  type Requests = { 'config:get': null };
-  type Replies = { 'config:get': { theme: string } };
-  const channel = createChannel<Requests, Replies>('app');
+  type Requests = { "config:get": null };
+  type Replies = { "config:get": { theme: string } };
+  const channel = createChannel<Requests, Replies>("app");
 
-  channel.answer('config:get', () => ({ theme: currentTheme }));
-  const { theme } = await channel.ask('config:get', null);
+  channel.answer("config:get", () => ({ theme: currentTheme }));
+  const { theme } = await channel.ask("config:get", null);
   ```
 
   Replies are a second, separate type map, empty by default, so `ask`/`answer` are opt-in and typed rather than `unknown` everywhere. `Channel<M>` keeps working unchanged.
@@ -132,7 +132,7 @@
 - [#56](https://github.com/rxova/use-everywhere/pull/56) [`8318285`](https://github.com/rxova/use-everywhere/commit/8318285c398904dd6d6bd0237ccb3f71550a85a5) - Add `indexedDbAdapter` — persistence with room, and with real fidelity.
 
   ```ts
-  defineStore('workspace', { persist: indexedDbAdapter('workspace') });
+  defineStore("workspace", { persist: indexedDbAdapter("workspace") });
   ```
 
   Two things it has that `localStorage` does not.
@@ -154,8 +154,8 @@
   "Prefix your names" was the workaround, and it fails the way conventions fail — silently, once, in whichever app forgot.
 
   ```ts
-  const checkout = createNamespace('checkout');
-  const cart = checkout.createSharedStore('cart', { items: [] }); // bus "checkout:cart"
+  const checkout = createNamespace("checkout");
+  const cart = checkout.createSharedStore("cart", { items: [] }); // bus "checkout:cart"
   ```
 
   The namespace carries every factory, not a reduced subset, and `busName()` exposes the real bus name for `observeBus`, `getTransportKind` and devtools. An empty namespace throws rather than silently putting everything back on the shared defaults.
@@ -229,9 +229,9 @@
   **A `Serializer` seam** carries the rest. Two methods, `stringify` and `parse`, accepted by `webStorageAdapter`/`localStorageAdapter`/`sessionStorageAdapter` and by `StorageTransport`, so wire and disk can be given matching fidelity:
 
   ```ts
-  import * as devalue from 'devalue';
+  import * as devalue from "devalue";
 
-  localStorageAdapter('settings', {
+  localStorageAdapter("settings", {
     serializer: { stringify: devalue.stringify, parse: devalue.parse },
   });
   ```
@@ -247,7 +247,7 @@
   The cause is _what travels_. Last-writer-wins ships the **result** of the increment, so concurrent results overwrite each other. A reducer ships the **increment**, and two increments are two entries in a list every client replays.
 
   ```ts
-  const votes = createSharedReducer('poll', (n, action) => n + action.by, 0);
+  const votes = createSharedReducer("poll", (n, action) => n + action.by, 0);
   votes.dispatch({ by: 1 });
   ```
 
@@ -284,8 +284,8 @@
 
   ```ts
   store.transaction(() => {
-    store.set('firstName', 'Ada');
-    store.set('lastName', 'Lovelace');
+    store.set("firstName", "Ada");
+    store.set("lastName", "Lovelace");
   });
   ```
 
@@ -316,7 +316,7 @@
   Each call site now carries the guard literally:
 
   ```ts
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     devWarn(`[use-everywhere] …`);
   }
   ```

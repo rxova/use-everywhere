@@ -1,5 +1,5 @@
-import { build } from 'esbuild';
-import { describe, expect, it } from 'vitest';
+import { build } from "esbuild";
+import { describe, expect, it } from "vitest";
 
 /**
  * Development warnings must not reach production bundles.
@@ -24,14 +24,14 @@ import { describe, expect, it } from 'vitest';
  */
 const bundle = async (nodeEnv: string): Promise<string> => {
   const result = await build({
-    entryPoints: ['src/index.ts'],
+    entryPoints: ["src/index.ts"],
     bundle: true,
     minify: true,
-    format: 'esm',
+    format: "esm",
     write: false,
-    define: { 'process.env.NODE_ENV': JSON.stringify(nodeEnv) },
+    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
   });
-  return result.outputFiles[0]?.text ?? '';
+  return result.outputFiles[0]?.text ?? "";
 };
 
 /**
@@ -39,32 +39,32 @@ const bundle = async (nodeEnv: string): Promise<string> => {
  * caller can catch, and the report of a throwing debug observer, which is a
  * real fault being contained in production rather than a diagnostic.
  */
-const ALLOWED_IN_PRODUCTION = new Set(['UE1011', 'UE1012']);
+const ALLOWED_IN_PRODUCTION = new Set(["UE1011", "UE1012"]);
 
 const codes = (code: string): string[] => [...new Set(code.match(/UE\d{4}/g) ?? [])].sort();
 
-describe('development warnings', () => {
-  it('are all present in a development bundle', async () => {
-    const emitted = codes(await bundle('development'));
+describe("development warnings", () => {
+  it("are all present in a development bundle", async () => {
+    const emitted = codes(await bundle("development"));
 
     // The warnings are the point of the library's "every silent behaviour
     // becomes loud" rule, so the guard must not cost them in development.
     expect(emitted.length).toBeGreaterThan(5);
   });
 
-  it('are all gone from a production bundle', async () => {
-    const emitted = codes(await bundle('production'));
+  it("are all gone from a production bundle", async () => {
+    const emitted = codes(await bundle("production"));
 
     // Named rather than counted: a failure here says which warning leaked.
     expect(emitted.filter((code) => !ALLOWED_IN_PRODUCTION.has(code))).toEqual([]);
   });
 
-  it('leaves real runtime messages alone', async () => {
-    const code = await bundle('production');
+  it("leaves real runtime messages alone", async () => {
+    const code = await bundle("production");
 
     // A thrown Error is not a diagnostic — stripping it would turn an
     // actionable failure into an anonymous one.
-    expect(code).toContain('StorageTransport needs localStorage');
-    expect(code).toContain('UE1011');
+    expect(code).toContain("StorageTransport needs localStorage");
+    expect(code).toContain("UE1011");
   });
 });

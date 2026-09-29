@@ -1,6 +1,6 @@
-import { diagnostic } from '../dev.js';
-import { jsonSerializer, type Serializer } from '../serializer.js';
-import type { Transport, TransportKind } from './transport.types.js';
+import { diagnostic } from "../dev.js";
+import { jsonSerializer, type Serializer } from "../serializer.js";
+import type { Transport, TransportKind } from "./transport.types.js";
 
 /**
  * Cross-tab delivery over the `storage` event, for browsers with no
@@ -24,7 +24,7 @@ import type { Transport, TransportKind } from './transport.types.js';
  *    receivers ignore.
  */
 export class StorageTransport implements Transport {
-  readonly kind: TransportKind = 'storage';
+  readonly kind: TransportKind = "storage";
   private key: string;
   private storage: Storage;
   private listeners = new Set<(data: unknown) => void>();
@@ -44,8 +44,8 @@ export class StorageTransport implements Transport {
     if (!storage) {
       throw new Error(
         diagnostic(
-          'UE1011',
-          'StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.',
+          "UE1011",
+          "StorageTransport needs localStorage; workers have none. Use BroadcastChannel there.",
         ),
       );
     }
@@ -63,7 +63,7 @@ export class StorageTransport implements Transport {
       }
       for (const listener of this.listeners) listener(payload.data);
     };
-    addEventListener('storage', this.onStorage);
+    addEventListener("storage", this.onStorage);
   }
 
   post(data: unknown): void {
@@ -88,6 +88,6 @@ export class StorageTransport implements Transport {
 
   close(): void {
     this.listeners.clear();
-    removeEventListener('storage', this.onStorage);
+    removeEventListener("storage", this.onStorage);
   }
 }

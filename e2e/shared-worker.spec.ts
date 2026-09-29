@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * The SharedWorker relay, in real browsers — the one transport that shipped
@@ -25,41 +25,41 @@ import { expect, test, type Page } from '@playwright/test';
 const text = (page: Page, id: string) => page.locator(`#${id}`);
 
 const socketOf = async (page: Page) => {
-  await expect(text(page, 'socket')).not.toBeEmpty({ timeout: 10_000 });
-  return text(page, 'socket').textContent();
+  await expect(text(page, "socket")).not.toBeEmpty({ timeout: 10_000 });
+  return text(page, "socket").textContent();
 };
 
-const tickOf = async (page: Page) => Number(await text(page, 'tick').textContent());
+const tickOf = async (page: Page) => Number(await text(page, "tick").textContent());
 
 /** Waits for the worker's next publish to land in this tab. */
 const advanced = async (page: Page, from: number) =>
   expect.poll(async () => tickOf(page), { timeout: 10_000 }).toBeGreaterThan(from);
 
-test.describe('a SharedWorker that owns the connection', () => {
-  test('is actually on the SharedWorker wire, not a fallback', async ({ page }) => {
-    await page.goto('/relay.html');
+test.describe("a SharedWorker that owns the connection", () => {
+  test("is actually on the SharedWorker wire, not a fallback", async ({ page }) => {
+    await page.goto("/relay.html");
 
     // First, because every other assertion in this file would pass just as
     // happily over BroadcastChannel. If the transport ever degrades silently,
     // this is the only line that notices.
-    await expect(text(page, 'transport')).toHaveText('shared-worker');
+    await expect(text(page, "transport")).toHaveText("shared-worker");
   });
 
-  test('publishes over the relay it is hosting, to a tab that never writes', async ({ page }) => {
-    await page.goto('/relay.html');
+  test("publishes over the relay it is hosting, to a tab that never writes", async ({ page }) => {
+    await page.goto("/relay.html");
 
     // Nothing on the page writes to this store. A moving counter means the
     // worker reached the tab through `relay.connect()` — the seat that did not
     // exist before, and the reason a hosted relay can now speak at all.
-    await expect(text(page, 'tick')).not.toHaveText('0', { timeout: 10_000 });
+    await expect(text(page, "tick")).not.toHaveText("0", { timeout: 10_000 });
   });
 
-  test('is one connection for the origin, not one per tab', async ({ page, context }) => {
-    await page.goto('/relay.html');
+  test("is one connection for the origin, not one per tab", async ({ page, context }) => {
+    await page.goto("/relay.html");
     const first = await socketOf(page);
 
     const second = await context.newPage();
-    await second.goto('/relay.html');
+    await second.goto("/relay.html");
 
     // Same id, so the same worker. Two tabs that had each spawned their own
     // would be on two relays with two port sets, holding two ids that cannot
@@ -69,13 +69,13 @@ test.describe('a SharedWorker that owns the connection', () => {
 
     // Distinct clients on that one wire, though. Sharing a worker must not mean
     // sharing an identity.
-    expect(await text(second, 'client').textContent()).not.toBe(
-      await text(page, 'client').textContent(),
+    expect(await text(second, "client").textContent()).not.toBe(
+      await text(page, "client").textContent(),
     );
   });
 
-  test('hands its state to a tab that arrives late', async ({ page, context }) => {
-    await page.goto('/relay.html');
+  test("hands its state to a tab that arrives late", async ({ page, context }) => {
+    await page.goto("/relay.html");
     const first = await socketOf(page);
 
     // `socketId` was written once, when the worker started, and is never
@@ -83,17 +83,17 @@ test.describe('a SharedWorker that owns the connection', () => {
     // the late-joiner handshake travelling over the relay rather than over a
     // BroadcastChannel, which is the path that had no coverage.
     const late = await context.newPage();
-    await late.goto('/relay.html');
+    await late.goto("/relay.html");
     expect(await socketOf(late)).toBe(first);
   });
 
-  test('survives the tab that opened it', async ({ page, context }) => {
-    await page.goto('/relay.html');
+  test("survives the tab that opened it", async ({ page, context }) => {
+    await page.goto("/relay.html");
     const opener = await socketOf(page);
 
     const other = await context.newPage();
-    await other.goto('/relay.html');
-    await expect(text(other, 'socket')).toHaveText(opener ?? '', { timeout: 10_000 });
+    await other.goto("/relay.html");
+    await expect(text(other, "socket")).toHaveText(opener ?? "", { timeout: 10_000 });
 
     // The tab that spawned the worker goes away. Under leader election this is
     // the moment the connection is dropped and re-established somewhere else.
@@ -103,6 +103,6 @@ test.describe('a SharedWorker that owns the connection', () => {
     // A changed id would mean a fresh worker, which is the same thing as a
     // reconnect — the cost this transport is chosen to avoid.
     await advanced(other, await tickOf(other));
-    await expect(text(other, 'socket')).toHaveText(opener ?? '');
+    await expect(text(other, "socket")).toHaveText(opener ?? "");
   });
 });

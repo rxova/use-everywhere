@@ -1,10 +1,10 @@
-import { act, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { StandardSchemaV1 } from '@use-everywhere/core';
-import { defineChannel } from '../define-channel.js';
-import { createStoreHooks } from '../create-store-hooks.js';
-import { getLeader } from '../registry.js';
-import { useSharedState } from '../use-shared-state.js';
+import { act, render } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { StandardSchemaV1 } from "@use-everywhere/core";
+import { defineChannel } from "../define-channel.js";
+import { createStoreHooks } from "../create-store-hooks.js";
+import { getLeader } from "../registry.js";
+import { useSharedState } from "../use-shared-state.js";
 
 /**
  * The production side of every development guard in this package.
@@ -20,24 +20,24 @@ import { useSharedState } from '../use-shared-state.js';
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
 const anySchema: StandardSchemaV1<unknown, unknown> = {
-  '~standard': { version: 1, vendor: 'handwritten', validate: (value) => ({ value }) },
+  "~standard": { version: 1, vendor: "handwritten", validate: (value) => ({ value }) },
 };
 
 let n = 0;
 const uniqueName = () => `dgr-${++n}`;
 
-describe('the development guard at runtime', () => {
+describe("the development guard at runtime", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
-  it('is silent when a store is redefined with different options', () => {
+  it("is silent when a store is redefined with different options", () => {
     const name = uniqueName();
     createStoreHooks(name, { persist: { read: () => undefined, write: () => {} } }).store();
 
-    vi.stubEnv('NODE_ENV', 'production');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     createStoreHooks(name, {
       persist: { read: () => undefined, write: () => {} },
@@ -47,12 +47,12 @@ describe('the development guard at runtime', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it('is silent when a channel is redefined with different options', () => {
+  it("is silent when a channel is redefined with different options", () => {
     const name = uniqueName();
     defineChannel(name).get();
 
-    vi.stubEnv('NODE_ENV', 'production');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // A *different* set of validated keys, or configureChannel returns early
     // and never reaches the warning this is asserting the silence of.
@@ -61,7 +61,7 @@ describe('the development guard at runtime', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it('records nothing extra for a leader created without options', () => {
+  it("records nothing extra for a leader created without options", () => {
     const name = uniqueName();
 
     // The branch where `options` is absent on first creation, which is what
@@ -69,28 +69,28 @@ describe('the development guard at runtime', () => {
     expect(getLeader(name)).toBe(getLeader(name));
   });
 
-  it('is silent when a later caller asks for different leader timings', () => {
+  it("is silent when a later caller asks for different leader timings", () => {
     const name = uniqueName();
     getLeader(name, { heartbeatMs: 20, leaseMs: 60 });
 
-    vi.stubEnv('NODE_ENV', 'production');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     getLeader(name, { heartbeatMs: 999, leaseMs: 999 });
 
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it('is silent when one key is registered with two different initials', async () => {
+  it("is silent when one key is registered with two different initials", async () => {
     const name = uniqueName();
-    vi.stubEnv('NODE_ENV', 'production');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     function App() {
       // Two callers, two defaults, one key: the first registration wins and the
       // second is discarded. Loud in development, and nothing here.
-      useSharedState('k', 1, { store: name });
-      useSharedState('k', 2, { store: name });
+      useSharedState("k", 1, { store: name });
+      useSharedState("k", 2, { store: name });
       return null;
     }
     render(<App />);

@@ -1,16 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPresence } from '../presence.js';
-import { MemoryHub } from '../transport/memory-hub.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPresence } from "../presence.js";
+import { MemoryHub } from "../transport/memory-hub.js";
 
-describe('createPresence', () => {
+describe("createPresence", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it('sees peers join via hello and leave via bye', async () => {
+  it("sees peers join via hello and leave via bye", async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };
-    const a = createPresence('test', options);
-    const b = createPresence('test', options);
+    const a = createPresence("test", options);
+    const b = createPresence("test", options);
     await vi.advanceTimersByTimeAsync(0);
 
     expect(a.getPeers().map((p) => p.id)).toEqual([b.clientId]);
@@ -21,25 +21,25 @@ describe('createPresence', () => {
     expect(a.getPeers()).toEqual([]);
   });
 
-  it('prunes peers that go silent', async () => {
+  it("prunes peers that go silent", async () => {
     const hub = new MemoryHub();
-    const a = createPresence('test', { transport: () => hub.connect() });
+    const a = createPresence("test", { transport: () => hub.connect() });
 
     // A raw transport that says hello once and then goes silent (crashed tab).
     const ghost = hub.connect();
-    ghost.post({ v: 1, scope: 'presence', type: 'hello', clientId: 'ghost1', kind: 'tab' });
+    ghost.post({ v: 1, scope: "presence", type: "hello", clientId: "ghost1", kind: "tab" });
     await vi.advanceTimersByTimeAsync(0);
-    expect(a.getPeers().map((p) => p.id)).toEqual(['ghost1']);
+    expect(a.getPeers().map((p) => p.id)).toEqual(["ghost1"]);
 
     await vi.advanceTimersByTimeAsync(8000); // prune ticks at 2.5s/5s/7.5s; 7.5s > 5s cutoff
     expect(a.getPeers()).toEqual([]);
   });
 
-  it('keeps peers alive through heartbeat pings and piggybacked traffic', async () => {
+  it("keeps peers alive through heartbeat pings and piggybacked traffic", async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };
-    const a = createPresence('test', options);
-    const b = createPresence('test', options);
+    const a = createPresence("test", options);
+    const b = createPresence("test", options);
 
     await vi.advanceTimersByTimeAsync(12_000); // many prune cycles
     expect(a.getPeers().map((p) => p.id)).toEqual([b.clientId]);
@@ -48,42 +48,42 @@ describe('createPresence', () => {
     a.close();
   });
 
-  it('a bye for an unknown peer changes nothing', async () => {
+  it("a bye for an unknown peer changes nothing", async () => {
     const hub = new MemoryHub();
-    const a = createPresence('test', { transport: () => hub.connect() });
+    const a = createPresence("test", { transport: () => hub.connect() });
     let calls = 0;
     a.subscribe(() => calls++);
 
     const raw = hub.connect();
-    raw.post({ v: 1, scope: 'presence', type: 'bye', clientId: 'stranger', kind: 'tab' });
+    raw.post({ v: 1, scope: "presence", type: "bye", clientId: "stranger", kind: "tab" });
     await vi.advanceTimersByTimeAsync(0);
 
     expect(calls).toBe(0);
     expect(a.getPeers()).toEqual([]);
   });
 
-  it('unsubscribing stops notifications', async () => {
+  it("unsubscribing stops notifications", async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };
-    const a = createPresence('test', options);
+    const a = createPresence("test", options);
     let calls = 0;
     const unsubscribe = a.subscribe(() => calls++);
     unsubscribe();
 
-    createPresence('test', options);
+    createPresence("test", options);
     await vi.advanceTimersByTimeAsync(0);
 
     expect(calls).toBe(0);
   });
 
-  it('notifies subscribers on membership changes only', async () => {
+  it("notifies subscribers on membership changes only", async () => {
     const hub = new MemoryHub();
     const options = { transport: () => hub.connect() };
-    const a = createPresence('test', options);
+    const a = createPresence("test", options);
     let calls = 0;
     a.subscribe(() => calls++);
 
-    const b = createPresence('test', options);
+    const b = createPresence("test", options);
     await vi.advanceTimersByTimeAsync(0);
     expect(calls).toBe(1);
 

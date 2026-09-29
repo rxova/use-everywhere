@@ -1,7 +1,7 @@
-import { useCallback, useSyncExternalStore } from 'react';
-import { warnOnInitialMismatch } from './dev.js';
-import { DEFAULT_NAME, getStore } from './registry.js';
-import type { UseSharedStateOptions } from './use-shared-state.types.js';
+import { useCallback, useSyncExternalStore } from "react";
+import { warnOnInitialMismatch } from "./dev.js";
+import { DEFAULT_NAME, getStore } from "./registry.js";
+import type { UseSharedStateOptions } from "./use-shared-state.types.js";
 
 /**
  * Like useState, but the value exists in every tab, window, and worker on
@@ -21,14 +21,14 @@ export function useSharedState<T>(
   options?: UseSharedStateOptions,
 ): [T, (next: T | ((prev: T) => T)) => void] {
   const storeName = options?.store ?? DEFAULT_NAME;
-  const store = getStore(storeName, options?.scope ?? 'everywhere');
+  const store = getStore(storeName, options?.scope ?? "everywhere");
   // Idempotent: first registration wins, remote writes always beat the initial.
   store.registerKey(key, initial);
   // Guarded at the call site, not inside: with the branch folded away the
   // function is unreferenced, so the bundler drops it *and* the Map of seen
   // initials *and* its message. An early return inside would have kept all
   // three in the bundle.
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     warnOnInitialMismatch(storeName, key, initial);
   }
 

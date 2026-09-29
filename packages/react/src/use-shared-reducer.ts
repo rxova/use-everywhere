@@ -1,5 +1,5 @@
-import { useCallback, useSyncExternalStore } from 'react';
-import { DEFAULT_NAME, getReducer } from './registry.js';
+import { useCallback, useSyncExternalStore } from "react";
+import { DEFAULT_NAME, getReducer } from "./registry.js";
 
 export interface UseSharedReducerOptions {
   /** Bus name. Default 'use-everywhere'. */
@@ -50,7 +50,7 @@ export function useSharedReducer<S, A>(
 ): [S, (action: A) => void] {
   const engine = getReducer<S, A>(
     options?.name ?? DEFAULT_NAME,
-    options?.key ?? 'default',
+    options?.key ?? "default",
     reducer,
     initial,
   );

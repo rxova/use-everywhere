@@ -1,4 +1,4 @@
-import type { LockManagerLike } from '../../leader.types.js';
+import type { LockManagerLike } from "../../leader.types.js";
 
 /**
  * A stand-in for `navigator.locks` with the two behaviours the leader depends
@@ -33,7 +33,7 @@ export class FakeLockManager implements LockManagerLike {
       };
 
       if (options.signal?.aborted) {
-        reject(new DOMException('aborted', 'AbortError'));
+        reject(new DOMException("aborted", "AbortError"));
         return;
       }
 
@@ -45,12 +45,12 @@ export class FakeLockManager implements LockManagerLike {
       const queue = this.queues.get(name) ?? [];
       queue.push(grant);
       this.queues.set(name, queue);
-      options.signal?.addEventListener('abort', () => {
+      options.signal?.addEventListener("abort", () => {
         const pending = this.queues.get(name);
         const at = pending?.indexOf(grant) ?? -1;
         if (pending && at >= 0) {
           pending.splice(at, 1);
-          reject(new DOMException('aborted', 'AbortError'));
+          reject(new DOMException("aborted", "AbortError"));
         }
       });
     });

@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { createScenario } from '../scenario.js';
-import { tick } from '../timing.js';
+import { describe, expect, it } from "vitest";
+import { createScenario } from "../scenario.js";
+import { tick } from "../timing.js";
 
 /**
  * The assertion this package exists to make possible: what happens to the seat
@@ -10,18 +10,18 @@ import { tick } from '../timing.js';
  * — Web Locks releases on tab death, and a lease expires when heartbeats stop.
  * Both paths run here, in one process, in milliseconds.
  */
-describe('leadership across a crash', () => {
-  it('hands the seat to the next tab when the leader is killed (web locks)', async () => {
+describe("leadership across a crash", () => {
+  it("hands the seat to the next tab when the leader is killed (web locks)", async () => {
     const browser = createScenario();
     const a = browser.tab();
     const b = browser.tab();
-    const first = a.leader('app');
-    const second = b.leader('app');
+    const first = a.leader("app");
+    const second = b.leader("app");
 
     await tick();
     expect(first.getSnapshot().isLeader).toBe(true);
     expect(second.getSnapshot().isLeader).toBe(false);
-    expect(browser.locks.holder('app')).toBe('tab-1');
+    expect(browser.locks.holder("app")).toBe("tab-1");
 
     a.crash();
     await tick();
@@ -30,12 +30,12 @@ describe('leadership across a crash', () => {
     browser.dispose();
   });
 
-  it('hands the seat over on a clean close, without waiting for anything', async () => {
+  it("hands the seat over on a clean close, without waiting for anything", async () => {
     const browser = createScenario();
     const a = browser.tab();
     const b = browser.tab();
-    a.leader('app');
-    const second = b.leader('app');
+    a.leader("app");
+    const second = b.leader("app");
 
     await tick();
     a.close();
@@ -45,10 +45,10 @@ describe('leadership across a crash', () => {
     browser.dispose();
   });
 
-  it('elects exactly one tab under the heartbeat strategy too', async () => {
-    const browser = createScenario({ election: 'heartbeat' });
+  it("elects exactly one tab under the heartbeat strategy too", async () => {
+    const browser = createScenario({ election: "heartbeat" });
     const leaders = [browser.tab(), browser.tab(), browser.tab()].map((tab) =>
-      tab.leader('app', { heartbeatMs: 20, leaseMs: 60 }),
+      tab.leader("app", { heartbeatMs: 20, leaseMs: 60 }),
     );
 
     await browser.settle(120);
@@ -57,12 +57,12 @@ describe('leadership across a crash', () => {
     browser.dispose();
   });
 
-  it('resolves waitForLeadership in whichever tab inherits the seat', async () => {
+  it("resolves waitForLeadership in whichever tab inherits the seat", async () => {
     const browser = createScenario();
     const a = browser.tab();
     const b = browser.tab();
-    a.leader('app');
-    const second = b.leader('app');
+    a.leader("app");
+    const second = b.leader("app");
     const inherited = second.waitForLeadership();
 
     await tick();

@@ -1,6 +1,6 @@
 ---
-title: 'Engines'
-description: 'The four factories behind the hooks — shared state, channels, presence and leader election — usable from any framework, or none.'
+title: "Engines"
+description: "The four factories behind the hooks — shared state, channels, presence and leader election — usable from any framework, or none."
 sidebar:
   order: 2
 ---
@@ -11,12 +11,12 @@ hook adds `useSyncExternalStore` and a singleton registry, nothing else.
 ## createSharedStore
 
 ```ts
-import { createSharedStore } from 'use-everywhere';
+import { createSharedStore } from "use-everywhere";
 
-const store = createSharedStore('settings', { theme: 'light' });
+const store = createSharedStore("settings", { theme: "light" });
 
-store.set('theme', 'dark'); // syncs to every tab
-store.state.theme = 'dark'; // same thing — the proxy writes through
+store.set("theme", "dark"); // syncs to every tab
+store.state.theme = "dark"; // same thing — the proxy writes through
 store.getSnapshot(); // frozen, referentially stable
 store.getVersions(); // the per-key clocks behind it
 
@@ -43,25 +43,25 @@ Fire-and-forget typed events. Not state — nothing is retained, and a tab that
 joins later hears nothing.
 
 ```ts
-import { createChannel } from 'use-everywhere';
+import { createChannel } from "use-everywhere";
 
-type Events = { 'cart-updated': { items: number } };
-const channel = createChannel<Events>('shop');
+type Events = { "cart-updated": { items: number } };
+const channel = createChannel<Events>("shop");
 
-const off = channel.on('cart-updated', (payload, meta) => {
-  console.log(payload.items, 'from', meta.clientId);
+const off = channel.on("cart-updated", (payload, meta) => {
+  console.log(payload.items, "from", meta.clientId);
 });
 
-channel.post('cart-updated', { items: 3 }); // never echoed to self
+channel.post("cart-updated", { items: 3 }); // never echoed to self
 channel.close();
 ```
 
 ## createPresence
 
 ```ts
-import { createPresence } from 'use-everywhere';
+import { createPresence } from "use-everywhere";
 
-const presence = createPresence('app');
+const presence = createPresence("app");
 presence.getPeers(); // [{ id, kind, lastSeen }, …] — others, never yourself
 presence.subscribe(() => render(presence.getPeers()));
 presence.close();
@@ -75,9 +75,9 @@ explicit goodbye, so it disappears at once.
 ## createLeader
 
 ```ts
-import { createLeader } from 'use-everywhere';
+import { createLeader } from "use-everywhere";
 
-const leader = createLeader('feed', { eligible: true });
+const leader = createLeader("feed", { eligible: true });
 
 leader.getSnapshot(); // { leaderId, isLeader } — frozen, stable
 leader.subscribe(() => {
@@ -100,9 +100,9 @@ leadership is advisory rather than a lock.
 ## Options every engine takes
 
 ```ts
-createChannel('name', {
+createChannel("name", {
   transport: (name) => new MemoryHub().connect(), // swap the wire (from '/testing')
-  kind: 'worker', // what this client calls itself
+  kind: "worker", // what this client calls itself
 });
 ```
 

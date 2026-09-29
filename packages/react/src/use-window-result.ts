@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { WindowClosedError, type MessageMap, type OpenedWindow } from '@use-everywhere/core';
-import type { OpenedWindowState, UseWindowResult } from './use-window-result.types.js';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { WindowClosedError, type MessageMap, type OpenedWindow } from "@use-everywhere/core";
+import type { OpenedWindowState, UseWindowResult } from "./use-window-result.types.js";
 
 const IDLE = Object.freeze({
-  status: 'idle',
+  status: "idle",
   result: undefined,
   error: undefined,
 }) as OpenedWindowState<never>;
@@ -38,38 +38,38 @@ export function useWindowResult<Out extends MessageMap, In extends MessageMap, R
     try {
       opened = factoryRef.current();
     } catch (err) {
-      setState({ status: 'error', result: undefined, error: err });
+      setState({ status: "error", result: undefined, error: err });
       return;
     }
     current.current = opened;
-    setState({ status: 'opening', result: undefined, error: undefined });
+    setState({ status: "opening", result: undefined, error: undefined });
 
     const fresh = () => current.current === opened;
     opened.ready.then(
       () => {
         if (!fresh()) return;
         setState((s) =>
-          s.status === 'opening' ? { status: 'connected', result: undefined, error: undefined } : s,
+          s.status === "opening" ? { status: "connected", result: undefined, error: undefined } : s,
         );
       },
       () => {}, // surfaced through result below
     );
     opened.result.then(
       (value) => {
-        if (fresh()) setState({ status: 'done', result: value, error: undefined });
+        if (fresh()) setState({ status: "done", result: value, error: undefined });
       },
       (err) => {
         if (!fresh()) return;
         setState(
           err instanceof WindowClosedError
-            ? { status: 'closed-early', result: undefined, error: err }
-            : { status: 'error', result: undefined, error: err },
+            ? { status: "closed-early", result: undefined, error: err }
+            : { status: "error", result: undefined, error: err },
         );
       },
     );
   }, []);
 
-  const post = useCallback<OpenedWindow<Out, In, R>['post']>((type, payload) => {
+  const post = useCallback<OpenedWindow<Out, In, R>["post"]>((type, payload) => {
     current.current?.post(type, payload);
   }, []);
 

@@ -1,6 +1,6 @@
-import type { BusWire } from './bus.types.js';
-import { devWarn } from './dev.js';
-import { skewLedger } from './rendezvous.js';
+import type { BusWire } from "./bus.types.js";
+import { devWarn } from "./dev.js";
+import { skewLedger } from "./rendezvous.js";
 
 /**
  * The wire protocol this build speaks. Stamped as `v` on everything posted, and
@@ -46,14 +46,14 @@ type Envelope = { v?: unknown; scope?: unknown; type?: unknown; clientId?: unkno
  */
 function hasEnvelopeShape(wire: Envelope): boolean {
   return (
-    typeof wire.scope === 'string' &&
-    typeof wire.type === 'string' &&
-    typeof wire.clientId === 'string'
+    typeof wire.scope === "string" &&
+    typeof wire.type === "string" &&
+    typeof wire.clientId === "string"
   );
 }
 
 export function isBusWire(data: unknown): data is BusWire {
-  if (typeof data !== 'object' || data === null) return false;
+  if (typeof data !== "object" || data === null) return false;
   const wire = data as Envelope;
   return wire.v === WIRE_VERSION && hasEnvelopeShape(wire);
 }
@@ -69,9 +69,9 @@ export function isBusWire(data: unknown): data is BusWire {
  * peer keeps an unrelated neighbour from being reported as a stale deploy.
  */
 export function foreignWireVersion(data: unknown): number | null {
-  if (typeof data !== 'object' || data === null) return null;
+  if (typeof data !== "object" || data === null) return null;
   const wire = data as Envelope;
-  if (typeof wire.v !== 'number' || wire.v === WIRE_VERSION) return null;
+  if (typeof wire.v !== "number" || wire.v === WIRE_VERSION) return null;
   return hasEnvelopeShape(wire) ? wire.v : null;
 }
 
@@ -84,11 +84,11 @@ export function recordSkew(name: string, version: number): void {
   versions.add(version);
   // Terse on purpose, with the explanation behind a link. The NODE_ENV guard
   // around the call keeps it out of production bundles entirely; see env.d.ts.
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     devWarn(
-      'UE1007',
+      "UE1007",
       `bus "${name}": a peer speaks wire protocol v${version}, this build speaks ` +
-        `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? 'newer' : 'older'} deploy. They cannot ` +
+        `v${WIRE_VERSION} — a ${version > WIRE_VERSION ? "newer" : "older"} deploy. They cannot ` +
         `share state, presence, or a leader seat. https://rxova.org/packages/use-everywhere/under-the-hood/version-skew/`,
     );
   }

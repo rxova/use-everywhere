@@ -14,7 +14,7 @@ pnpm add -D eslint-plugin-use-everywhere
 
 ```js
 // eslint.config.js
-import useEverywhere from 'eslint-plugin-use-everywhere';
+import useEverywhere from "eslint-plugin-use-everywhere";
 
 export default [
   // …your config
@@ -42,7 +42,7 @@ Turning a rule off is one line:
 ```js
 export default [
   useEverywhere.configs.recommended,
-  { rules: { 'use-everywhere/leader-effect-captures': 'off' } },
+  { rules: { "use-everywhere/leader-effect-captures": "off" } },
 ];
 ```
 

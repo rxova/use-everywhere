@@ -1,4 +1,4 @@
-import type { Version } from './common.types.js';
+import type { Version } from "./common.types.js";
 
 /**
  * What goes to disk. The version clocks travel *with* the values — that is the
@@ -36,7 +36,7 @@ export interface PersistAdapter {
 /** Why a restore was refused, for {@link PersistOptions.onRestoreError}. */
 export interface RestoreError {
   /** `'ahead'` — written by a newer build; `'no-migrate'` — older, with no way forward; `'migrate-threw'`. */
-  readonly reason: 'ahead' | 'no-migrate' | 'migrate-threw';
+  readonly reason: "ahead" | "no-migrate" | "migrate-threw";
   /** The schema version on disk. */
   readonly found: number;
   /** The schema version this build expects. */

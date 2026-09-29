@@ -1,6 +1,6 @@
-import { BroadcastChannel as PackageChannel } from 'broadcast-channel';
-import { BroadcastChannelTransport, createChannel } from '@use-everywhere/core';
-import { settle, time } from '../measure.js';
+import { BroadcastChannel as PackageChannel } from "broadcast-channel";
+import { BroadcastChannelTransport, createChannel } from "@use-everywhere/core";
+import { settle, time } from "../measure.js";
 
 /**
  * The comparison the roadmap kept deferring, and the reason it was worth
@@ -46,7 +46,7 @@ export async function competitorThroughput(): Promise<{ library: number; package
 }
 
 async function libraryThroughput(): Promise<number> {
-  const name = uniqueName('bench-vs-bc');
+  const name = uniqueName("bench-vs-bc");
   const options = { transport: (bus: string) => new BroadcastChannelTransport(bus) };
   const sender = createChannel<{ tick: number }>(name, options);
   const listener = createChannel<{ tick: number }>(name, options);
@@ -57,7 +57,7 @@ async function libraryThroughput(): Promise<number> {
     for (let round = 0; round < ROUNDS; round += 1) {
       let seen = 0;
       const done = new Promise<void>((resolve) => {
-        const stop = listener.on('tick', () => {
+        const stop = listener.on("tick", () => {
           seen += 1;
           if (seen === MESSAGES) {
             stop();
@@ -67,7 +67,7 @@ async function libraryThroughput(): Promise<number> {
       });
       durations.push(
         await time(async () => {
-          for (let index = 0; index < MESSAGES; index += 1) sender.post('tick', index);
+          for (let index = 0; index < MESSAGES; index += 1) sender.post("tick", index);
           await done;
         }),
       );
@@ -80,9 +80,9 @@ async function libraryThroughput(): Promise<number> {
 }
 
 async function packageThroughput(): Promise<number> {
-  const name = uniqueName('bench-vs-bc-pkg');
-  const sender = new PackageChannel<number>(name, { type: 'native' });
-  const listener = new PackageChannel<number>(name, { type: 'native' });
+  const name = uniqueName("bench-vs-bc-pkg");
+  const sender = new PackageChannel<number>(name, { type: "native" });
+  const listener = new PackageChannel<number>(name, { type: "native" });
   await settle();
 
   const durations: number[] = [];

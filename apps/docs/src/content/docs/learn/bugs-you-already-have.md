@@ -1,6 +1,6 @@
 ---
-title: 'Bugs you already have'
-description: 'Five tabs, one expired token, five refresh calls. The multi-tab bugs already in your app, and which primitive fixes each one.'
+title: "Bugs you already have"
+description: "Five tabs, one expired token, five refresh calls. The multi-tab bugs already in your app, and which primitive fixes each one."
 sidebar:
   order: 1
 ---
@@ -37,17 +37,17 @@ tabs have their own copy of everything and no reason to look again.
 **The fix.** One message, and every tab finds out in the same millisecond.
 
 ```tsx
-type Session = { 'signed-out': { reason: string } };
+type Session = { "signed-out": { reason: string } };
 
-const channel = useChannel<Session>('session');
+const channel = useChannel<Session>("session");
 
-useOnMessage(channel, 'signed-out', ({ reason }) => {
+useOnMessage(channel, "signed-out", ({ reason }) => {
   queryClient.clear();
   navigate(`/login?reason=${reason}`);
 });
 
 // in your sign-out handler
-useSend(channel)('signed-out', { reason: 'you signed out' }, { echo: true });
+useSend(channel)("signed-out", { reason: "you signed out" }, { echo: true });
 ```
 
 `echo: true` is doing real work there. A post does not come back to the sender —
@@ -68,7 +68,7 @@ they are five copies of one session, so all five do the work.
 **The fix.** Exactly one tab refreshes; the result is shared.
 
 ```tsx
-const [token, setToken] = useSharedState<Token | null>('token', null);
+const [token, setToken] = useSharedState<Token | null>("token", null);
 
 useLeaderEffect(() => {
   const timer = setInterval(async () => {
@@ -101,16 +101,16 @@ every tab.
 **The fix.** One tab owns the socket and relays what it hears.
 
 ```tsx
-const channel = useChannel<{ event: ServerEvent }>('server-events');
+const channel = useChannel<{ event: ServerEvent }>("server-events");
 const post = useSend(channel);
 
 useLeaderEffect(() => {
   const socket = new WebSocket(URL);
-  socket.onmessage = (message) => post('event', JSON.parse(message.data), { echo: true });
+  socket.onmessage = (message) => post("event", JSON.parse(message.data), { echo: true });
   return () => socket.close();
 });
 
-useOnMessage(channel, 'event', applyServerEvent);
+useOnMessage(channel, "event", applyServerEvent);
 ```
 
 Six connections become one. When the owning tab goes away the socket moves —
@@ -133,15 +133,15 @@ mutation. Every other tab has its own cache and no idea anything changed.
 **The fix.** Broadcast the invalidation.
 
 ```tsx
-const channel = useChannel<{ invalidate: { key: string } }>('cache');
+const channel = useChannel<{ invalidate: { key: string } }>("cache");
 const post = useSend(channel);
 
-useOnMessage(channel, 'invalidate', ({ key }) => {
+useOnMessage(channel, "invalidate", ({ key }) => {
   queryClient.invalidateQueries({ queryKey: [key] });
 });
 
 // after a successful mutation
-post('invalidate', { key: 'invoices' });
+post("invalidate", { key: "invoices" });
 ```
 
 No echo this time, and the difference is worth noticing: your mutation's own
@@ -167,13 +167,13 @@ handshake that already does the checks:
 
 ```tsx
 const payment = useWindowResult(() =>
-  openWindow('https://pay.example.com/checkout', {
-    peerOrigin: 'https://pay.example.com',
+  openWindow("https://pay.example.com/checkout", {
+    peerOrigin: "https://pay.example.com",
   }),
 );
 
-if (payment.status === 'done') return <Receipt id={payment.result.receiptId} />;
-if (payment.status === 'error') return <Retry error={payment.error} />;
+if (payment.status === "done") return <Receipt id={payment.result.receiptId} />;
+if (payment.status === "error") return <Retry error={payment.error} />;
 ```
 
 Origin validation, an envelope brand, a per-session nonce, `event.source`

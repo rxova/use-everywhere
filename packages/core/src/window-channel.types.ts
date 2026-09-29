@@ -1,12 +1,12 @@
-import type { MessageMap } from './common.types.js';
+import type { MessageMap } from "./common.types.js";
 
 /** Wire envelope between opener and child. `cid` is the opener-generated nonce. */
 export type WindowWire =
-  | { __ue: 1; cid: string; t: 'ready' }
-  | { __ue: 1; cid: string; t: 'ready-ack' }
-  | { __ue: 1; cid: string; t: 'msg'; type: string; payload: unknown; msgId: string }
-  | { __ue: 1; cid: string; t: 'result'; payload: unknown }
-  | { __ue: 1; cid: string; t: 'close' };
+  | { __ue: 1; cid: string; t: "ready" }
+  | { __ue: 1; cid: string; t: "ready-ack" }
+  | { __ue: 1; cid: string; t: "msg"; type: string; payload: unknown; msgId: string }
+  | { __ue: 1; cid: string; t: "result"; payload: unknown }
+  | { __ue: 1; cid: string; t: "close" };
 
 export interface MessageEventLike {
   data: unknown;

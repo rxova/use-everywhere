@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
-import type { BusWire } from '../bus.types.js';
-import { isVersion } from '../clock.js';
-import { createLeader } from '../leader.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { FakeLockManager } from './helpers/fake-locks.js';
-import { tick } from './helpers/tick.js';
+import { describe, expect, it, vi } from "vitest";
+import type { BusWire } from "../bus.types.js";
+import { isVersion } from "../clock.js";
+import { createLeader } from "../leader.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { FakeLockManager } from "./helpers/fake-locks.js";
+import { tick } from "./helpers/tick.js";
 
 /**
  * The Web Locks strategy, which the existing suite exercises through its happy
@@ -27,14 +27,14 @@ const recorder = (hub: MemoryHub) => {
 
 const build = (hub: MemoryHub, locks: FakeLockManager, name: string, extra = {}) =>
   createLeader(name, {
-    strategy: 'web-locks',
+    strategy: "web-locks",
     locks,
     transport: () => hub.connect(),
     ...extra,
   });
 
-describe('what the Web Locks strategy puts on the wire', () => {
-  it('announces when it takes the lock', async () => {
+describe("what the Web Locks strategy puts on the wire", () => {
+  it("announces when it takes the lock", async () => {
     const hub = new MemoryHub();
     const rec = recorder(hub);
     const leader = build(hub, new FakeLockManager(), uniqueName());
@@ -42,7 +42,7 @@ describe('what the Web Locks strategy puts on the wire', () => {
 
     // No claim and no heartbeat interval: holding the lock *is* the claim, and
     // one announcement is what tells peers who has it.
-    const announces = rec.seen.filter((w) => w.scope === 'leader' && w.type === 'heartbeat');
+    const announces = rec.seen.filter((w) => w.scope === "leader" && w.type === "heartbeat");
     expect(announces.length).toBeGreaterThanOrEqual(1);
     expect(leader.getSnapshot().isLeader).toBe(true);
 
@@ -50,7 +50,7 @@ describe('what the Web Locks strategy puts on the wire', () => {
     rec.close();
   });
 
-  it('answers a joiner hello, but only while it holds the seat', async () => {
+  it("answers a joiner hello, but only while it holds the seat", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -60,35 +60,35 @@ describe('what the Web Locks strategy puts on the wire', () => {
 
     hub.connect().post({
       v: 1,
-      scope: 'leader',
-      type: 'hello',
-      clientId: 'joiner',
-      kind: 'tab',
+      scope: "leader",
+      type: "hello",
+      clientId: "joiner",
+      kind: "tab",
     } satisfies BusWire);
     await tick();
-    expect(rec.seen.filter((w) => w.type === 'heartbeat')).toHaveLength(1);
+    expect(rec.seen.filter((w) => w.type === "heartbeat")).toHaveLength(1);
 
     // Once it has given the seat up, a hello is not its to answer.
     leader.setEligible(false);
     await settle();
     // Counting heartbeats, not every wire: the recorder is a hub connection, so
     // it also sees the hello being injected below.
-    const answered = rec.seen.filter((w) => w.type === 'heartbeat').length;
+    const answered = rec.seen.filter((w) => w.type === "heartbeat").length;
     hub.connect().post({
       v: 1,
-      scope: 'leader',
-      type: 'hello',
-      clientId: 'joiner',
-      kind: 'tab',
+      scope: "leader",
+      type: "hello",
+      clientId: "joiner",
+      kind: "tab",
     } satisfies BusWire);
     await tick();
-    expect(rec.seen.filter((w) => w.type === 'heartbeat')).toHaveLength(answered);
+    expect(rec.seen.filter((w) => w.type === "heartbeat")).toHaveLength(answered);
 
     leader.close();
     rec.close();
   });
 
-  it('says resign when it gives the seat up', async () => {
+  it("says resign when it gives the seat up", async () => {
     const hub = new MemoryHub();
     const leader = build(hub, new FakeLockManager(), uniqueName());
     await settle();
@@ -97,27 +97,27 @@ describe('what the Web Locks strategy puts on the wire', () => {
     leader.setEligible(false);
     await settle();
 
-    expect(rec.seen.filter((w) => w.type === 'resign')).toHaveLength(1);
+    expect(rec.seen.filter((w) => w.type === "resign")).toHaveLength(1);
 
     leader.close();
     rec.close();
   });
 
-  it('passes an explicit kind through to the bus', async () => {
+  it("passes an explicit kind through to the bus", async () => {
     const hub = new MemoryHub();
     const rec = recorder(hub);
-    const leader = build(hub, new FakeLockManager(), uniqueName(), { kind: 'worker' });
+    const leader = build(hub, new FakeLockManager(), uniqueName(), { kind: "worker" });
     await settle();
 
-    expect(rec.seen.some((w) => w.kind === 'worker')).toBe(true);
+    expect(rec.seen.some((w) => w.kind === "worker")).toBe(true);
 
     leader.close();
     rec.close();
   });
 });
 
-describe('wires it hears from others', () => {
-  it('follows whoever announces, since only the lock holder can', async () => {
+describe("wires it hears from others", () => {
+  it("follows whoever announces, since only the lock holder can", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -134,7 +134,7 @@ describe('wires it hears from others', () => {
     follower.close();
   });
 
-  it('empties the seat on a resign from the holder, and ignores one from anyone else', async () => {
+  it("empties the seat on a resign from the holder, and ignores one from anyone else", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -147,11 +147,11 @@ describe('wires it hears from others', () => {
     const wire = hub.connect();
     wire.post({
       v: 1,
-      scope: 'leader',
-      type: 'resign',
-      term: [1, 'stranger'],
-      clientId: 'stranger',
-      kind: 'tab',
+      scope: "leader",
+      type: "resign",
+      term: [1, "stranger"],
+      clientId: "stranger",
+      kind: "tab",
     } satisfies BusWire);
     await tick();
     // A stranger cannot vacate somebody else's seat by saying so.
@@ -159,11 +159,11 @@ describe('wires it hears from others', () => {
 
     wire.post({
       v: 1,
-      scope: 'leader',
-      type: 'resign',
+      scope: "leader",
+      type: "resign",
       term: [1, incumbent.clientId],
       clientId: incumbent.clientId,
-      kind: 'tab',
+      kind: "tab",
     } satisfies BusWire);
     await tick();
     expect(follower.getSnapshot().leaderId).toBeNull();
@@ -173,7 +173,7 @@ describe('wires it hears from others', () => {
     wire.close();
   });
 
-  it('ignores traffic on other scopes', async () => {
+  it("ignores traffic on other scopes", async () => {
     const hub = new MemoryHub();
     const leader = build(hub, new FakeLockManager(), uniqueName());
     await settle();
@@ -182,10 +182,10 @@ describe('wires it hears from others', () => {
 
     hub.connect().post({
       v: 1,
-      scope: 'presence',
-      type: 'hello',
-      clientId: 'x',
-      kind: 'tab',
+      scope: "presence",
+      type: "hello",
+      clientId: "x",
+      kind: "tab",
     } satisfies BusWire);
     await tick();
 
@@ -194,8 +194,8 @@ describe('wires it hears from others', () => {
   });
 });
 
-describe('letting go of the lock', () => {
-  it('hands it to the next in the queue when it becomes ineligible', async () => {
+describe("letting go of the lock", () => {
+  it("hands it to the next in the queue when it becomes ineligible", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -214,7 +214,7 @@ describe('letting go of the lock', () => {
     second.close();
   });
 
-  it('does nothing when eligibility is set to what it already is', async () => {
+  it("does nothing when eligibility is set to what it already is", async () => {
     const hub = new MemoryHub();
     const leader = build(hub, new FakeLockManager(), uniqueName());
     await settle();
@@ -228,7 +228,7 @@ describe('letting go of the lock', () => {
     leader.close();
   });
 
-  it('rejoins the queue when it becomes eligible again', async () => {
+  it("rejoins the queue when it becomes eligible again", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -246,7 +246,7 @@ describe('letting go of the lock', () => {
     leader.close();
   });
 
-  it('gives the seat up on pagehide', async () => {
+  it("gives the seat up on pagehide", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -254,16 +254,16 @@ describe('letting go of the lock', () => {
     await settle();
     const rec = recorder(hub);
 
-    dispatchEvent(new Event('pagehide'));
+    dispatchEvent(new Event("pagehide"));
     await settle();
 
-    expect(rec.seen.filter((w) => w.type === 'resign')).toHaveLength(1);
+    expect(rec.seen.filter((w) => w.type === "resign")).toHaveLength(1);
 
     leader.close();
     rec.close();
   });
 
-  it('releases on close, is idempotent, and stops listening', async () => {
+  it("releases on close, is idempotent, and stops listening", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -275,7 +275,7 @@ describe('letting go of the lock', () => {
     await settle();
 
     const rec = recorder(hub);
-    dispatchEvent(new Event('pagehide'));
+    dispatchEvent(new Event("pagehide"));
     await settle();
 
     // A closed leader that still answered pagehide would post on a released bus.
@@ -283,7 +283,7 @@ describe('letting go of the lock', () => {
     rec.close();
   });
 
-  it('lets a queued follower through once the holder closes', async () => {
+  it("lets a queued follower through once the holder closes", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -301,8 +301,8 @@ describe('letting go of the lock', () => {
   });
 });
 
-describe('the snapshot it hands subscribers', () => {
-  it('wakes nobody when a repeated announcement names the same leader', async () => {
+describe("the snapshot it hands subscribers", () => {
+  it("wakes nobody when a repeated announcement names the same leader", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -317,11 +317,11 @@ describe('the snapshot it hands subscribers', () => {
     for (let i = 0; i < 3; i++) {
       wire.post({
         v: 1,
-        scope: 'leader',
-        type: 'heartbeat',
+        scope: "leader",
+        type: "heartbeat",
         term: [1, holder.clientId],
         clientId: holder.clientId,
-        kind: 'tab',
+        kind: "tab",
       } satisfies BusWire);
     }
     await tick();
@@ -335,7 +335,7 @@ describe('the snapshot it hands subscribers', () => {
     wire.close();
   });
 
-  it('does not resolve waitForLeadership when somebody else takes the seat', async () => {
+  it("does not resolve waitForLeadership when somebody else takes the seat", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -357,24 +357,24 @@ describe('the snapshot it hands subscribers', () => {
     waiting.close();
   });
 
-  it('announces a term other strategies can arbitrate', async () => {
+  it("announces a term other strategies can arbitrate", async () => {
     const hub = new MemoryHub();
     const rec = recorder(hub);
     const leader = build(hub, new FakeLockManager(), uniqueName());
     await settle();
 
-    const announce = rec.seen.find((w) => w.scope === 'leader' && w.type === 'heartbeat');
+    const announce = rec.seen.find((w) => w.scope === "leader" && w.type === "heartbeat");
     // The lock decides here, but the wire is shared with the heartbeat
     // strategy, and a peer on that one arbitrates whatever term arrives.
-    expect(announce && 'term' in announce && isVersion(announce.term)).toBe(true);
+    expect(announce && "term" in announce && isVersion(announce.term)).toBe(true);
 
     leader.close();
     rec.close();
   });
 });
 
-describe('who is allowed to say the seat is empty', () => {
-  it('does not resolve a waiter when the seat merely empties', async () => {
+describe("who is allowed to say the seat is empty", () => {
+  it("does not resolve a waiter when the seat merely empties", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -391,11 +391,11 @@ describe('who is allowed to say the seat is empty', () => {
     const wire = hub.connect();
     wire.post({
       v: 1,
-      scope: 'leader',
-      type: 'resign',
+      scope: "leader",
+      type: "resign",
       term: [1, holder.clientId],
       clientId: holder.clientId,
-      kind: 'tab',
+      kind: "tab",
     } satisfies BusWire);
     await settle();
 
@@ -408,7 +408,7 @@ describe('who is allowed to say the seat is empty', () => {
     wire.close();
   });
 
-  it('says nothing on the wire when a follower closes', async () => {
+  it("says nothing on the wire when a follower closes", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -423,14 +423,14 @@ describe('who is allowed to say the seat is empty', () => {
 
     // A follower announcing a resign would tell every peer the leader had gone
     // — and the leader is sitting right there, still holding the lock.
-    expect(rec.seen.filter((w) => w.type === 'resign')).toHaveLength(0);
+    expect(rec.seen.filter((w) => w.type === "resign")).toHaveLength(0);
     expect(holder.getSnapshot().isLeader).toBe(true);
 
     holder.close();
     rec.close();
   });
 
-  it('tells peers when the holder gives the seat up', async () => {
+  it("tells peers when the holder gives the seat up", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -451,8 +451,8 @@ describe('who is allowed to say the seat is empty', () => {
   });
 });
 
-describe('joining the queue', () => {
-  it('does not queue twice while a request is already outstanding', async () => {
+describe("joining the queue", () => {
+  it("does not queue twice while a request is already outstanding", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -475,7 +475,7 @@ describe('joining the queue', () => {
     waiting.close();
   });
 
-  it('does not queue at all when it is ineligible from the start', async () => {
+  it("does not queue at all when it is ineligible from the start", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -488,10 +488,10 @@ describe('joining the queue', () => {
     standby.close();
   });
 
-  it('never asks the browser for the lock at all when it is ineligible', async () => {
+  it("never asks the browser for the lock at all when it is ineligible", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
-    const request = vi.spyOn(locks, 'request');
+    const request = vi.spyOn(locks, "request");
     const name = uniqueName();
     const standby = build(hub, locks, name, { eligible: false });
     await settle();
@@ -511,7 +511,7 @@ describe('joining the queue', () => {
     standby.close();
   });
 
-  it('stops caring about the seat once closed, even mid-queue', async () => {
+  it("stops caring about the seat once closed, even mid-queue", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -529,8 +529,8 @@ describe('joining the queue', () => {
   });
 });
 
-describe('resign', () => {
-  it('hands the seat on when somebody else is waiting', async () => {
+describe("resign", () => {
+  it("hands the seat on when somebody else is waiting", async () => {
     const hub = new MemoryHub();
     const locks = new FakeLockManager();
     const name = uniqueName();
@@ -548,7 +548,7 @@ describe('resign', () => {
     second.close();
   });
 
-  it('hands it straight back when nobody else is waiting', async () => {
+  it("hands it straight back when nobody else is waiting", async () => {
     const hub = new MemoryHub();
     const leader = build(hub, new FakeLockManager(), uniqueName());
     await settle();

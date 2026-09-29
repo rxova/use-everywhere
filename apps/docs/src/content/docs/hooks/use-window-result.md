@@ -1,6 +1,6 @@
 ---
-title: 'useWindowResult'
-description: 'Open a window on another domain, hand it typed data and await its result, as plain render state.'
+title: "useWindowResult"
+description: "Open a window on another domain, hand it typed data and await its result, as plain render state."
 sidebar:
   order: 9
 ---
@@ -13,7 +13,7 @@ and a `result` when the child finishes. The handshake, the message
 validation, the "user closed the window" detection: all handled.
 
 ```tsx
-import { openWindow, useWindowResult } from 'use-everywhere';
+import { openWindow, useWindowResult } from "use-everywhere";
 
 type ToPayment = { order: { orderId: string; amount: string } };
 type FromPayment = { progress: { step: string } };
@@ -21,19 +21,19 @@ type Receipt = { receiptId: string; last4: string };
 
 function PayButton() {
   const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
-    openWindow('https://pay.example.com/checkout', {
-      peerOrigin: 'https://pay.example.com',
-      features: 'popup,width=440,height=640',
+    openWindow("https://pay.example.com/checkout", {
+      peerOrigin: "https://pay.example.com",
+      features: "popup,width=440,height=640",
     }),
   );
 
-  if (pay.status === 'done') return <p>✓ receipt {pay.result.receiptId}</p>;
-  if (pay.status === 'closed-early') return <p>Window closed — try again.</p>;
-  if (pay.status === 'error') return <p>Something broke: {String(pay.error)}</p>;
+  if (pay.status === "done") return <p>✓ receipt {pay.result.receiptId}</p>;
+  if (pay.status === "closed-early") return <p>Window closed — try again.</p>;
+  if (pay.status === "error") return <p>Something broke: {String(pay.error)}</p>;
 
   return (
-    <button onClick={pay.open} disabled={pay.status !== 'idle'}>
-      {pay.status === 'idle' ? 'Pay in secure window' : 'Waiting…'}
+    <button onClick={pay.open} disabled={pay.status !== "idle"}>
+      {pay.status === "idle" ? "Pay in secure window" : "Waiting…"}
     </button>
   );
 }
@@ -82,10 +82,10 @@ The three state fields are a **discriminated union** on `status`, so checking it
 narrows the rest — no non-null assertion needed:
 
 ```tsx
-if (pay.status === 'done') {
+if (pay.status === "done") {
   pay.result.receiptId; // R, not R | undefined
 }
-if (pay.status === 'closed-early') {
+if (pay.status === "closed-early") {
   pay.error; // WindowClosedError
 }
 ```
@@ -122,14 +122,14 @@ The child page uses `connectToOpener` — core API, framework-free, same
 `peerOrigin` discipline:
 
 ```ts title="on pay.example.com"
-import { connectToOpener } from '@use-everywhere/core';
+import { connectToOpener } from "@use-everywhere/core";
 
 const conn = connectToOpener<ToPayment, FromPayment, Receipt>({
-  peerOrigin: 'https://shop.example.com',
+  peerOrigin: "https://shop.example.com",
 });
-conn.on('order', (order) => renderOrderSummary(order));
-conn.post('progress', { step: 'card-entered' });
-conn.finish({ receiptId: 'r-123', last4: '4242' }); // resolves the opener's result
+conn.on("order", (order) => renderOrderSummary(order));
+conn.post("progress", { step: "card-entered" });
+conn.finish({ receiptId: "r-123", last4: "4242" }); // resolves the opener's result
 ```
 
 The full two-sided walkthrough lives in

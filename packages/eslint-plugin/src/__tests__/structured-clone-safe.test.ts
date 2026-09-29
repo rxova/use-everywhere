@@ -1,7 +1,7 @@
-import { structuredCloneSafe } from '../rules/structured-clone-safe.js';
-import { ruleTester } from './rule-tester.js';
+import { structuredCloneSafe } from "../rules/structured-clone-safe.js";
+import { ruleTester } from "./rule-tester.js";
 
-ruleTester.run('structured-clone-safe', structuredCloneSafe, {
+ruleTester.run("structured-clone-safe", structuredCloneSafe, {
   valid: [
     { code: `const [theme, setTheme] = useSharedState('theme', 'dark');` },
     { code: `useSharedState('cart', { items: [], total: 0, updatedAt: new Date() });` },
@@ -31,56 +31,56 @@ ruleTester.run('structured-clone-safe', structuredCloneSafe, {
   invalid: [
     {
       code: `useSharedState('cart', { onCheckout: () => {} });`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a function' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a function" } }],
     },
     {
       code: `useSharedState('cart', function () {});`,
-      errors: [{ messageId: 'notCloneable' }],
+      errors: [{ messageId: "notCloneable" }],
     },
     {
       code: `createSharedStore('cart', { rows: [() => {}] });`,
-      errors: [{ messageId: 'notCloneable' }],
+      errors: [{ messageId: "notCloneable" }],
     },
     {
       code: `useSharedState('cart', { Renderer: class {} });`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a class' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a class" } }],
     },
     {
       code: `useSharedState('pending', new Promise(() => {}));`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a Promise' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a Promise" } }],
     },
     {
       code: `useSharedState('cache', { byId: new WeakMap() });`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a WeakMap' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a WeakMap" } }],
     },
     {
       code: `useSharedState('id', Symbol('cart'));`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a symbol' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a symbol" } }],
     },
     {
       code: `useSharedState('user', new User('ada'));`,
-      errors: [{ messageId: 'prototypeLost', data: { name: 'User' } }],
+      errors: [{ messageId: "prototypeLost", data: { name: "User" } }],
     },
     {
       code: `createSharedReducer('votes', reduce, { at: new URL('/x', origin) });`,
-      errors: [{ messageId: 'prototypeLost', data: { name: 'URL' } }],
+      errors: [{ messageId: "prototypeLost", data: { name: "URL" } }],
     },
     {
       code: `function onSave() {}\nuseSharedState('cart', { onSave });`,
-      errors: [{ messageId: 'notCloneable', data: { what: 'a function' } }],
+      errors: [{ messageId: "notCloneable", data: { what: "a function" } }],
     },
     {
       code: `const onSave = () => {};\nuseSharedState('cart', { onSave });`,
-      errors: [{ messageId: 'notCloneable' }],
+      errors: [{ messageId: "notCloneable" }],
     },
     {
       code: `store.registerKey('cart', { onSave: function () {} });`,
-      errors: [{ messageId: 'notCloneable' }],
+      errors: [{ messageId: "notCloneable" }],
     },
     // Two problems in one literal are two reports.
     {
       code: `useSharedState('cart', { onSave: () => {}, user: new User('ada') });`,
-      errors: [{ messageId: 'notCloneable' }, { messageId: 'prototypeLost' }],
+      errors: [{ messageId: "notCloneable" }, { messageId: "prototypeLost" }],
     },
   ],
 });

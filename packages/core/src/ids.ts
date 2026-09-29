@@ -1,4 +1,4 @@
-import { devWarn } from './dev.js';
+import { devWarn } from "./dev.js";
 
 // Ids are load-bearing beyond uniqueness: the clientId is the LWW tie-breaker
 // (two equal ids deadlock a version tie forever) and the self-echo filter (a
@@ -14,25 +14,25 @@ function randomHex(bytes: number): string {
   const crypto = globalThis.crypto;
   if (crypto?.getRandomValues) {
     const buf = crypto.getRandomValues(new Uint8Array(bytes));
-    let out = '';
-    for (const b of buf) out += b.toString(16).padStart(2, '0');
+    let out = "";
+    for (const b of buf) out += b.toString(16).padStart(2, "0");
     return out;
   }
   // Practically unreachable on the web; kept so an exotic host (Hermes without
   // a polyfill) degrades instead of throwing on import. Warned about rather
   // than silent: this weakens the window channel's nonce, and a security
   // property that quietly downgrades is worse than one that fails loudly.
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     devWarn(
-      'UE1006',
-      'crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.',
+      "UE1006",
+      "crypto.getRandomValues is unavailable; falling back to Math.random for ids. Cross-origin window nonces are not cryptographically strong in this environment.",
     );
   }
-  let out = '';
+  let out = "";
   while (out.length < bytes * 2)
     out += Math.floor(Math.random() * 256)
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
   return out;
 }
 

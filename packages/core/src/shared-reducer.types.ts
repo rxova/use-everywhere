@@ -1,5 +1,5 @@
-import type { CommonOptions } from './common.types.js';
-import type { Leader, LeaderOptions } from './leader.types.js';
+import type { CommonOptions } from "./common.types.js";
+import type { Leader, LeaderOptions } from "./leader.types.js";
 
 export interface SharedReducerOptions extends CommonOptions {
   /**

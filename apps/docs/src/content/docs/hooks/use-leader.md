@@ -1,6 +1,6 @@
 ---
-title: 'useLeader'
-description: 'Elect exactly one tab to own the WebSocket, the polling loop or the token refresh — and hand the seat over when that tab closes.'
+title: "useLeader"
+description: "Elect exactly one tab to own the WebSocket, the polling loop or the token refresh — and hand the seat over when that tab closes."
 sidebar:
   order: 10
 ---
@@ -14,11 +14,11 @@ one.
 the elected tab goes away, another one picks the job up.
 
 ```tsx
-import { useLeaderEffect } from 'use-everywhere';
+import { useLeaderEffect } from "use-everywhere";
 
 function LiveFeed() {
   useLeaderEffect(() => {
-    const socket = new WebSocket('wss://example.com/feed');
+    const socket = new WebSocket("wss://example.com/feed");
     return () => socket.close();
   });
 
@@ -86,7 +86,7 @@ For imperative code — outside React, or in an effect — `waitForLeadership()`
 resolves when this tab holds the seat, immediately if it already does:
 
 ```ts
-const leader = getLeader('feed');
+const leader = getLeader("feed");
 await leader.waitForLeadership();
 startTheExpensiveThing();
 ```
@@ -118,7 +118,7 @@ without passing `eligible` will not re-enrol a tab that opted out.
 
 ```tsx
 useLeader({
-  name: 'feed', // which bus to elect on
+  name: "feed", // which bus to elect on
   heartbeatMs: 1000, // how often the leader re-announces
   leaseMs: 3000, // how long followers tolerate silence
 });

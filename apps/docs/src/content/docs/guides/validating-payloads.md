@@ -1,5 +1,5 @@
 ---
-title: 'Validating payloads'
+title: "Validating payloads"
 description: "Validate what arrives on the bus: the sender may be running last week's bundle, so types alone do not protect you."
 sidebar:
   order: 7
@@ -14,12 +14,12 @@ the version clock, the origin on a window channel. The payload is the one thing
 that was cast rather than checked. This closes that.
 
 ```ts
-import { z } from 'zod';
-import { defineChannel } from 'use-everywhere';
+import { z } from "zod";
+import { defineChannel } from "use-everywhere";
 
-const cart = defineChannel<{ 'item:add': { sku: string; qty: number } }>('cart', {
+const cart = defineChannel<{ "item:add": { sku: string; qty: number } }>("cart", {
   schema: {
-    'item:add': z.object({ sku: z.string(), qty: z.number().int().positive() }),
+    "item:add": z.object({ sku: z.string(), qty: z.number().int().positive() }),
   },
 });
 ```
@@ -36,11 +36,11 @@ works too:
 
 ```ts
 const isSku = {
-  '~standard': {
+  "~standard": {
     version: 1,
-    vendor: 'my-app',
+    vendor: "my-app",
     validate: (value: unknown) =>
-      typeof value === 'string' ? { value } : { issues: [{ message: 'expected a string' }] },
+      typeof value === "string" ? { value } : { issues: [{ message: "expected a string" }] },
   },
 };
 ```
@@ -66,10 +66,10 @@ By default a failure warns once in development. Pass `onInvalid` to observe it
 instead — count it, sample it, ship it to your error tracker:
 
 ```ts
-defineChannel<Messages>('cart', {
-  schema: { 'item:add': itemAdd },
+defineChannel<Messages>("cart", {
+  schema: { "item:add": itemAdd },
   onInvalid: ({ key, direction, issues }) => {
-    telemetry.increment('bus.invalid', { key, direction });
+    telemetry.increment("bus.invalid", { key, direction });
   },
 });
 ```
@@ -83,8 +83,8 @@ Per key rather than per message type, and covering one more entry point:
 
 ```ts
 const store = createSharedStore(
-  'prefs',
-  { theme: 'light', fontSize: 14 },
+  "prefs",
+  { theme: "light", fontSize: 14 },
   { schema: { fontSize: z.number().int().min(8).max(32) } },
 );
 ```

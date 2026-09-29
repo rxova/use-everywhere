@@ -1,5 +1,5 @@
 ---
-title: 'Inspector'
+title: "Inspector"
 description: "A floating panel showing what this tab is saying and hearing on the bus, so you don't debug five tabs with five console.logs."
 sidebar:
   order: 12
@@ -10,7 +10,7 @@ miserable. The Inspector is a floating panel that shows what this tab is saying
 and hearing on the bus.
 
 ```tsx
-import { Inspector } from 'use-everywhere/devtools';
+import { Inspector } from "use-everywhere/devtools";
 
 function App() {
   return (
@@ -100,7 +100,7 @@ One consequence, if your own tests assert on the panel: it is not in `document`.
 Reach it through the host.
 
 ```ts
-const host = screen.getByTestId('ue-inspector-host');
+const host = screen.getByTestId("ue-inspector-host");
 const panel = within(host.shadowRoot as unknown as HTMLElement);
 ```
 
@@ -140,14 +140,14 @@ who leads.
 The seam underneath is a plain function, so you can watch a bus from anywhere:
 
 ```ts
-import { observeBus, enableDebug } from 'use-everywhere';
+import { observeBus, enableDebug } from "use-everywhere";
 
 // Log every wire on the default bus to the console.
 const stop = enableDebug();
 
 // Or handle them yourself.
-observeBus('settings', ({ direction, wire }) => {
-  if (wire.scope === 'state') console.log(direction, wire);
+observeBus("settings", ({ direction, wire }) => {
+  if (wire.scope === "state") console.log(direction, wire);
 });
 ```
 

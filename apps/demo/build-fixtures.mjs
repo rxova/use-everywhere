@@ -1,5 +1,5 @@
-import { resolve } from 'node:path';
-import { build } from 'vite';
+import { resolve } from "node:path";
+import { build } from "vite";
 
 /**
  * Builds the fixture bundles that Vite cannot serve as modules, into
@@ -24,15 +24,15 @@ const dir = import.meta.dirname;
 
 /** Entry → output, each built on its own so nothing is hoisted between them. */
 const fixtures = [
-  { entry: 'mfe/a.ts', outDir: 'public/mfe', file: 'a.js', name: 'mfe_bundle_a' },
-  { entry: 'mfe/b.ts', outDir: 'public/mfe', file: 'b.js', name: 'mfe_bundle_b' },
-  { entry: 'relay/worker.ts', outDir: 'public/relay', file: 'worker.js', name: 'relay_worker' },
+  { entry: "mfe/a.ts", outDir: "public/mfe", file: "a.js", name: "mfe_bundle_a" },
+  { entry: "mfe/b.ts", outDir: "public/mfe", file: "b.js", name: "mfe_bundle_b" },
+  { entry: "relay/worker.ts", outDir: "public/relay", file: "worker.js", name: "relay_worker" },
 ];
 
 for (const fixture of fixtures) {
   await build({
     configFile: false,
-    logLevel: 'warn',
+    logLevel: "warn",
     // The output lands *inside* the public directory, which is the point — the
     // fixtures load it as a plain script. Vite warns about that overlap unless
     // told there is no public directory to copy for these builds.
@@ -40,7 +40,7 @@ for (const fixture of fixtures) {
     build: {
       lib: {
         entry: resolve(dir, fixture.entry),
-        formats: ['iife'],
+        formats: ["iife"],
         name: fixture.name,
         fileName: () => fixture.file,
       },

@@ -13,7 +13,7 @@ export type Sample = number;
  * never observed, and the whole point is to report something that happened.
  */
 export function percentile(samples: readonly Sample[], p: number): number {
-  if (samples.length === 0) throw new Error('percentile() needs at least one sample');
+  if (samples.length === 0) throw new Error("percentile() needs at least one sample");
   const sorted = [...samples].sort((a, b) => a - b);
   const rank = Math.ceil((p / 100) * sorted.length);
   const index = Math.min(sorted.length - 1, Math.max(0, rank - 1));
@@ -21,7 +21,7 @@ export function percentile(samples: readonly Sample[], p: number): number {
 }
 
 export function mean(samples: readonly Sample[]): number {
-  if (samples.length === 0) throw new Error('mean() needs at least one sample');
+  if (samples.length === 0) throw new Error("mean() needs at least one sample");
   return samples.reduce((total, sample) => total + sample, 0) / samples.length;
 }
 

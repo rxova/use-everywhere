@@ -1,6 +1,6 @@
 ---
-title: 'useOnMessage'
-description: 'Run a handler whenever another tab posts a given event — the listen half of the typed cross-tab event system.'
+title: "useOnMessage"
+description: "Run a handler whenever another tab posts a given event — the listen half of the typed cross-tab event system."
 sidebar:
   order: 4
 ---
@@ -11,15 +11,15 @@ the "listen" half of the typed event system — you give it a channel from
 manages the subscription for the component's lifetime.
 
 ```tsx
-import { useChannel, useOnMessage } from 'use-everywhere';
+import { useChannel, useOnMessage } from "use-everywhere";
 
-type AuthEvents = { 'logged-out': undefined };
+type AuthEvents = { "logged-out": undefined };
 
 function SessionGuard() {
-  const channel = useChannel<AuthEvents>('auth');
+  const channel = useChannel<AuthEvents>("auth");
 
-  useOnMessage(channel, 'logged-out', () => {
-    window.location.assign('/login'); // another tab logged us out
+  useOnMessage(channel, "logged-out", () => {
+    window.location.assign("/login"); // another tab logged us out
   });
 
   return null;
@@ -68,11 +68,11 @@ your latest render, so it can close over current props and state safely:
 ```tsx
 function CartBadge() {
   const [items, setItems] = useState(0);
-  const channel = useChannel<ShopEvents>('shop');
+  const channel = useChannel<ShopEvents>("shop");
 
   // `items` here is never stale, and this never tears down / re-subscribes
   // on every render the way a raw useEffect subscription would.
-  useOnMessage(channel, 'cart-updated', (payload) => {
+  useOnMessage(channel, "cart-updated", (payload) => {
     console.log(`cart went from ${items} to ${payload.items}`);
     setItems(payload.items);
   });

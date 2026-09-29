@@ -1,5 +1,5 @@
-import { devWarn } from './dev.js';
-import type { SharedBusCore } from './bus.types.js';
+import { devWarn } from "./dev.js";
+import type { SharedBusCore } from "./bus.types.js";
 
 /**
  * Where the copies of this library that are loaded on one page find each other.
@@ -30,7 +30,7 @@ import type { SharedBusCore } from './bus.types.js';
 const PROTOCOL = 1;
 const TABLE = Symbol.for(`use-everywhere.rendezvous.${PROTOCOL}`);
 /** Unversioned, so copies compiled against *different* protocols still meet here. */
-const CENSUS = Symbol.for('use-everywhere.rendezvous.census');
+const CENSUS = Symbol.for("use-everywhere.rendezvous.census");
 /**
  * Also unversioned, and for the same reason plus a stronger one: skew is a fact
  * about the *origin*, not about one bundle's view of it. If two copies on this
@@ -41,7 +41,7 @@ const CENSUS = Symbol.for('use-everywhere.rendezvous.census');
  * plain numbers in a built-in Set, with no methods of ours for a foreign copy
  * to call.
  */
-const SKEW = Symbol.for('use-everywhere.rendezvous.skew');
+const SKEW = Symbol.for("use-everywhere.rendezvous.skew");
 
 interface Census {
   protocols: number[];
@@ -59,11 +59,11 @@ function announce(): void {
   if (census.protocols.includes(PROTOCOL)) return;
   census.protocols.push(PROTOCOL);
   if (census.protocols.length > 1) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       devWarn(
-        'UE1008',
+        "UE1008",
         `two incompatible versions of this library are loaded on one page ` +
-          `(rendezvous protocols ${census.protocols.join(', ')}). They will not share a client ` +
+          `(rendezvous protocols ${census.protocols.join(", ")}). They will not share a client ` +
           `identity: expect one presence entry per version and no synchronous delivery between ` +
           `them. They still sync over the bus. Align the versions to fix it.`,
       );

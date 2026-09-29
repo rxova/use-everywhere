@@ -1,5 +1,5 @@
-import type { BusOptions } from './bus.types.js';
-import type { Peer } from './common.types.js';
+import type { BusOptions } from "./bus.types.js";
+import type { Peer } from "./common.types.js";
 
 export interface PresenceOptions extends BusOptions {
   /** How much silence makes a peer suspect. Default 5000ms. It is then probed, not dropped. */

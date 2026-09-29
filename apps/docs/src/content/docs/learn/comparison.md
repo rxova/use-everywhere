@@ -1,6 +1,6 @@
 ---
-title: 'Compared to the alternatives'
-description: 'use-everywhere compared to hand-rolled BroadcastChannel, localStorage events, Zustand, Jotai and Redux — what you would write instead, and what it would cost.'
+title: "Compared to the alternatives"
+description: "use-everywhere compared to hand-rolled BroadcastChannel, localStorage events, Zustand, Jotai and Redux — what you would write instead, and what it would cost."
 sidebar:
   order: 5
 ---
@@ -16,7 +16,7 @@ This is the honest baseline, and for a surprising number of apps it is the right
 one. Two tabs, one flag, no conflicts:
 
 ```ts
-const channel = new BroadcastChannel('theme');
+const channel = new BroadcastChannel("theme");
 channel.postMessage(theme);
 channel.onmessage = (event) => setTheme(event.data);
 ```
@@ -88,7 +88,7 @@ If all you want is "exactly one tab does this", `navigator.locks` is excellent
 and you should use it:
 
 ```ts
-navigator.locks.request('poller', () => forever());
+navigator.locks.request("poller", () => forever());
 ```
 
 The library's leader election _is_ Web Locks where the API exists. What it adds

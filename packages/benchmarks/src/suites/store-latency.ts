@@ -1,5 +1,5 @@
-import { BroadcastChannelTransport, createSharedStore } from '@use-everywhere/core';
-import { percentile, repeat, settle, time, type Sample } from '../measure.js';
+import { BroadcastChannelTransport, createSharedStore } from "@use-everywhere/core";
+import { percentile, repeat, settle, time, type Sample } from "../measure.js";
 
 /**
  * How long a write takes to reach every other tab, against the floor: the same
@@ -21,7 +21,7 @@ export async function storeLatency(): Promise<{ library: Sample[]; raw: Sample[]
 }
 
 async function libraryLatency(): Promise<Sample[]> {
-  const name = uniqueName('bench-store');
+  const name = uniqueName("bench-store");
   const options = { transport: (bus: string) => new BroadcastChannelTransport(bus) };
   const writer = createSharedStore(name, { seq: 0 }, options);
   const readers = Array.from({ length: READERS }, () =>
@@ -39,7 +39,7 @@ async function libraryLatency(): Promise<Sample[]> {
         readers.map(
           (reader) =>
             new Promise<void>((resolve) => {
-              const stop = reader.subscribeKey('seq', () => {
+              const stop = reader.subscribeKey("seq", () => {
                 if (reader.getSnapshot().seq === target) {
                   stop();
                   resolve();
@@ -49,7 +49,7 @@ async function libraryLatency(): Promise<Sample[]> {
         ),
       );
       return time(async () => {
-        writer.set('seq', target);
+        writer.set("seq", target);
         await arrived;
       });
     });
@@ -60,7 +60,7 @@ async function libraryLatency(): Promise<Sample[]> {
 }
 
 async function rawLatency(): Promise<Sample[]> {
-  const name = uniqueName('bench-raw-store');
+  const name = uniqueName("bench-raw-store");
   const writer = new BroadcastChannel(name);
   const readers = Array.from({ length: READERS }, () => new BroadcastChannel(name));
 
@@ -73,16 +73,16 @@ async function rawLatency(): Promise<Sample[]> {
             new Promise<void>((resolve) => {
               const listener = (event: MessageEvent): void => {
                 if ((event.data as { seq: number }).seq === target) {
-                  reader.removeEventListener('message', listener);
+                  reader.removeEventListener("message", listener);
                   resolve();
                 }
               };
-              reader.addEventListener('message', listener);
+              reader.addEventListener("message", listener);
             }),
         ),
       );
       return time(async () => {
-        writer.postMessage({ key: 'seq', seq: target });
+        writer.postMessage({ key: "seq", seq: target });
         await arrived;
       });
     });

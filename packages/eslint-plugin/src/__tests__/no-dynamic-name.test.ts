@@ -1,7 +1,7 @@
-import { noDynamicName } from '../rules/no-dynamic-name.js';
-import { ruleTester } from './rule-tester.js';
+import { noDynamicName } from "../rules/no-dynamic-name.js";
+import { ruleTester } from "./rule-tester.js";
 
-ruleTester.run('no-dynamic-name', noDynamicName, {
+ruleTester.run("no-dynamic-name", noDynamicName, {
   valid: [
     { code: `const cart = createStoreHooks('cart');` },
     { code: `const chat = defineChannel(\`chat\`);` },
@@ -21,45 +21,45 @@ ruleTester.run('no-dynamic-name', noDynamicName, {
   invalid: [
     {
       code: `function Cart({ id }) { return getSharedStore(id); }`,
-      errors: [{ messageId: 'dynamicName', data: { name: 'getSharedStore' } }],
+      errors: [{ messageId: "dynamicName", data: { name: "getSharedStore" } }],
     },
     {
       code: `const cart = createStoreHooks(\`cart-\${window.location.host}\`);`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `let CART = 'cart';\nconst cart = createSharedStore(CART, {});`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `const CART = prefix + 'cart';\nconst cart = createChannel(CART);`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `function make(name) { return createLeader(name); }`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     // Module scope is not enough on its own — the binding has to be a string.
     {
       code: `function CART() {}\nconst chat = createChannel(CART);`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     // Undeclared: nothing to resolve, so nothing vouches for it.
     {
       code: `const chat = createChannel(CHAT_NAME);`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `const n = createNamespace(String(1));`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `function Chat({ id }) { return createSharedReducer(id, reduce, {}); }`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
     {
       code: `function useSeat({ id }) { return getLeader(id); }`,
-      errors: [{ messageId: 'dynamicName' }],
+      errors: [{ messageId: "dynamicName" }],
     },
   ],
 });

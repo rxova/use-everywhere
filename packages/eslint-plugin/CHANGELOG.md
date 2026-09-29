@@ -56,7 +56,7 @@
   Flat config, ESLint 9+, no type information required:
 
   ```js
-  import useEverywhere from 'eslint-plugin-use-everywhere';
+  import useEverywhere from "eslint-plugin-use-everywhere";
 
   export default [useEverywhere.configs.recommended];
   ```

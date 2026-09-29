@@ -1,7 +1,7 @@
-import type { BusWire } from './bus.types.js';
-import type { BusEvent, BusObserver, DebugOptions } from './debug.types.js';
-import { DEFAULT_NAME } from './defaults.js';
-import { diagnostic } from './dev.js';
+import type { BusWire } from "./bus.types.js";
+import type { BusEvent, BusObserver, DebugOptions } from "./debug.types.js";
+import { DEFAULT_NAME } from "./defaults.js";
+import { diagnostic } from "./dev.js";
 
 /**
  * Observers keyed by bus name, looked up at emit time rather than handed to
@@ -11,7 +11,7 @@ import { diagnostic } from './dev.js';
 const observers = new Map<string, Set<BusObserver>>();
 
 /** @internal Called by the bus on every wire in and out. */
-export function emitBusEvent(name: string, direction: 'in' | 'out', wire: BusWire): void {
+export function emitBusEvent(name: string, direction: "in" | "out", wire: BusWire): void {
   const set = observers.get(name);
   if (!set) return;
   const event: BusEvent = { name, direction, wire };
@@ -22,7 +22,7 @@ export function emitBusEvent(name: string, direction: 'in' | 'out', wire: BusWir
     try {
       fn(event);
     } catch (error) {
-      console.error(diagnostic('UE1012', `a bus observer for "${name}" threw`), error);
+      console.error(diagnostic("UE1012", `a bus observer for "${name}" threw`), error);
     }
   }
 }
@@ -56,7 +56,7 @@ export function enableDebug(options: DebugOptions = {}): () => void {
   const log = options.log ?? ((...args: unknown[]) => console.log(...args));
 
   return observeBus(name, ({ direction, wire }) => {
-    const arrow = direction === 'out' ? '→' : '←';
+    const arrow = direction === "out" ? "→" : "←";
     log(`[use-everywhere:${name}] ${arrow} ${wire.scope}/${wire.type}`, wire);
   });
 }

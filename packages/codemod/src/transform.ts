@@ -1,7 +1,7 @@
-import ts from 'typescript';
+import ts from "typescript";
 
 /** The package whose exports were renamed. Nothing in `@use-everywhere/core` changed. */
-export const PACKAGE = 'use-everywhere';
+export const PACKAGE = "use-everywhere";
 
 /**
  * The named exports renamed at 1.0, old spelling → new. The table from RFC 0001,
@@ -12,13 +12,13 @@ export const PACKAGE = 'use-everywhere';
  * argument list.
  */
 export const RENAMES: Readonly<Record<string, string>> = Object.freeze({
-  useMessage: 'useOnMessage',
-  useOpenedWindow: 'useWindowResult',
-  defineStore: 'createStoreHooks',
-  useSharedStore: 'useSharedSelector',
-  UseMessageOptions: 'UseOnMessageOptions',
-  DefineStoreOptions: 'CreateStoreHooksOptions',
-  UseOpenedWindow: 'UseWindowResult',
+  useMessage: "useOnMessage",
+  useOpenedWindow: "useWindowResult",
+  defineStore: "createStoreHooks",
+  useSharedStore: "useSharedSelector",
+  UseMessageOptions: "UseOnMessageOptions",
+  DefineStoreOptions: "CreateStoreHooksOptions",
+  UseOpenedWindow: "UseWindowResult",
 });
 
 /**
@@ -27,19 +27,19 @@ export const RENAMES: Readonly<Record<string, string>> = Object.freeze({
  * receiver is provably one of ours — see `receiverKind`.
  */
 const MEMBER_RENAMES: Readonly<Record<ReceiverKind, Readonly<Record<string, string>>>> = {
-  store: { get: 'store' },
-  channel: { useMessage: 'useOnMessage' },
-  namespace: { defineStore: 'createStoreHooks', useSharedStore: 'useSharedSelector' },
+  store: { get: "store" },
+  channel: { useMessage: "useOnMessage" },
+  namespace: { defineStore: "createStoreHooks", useSharedStore: "useSharedSelector" },
 };
 
-type ReceiverKind = 'store' | 'channel' | 'namespace';
+type ReceiverKind = "store" | "channel" | "namespace";
 
 /** Which factory call produces which kind of receiver. Both spellings of the store factory count. */
 const FACTORIES: Readonly<Record<string, ReceiverKind>> = {
-  defineStore: 'store',
-  createStoreHooks: 'store',
-  defineChannel: 'channel',
-  createNamespace: 'namespace',
+  defineStore: "store",
+  createStoreHooks: "store",
+  defineChannel: "channel",
+  createNamespace: "namespace",
 };
 
 /**
@@ -72,22 +72,22 @@ interface Edit {
 }
 
 const EXTENSION_KINDS: Readonly<Record<string, ts.ScriptKind>> = {
-  '.ts': ts.ScriptKind.TS,
-  '.mts': ts.ScriptKind.TS,
-  '.cts': ts.ScriptKind.TS,
-  '.tsx': ts.ScriptKind.TSX,
-  '.js': ts.ScriptKind.JS,
-  '.mjs': ts.ScriptKind.JS,
-  '.cjs': ts.ScriptKind.JS,
-  '.jsx': ts.ScriptKind.JSX,
+  ".ts": ts.ScriptKind.TS,
+  ".mts": ts.ScriptKind.TS,
+  ".cts": ts.ScriptKind.TS,
+  ".tsx": ts.ScriptKind.TSX,
+  ".js": ts.ScriptKind.JS,
+  ".mjs": ts.ScriptKind.JS,
+  ".cjs": ts.ScriptKind.JS,
+  ".jsx": ts.ScriptKind.JSX,
 };
 
 /** File extensions the transform parses. Anything else is skipped rather than guessed at. */
 export const EXTENSIONS: readonly string[] = Object.keys(EXTENSION_KINDS);
 
 const scriptKind = (filename: string): ts.ScriptKind => {
-  const dot = filename.lastIndexOf('.');
-  const extension = dot === -1 ? '' : filename.slice(dot);
+  const dot = filename.lastIndexOf(".");
+  const extension = dot === -1 ? "" : filename.slice(dot);
   return EXTENSION_KINDS[extension] ?? ts.ScriptKind.TSX;
 };
 
@@ -95,7 +95,7 @@ const isRequireOf = (node: ts.Expression | undefined, module: string): boolean =
   node !== undefined &&
   ts.isCallExpression(node) &&
   ts.isIdentifier(node.expression) &&
-  node.expression.text === 'require' &&
+  node.expression.text === "require" &&
   node.arguments.length === 1 &&
   ts.isStringLiteral(node.arguments[0]!) &&
   node.arguments[0].text === module;
@@ -122,7 +122,7 @@ const isRequireOf = (node: ts.Expression | undefined, module: string): boolean =
  * A `.useMessage(` call on a receiver it cannot attribute is reported as a
  * warning rather than rewritten.
  */
-export function transform(source: string, filename = 'file.tsx'): TransformResult {
+export function transform(source: string, filename = "file.tsx"): TransformResult {
   const file = ts.createSourceFile(
     filename,
     source,
@@ -322,7 +322,7 @@ export function transform(source: string, filename = 'file.tsx'): TransformResul
       return;
     }
     if (
-      member === 'useMessage' &&
+      member === "useMessage" &&
       ts.isCallExpression(node.parent) &&
       node.parent.expression === node
     ) {
@@ -331,8 +331,8 @@ export function transform(source: string, filename = 'file.tsx'): TransformResul
         line: line + 1,
         message:
           `\`${receiver.getText(file)}.useMessage(...)\` was left alone: the receiver is not ` +
-          'defined from `defineChannel` in this file. If it is a use-everywhere channel, rename ' +
-          'the call to `.useOnMessage(...)` by hand.',
+          "defined from `defineChannel` in this file. If it is a use-everywhere channel, rename " +
+          "the call to `.useOnMessage(...)` by hand.",
       });
     }
   }

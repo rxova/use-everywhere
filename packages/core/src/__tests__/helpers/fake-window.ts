@@ -1,4 +1,4 @@
-import type { WindowEventTarget, WindowLike } from '../../window-channel.types.js';
+import type { WindowEventTarget, WindowLike } from "../../window-channel.types.js";
 
 type Listener = (event: { data: unknown; origin: string; source: unknown }) => void;
 
@@ -31,11 +31,11 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
 
   /** Called by the peer: deliver a message event to this window's listeners. */
   postMessage(data: unknown, targetOrigin: string): void {
-    if (targetOrigin !== '*' && targetOrigin !== this.origin) return; // browser drops it
+    if (targetOrigin !== "*" && targetOrigin !== this.origin) return; // browser drops it
     const from = this.peer!;
     const deliver = () => {
       if (this.closed) return;
-      for (const fn of this.listeners.get('message') ?? []) {
+      for (const fn of this.listeners.get("message") ?? []) {
         fn({ data, origin: from.origin, source: from });
       }
     };
@@ -45,7 +45,7 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
 
   /** Inject a message that did not come from the peer (attacker / unrelated page). */
   injectMessage(data: unknown, origin: string, source: unknown = {}): void {
-    for (const fn of this.listeners.get('message') ?? []) {
+    for (const fn of this.listeners.get("message") ?? []) {
       fn({ data, origin, source });
     }
   }
@@ -56,7 +56,7 @@ export class FakeWindow implements WindowEventTarget, WindowLike {
 
   close(): void {
     this.closed = true;
-    for (const fn of this.listeners.get('pagehide') ?? []) {
+    for (const fn of this.listeners.get("pagehide") ?? []) {
       fn({ data: undefined, origin: this.origin, source: this });
     }
   }

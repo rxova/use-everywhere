@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { Shell } from './shell/Shell.js';
-import { pageFor } from './shell/pages.js';
-import { useRoute } from './router.js';
+import { useEffect } from "react";
+import { Shell } from "./shell/Shell.js";
+import { pageFor } from "./shell/pages.js";
+import { useRoute } from "./router.js";
 
 export function App() {
   const route = useRoute();

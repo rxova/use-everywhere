@@ -1,6 +1,6 @@
 ---
-title: 'Serialization: Dates, Maps, and the text paths'
-description: 'BroadcastChannel carries structured clone, so a Date arrives a Date and a Map arrives a Map. What does not survive, and where the text paths change that.'
+title: "Serialization: Dates, Maps, and the text paths"
+description: "BroadcastChannel carries structured clone, so a Date arrives a Date and a Map arrives a Map. What does not survive, and where the text paths change that."
 sidebar:
   order: 11
 ---
@@ -29,7 +29,7 @@ production, on the one browser you didn't test.
 The default serializer **refuses** every value JSON would silently change:
 
 ```ts
-store.set('createdAt', new Date());
+store.set("createdAt", new Date());
 // TypeError: use-everywhere: "createdAt" is a Date (JSON makes it a string),
 // which JSON cannot round-trip. Pass a serializer (devalue, superjson) or keep
 // the value JSON-shaped.
@@ -50,10 +50,10 @@ already throws on both.
 Pass a `Serializer`. Two methods, no dependency:
 
 ```ts
-import * as devalue from 'devalue';
+import * as devalue from "devalue";
 
-const settings = createStoreHooks('settings', {
-  persist: localStorageAdapter('app:settings', {
+const settings = createStoreHooks("settings", {
+  persist: localStorageAdapter("app:settings", {
     serializer: { stringify: devalue.stringify, parse: devalue.parse },
   }),
 });

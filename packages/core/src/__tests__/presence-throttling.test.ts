@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BusWire } from '../bus.types.js';
-import { createPresence } from '../presence.js';
-import { MemoryHub } from '../transport/memory-hub.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { BusWire } from "../bus.types.js";
+import { createPresence } from "../presence.js";
+import { MemoryHub } from "../transport/memory-hub.js";
 
 /**
  * The bug these describe: browsers clamp a hidden tab's timers to roughly one
@@ -14,7 +14,7 @@ import { MemoryHub } from '../transport/memory-hub.js';
  * message handler, which browsers do *not* throttle) but never pings on a timer
  * of its own.
  */
-describe('presence under timer throttling', () => {
+describe("presence under timer throttling", () => {
   let hub: MemoryHub;
 
   beforeEach(() => {
@@ -28,19 +28,19 @@ describe('presence under timer throttling', () => {
     const client = hub.connect();
     client.subscribe((data) => {
       const wire = data as BusWire;
-      if (wire.scope === 'presence' && wire.type === 'hello') {
-        client.post({ v: 1, scope: 'presence', type: 'ping', clientId: id, kind: 'tab' });
+      if (wire.scope === "presence" && wire.type === "hello") {
+        client.post({ v: 1, scope: "presence", type: "ping", clientId: id, kind: "tab" });
       }
     });
-    client.post({ v: 1, scope: 'presence', type: 'hello', clientId: id, kind: 'tab' });
+    client.post({ v: 1, scope: "presence", type: "hello", clientId: id, kind: "tab" });
     return client;
   }
 
-  it('keeps a throttled peer in the roster instead of flapping it', async () => {
-    const presence = createPresence('pt-keep', { transport: () => hub.connect() });
-    const peer = throttledPeer('sleepy');
+  it("keeps a throttled peer in the roster instead of flapping it", async () => {
+    const presence = createPresence("pt-keep", { transport: () => hub.connect() });
+    const peer = throttledPeer("sleepy");
     await vi.advanceTimersByTimeAsync(100);
-    expect(presence.getPeers().map((p) => p.id)).toEqual(['sleepy']);
+    expect(presence.getPeers().map((p) => p.id)).toEqual(["sleepy"]);
 
     // Watch the roster across a minute of the peer never once pinging by timer.
     const seen: number[] = [];
@@ -50,16 +50,16 @@ describe('presence under timer throttling', () => {
     // It answered every probe, so it was never dropped and never re-added:
     // no membership change at all.
     expect(seen).toEqual([]);
-    expect(presence.getPeers().map((p) => p.id)).toEqual(['sleepy']);
+    expect(presence.getPeers().map((p) => p.id)).toEqual(["sleepy"]);
 
     presence.close();
     peer.close();
   });
 
-  it('still drops a peer that has genuinely gone', async () => {
-    const presence = createPresence('pt-drop', { transport: () => hub.connect() });
+  it("still drops a peer that has genuinely gone", async () => {
+    const presence = createPresence("pt-drop", { transport: () => hub.connect() });
     const ghost = hub.connect();
-    ghost.post({ v: 1, scope: 'presence', type: 'hello', clientId: 'ghost', kind: 'tab' });
+    ghost.post({ v: 1, scope: "presence", type: "hello", clientId: "ghost", kind: "tab" });
     await vi.advanceTimersByTimeAsync(100);
     expect(presence.getPeers()).toHaveLength(1);
 
@@ -71,17 +71,17 @@ describe('presence under timer throttling', () => {
     ghost.close();
   });
 
-  it('probes before dropping, rather than dropping and asking later', async () => {
-    const presence = createPresence('pt-probe', { transport: () => hub.connect() });
+  it("probes before dropping, rather than dropping and asking later", async () => {
+    const presence = createPresence("pt-probe", { transport: () => hub.connect() });
     const observer = hub.connect();
     const hellos: BusWire[] = [];
     observer.subscribe((data) => {
       const wire = data as BusWire;
-      if (wire.scope === 'presence' && wire.type === 'hello') hellos.push(wire);
+      if (wire.scope === "presence" && wire.type === "hello") hellos.push(wire);
     });
 
     const ghost = hub.connect();
-    ghost.post({ v: 1, scope: 'presence', type: 'hello', clientId: 'ghost', kind: 'tab' });
+    ghost.post({ v: 1, scope: "presence", type: "hello", clientId: "ghost", kind: "tab" });
     await vi.advanceTimersByTimeAsync(100);
     const before = hellos.length;
 
@@ -95,24 +95,24 @@ describe('presence under timer throttling', () => {
     ghost.close();
   });
 
-  it('sends no probes at all while everyone is talking', async () => {
-    const presence = createPresence('pt-quiet', { transport: () => hub.connect() });
+  it("sends no probes at all while everyone is talking", async () => {
+    const presence = createPresence("pt-quiet", { transport: () => hub.connect() });
     const chatty = hub.connect();
     const hellos: BusWire[] = [];
     const observer = hub.connect();
     observer.subscribe((data) => {
       const wire = data as BusWire;
-      if (wire.scope === 'presence' && wire.type === 'hello') hellos.push(wire);
+      if (wire.scope === "presence" && wire.type === "hello") hellos.push(wire);
     });
 
-    chatty.post({ v: 1, scope: 'presence', type: 'hello', clientId: 'chatty', kind: 'tab' });
+    chatty.post({ v: 1, scope: "presence", type: "hello", clientId: "chatty", kind: "tab" });
     await vi.advanceTimersByTimeAsync(100);
     const baseline = hellos.length;
 
     // A peer pinging normally never looks suspect, so probing stays idle —
     // the mechanism costs nothing in the healthy case.
     for (let i = 0; i < 10; i++) {
-      chatty.post({ v: 1, scope: 'presence', type: 'ping', clientId: 'chatty', kind: 'tab' });
+      chatty.post({ v: 1, scope: "presence", type: "ping", clientId: "chatty", kind: "tab" });
       await vi.advanceTimersByTimeAsync(1_000);
     }
 
@@ -124,15 +124,15 @@ describe('presence under timer throttling', () => {
     observer.close();
   });
 
-  it('a peer that answers late is kept, not resurrected', async () => {
+  it("a peer that answers late is kept, not resurrected", async () => {
     // Answering within the grace window must prevent the drop outright, so
     // subscribers never see the membership blip.
-    const presence = createPresence('pt-late', {
+    const presence = createPresence("pt-late", {
       transport: () => hub.connect(),
       pruneAfterMs: 1_000,
       probeGraceMs: 500,
     });
-    const peer = throttledPeer('slow');
+    const peer = throttledPeer("slow");
     await vi.advanceTimersByTimeAsync(100);
 
     const changes: number[] = [];

@@ -1,7 +1,7 @@
-import { jsonSerializer, type Serializer } from './serializer.js';
-import type { Persisted, PersistAdapter } from './persist.types.js';
+import { jsonSerializer, type Serializer } from "./serializer.js";
+import type { Persisted, PersistAdapter } from "./persist.types.js";
 
-export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export interface WebStorageAdapterOptions {
   /**
@@ -10,7 +10,7 @@ export interface WebStorageAdapterOptions {
    * observability seam (telemetry, a "your changes may not be saved" notice),
    * not a recovery path. Errors thrown by the callback itself are swallowed.
    */
-  onError?: (error: unknown, operation: 'read' | 'write' | 'remove') => void;
+  onError?: (error: unknown, operation: "read" | "write" | "remove") => void;
   /**
    * How values become text. Defaults to JSON, which refuses anything it would
    * silently change — a `Date`, a `Map`, an `undefined` — rather than write a
@@ -24,12 +24,12 @@ export interface WebStorageAdapterOptions {
 }
 
 function isPersisted(value: unknown): value is Persisted {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== "object" || value === null) return false;
   const candidate = value as Partial<Persisted>;
   return (
     candidate.v === 1 &&
-    typeof candidate.state === 'object' &&
-    typeof candidate.versions === 'object'
+    typeof candidate.state === "object" &&
+    typeof candidate.versions === "object"
   );
 }
 
@@ -52,7 +52,7 @@ export function webStorageAdapter(
   options: WebStorageAdapterOptions = {},
 ): PersistAdapter {
   const serializer = options.serializer ?? jsonSerializer;
-  const report = (error: unknown, operation: 'read' | 'write' | 'remove') => {
+  const report = (error: unknown, operation: "read" | "write" | "remove") => {
     try {
       options.onError?.(error, operation);
     } catch {
@@ -60,9 +60,9 @@ export function webStorageAdapter(
     }
   };
 
-  const resolve = (operation: 'read' | 'write' | 'remove'): StorageLike | undefined => {
+  const resolve = (operation: "read" | "write" | "remove"): StorageLike | undefined => {
     try {
-      return typeof storage === 'function' ? storage() : storage;
+      return typeof storage === "function" ? storage() : storage;
     } catch (error) {
       report(error, operation);
       return undefined;
@@ -72,28 +72,28 @@ export function webStorageAdapter(
   return {
     read() {
       try {
-        const raw = resolve('read')?.getItem(key);
+        const raw = resolve("read")?.getItem(key);
         if (!raw) return undefined;
         const parsed: unknown = serializer.parse(raw);
         return isPersisted(parsed) ? parsed : undefined;
       } catch (error) {
-        report(error, 'read');
+        report(error, "read");
         return undefined;
       }
     },
     write(snapshot) {
       try {
-        resolve('write')?.setItem(key, serializer.stringify(snapshot));
+        resolve("write")?.setItem(key, serializer.stringify(snapshot));
       } catch (error) {
         // Quota exceeded, or storage blocked.
-        report(error, 'write');
+        report(error, "write");
       }
     },
     remove() {
       try {
-        resolve('remove')?.removeItem(key);
+        resolve("remove")?.removeItem(key);
       } catch (error) {
-        report(error, 'remove');
+        report(error, "remove");
       }
     },
   };

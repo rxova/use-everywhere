@@ -1,6 +1,6 @@
 ---
-title: 'Recipes'
-description: 'Small, complete cross-tab patterns to lift straight into an app, each naming the primitive it leans on and why that one is right.'
+title: "Recipes"
+description: "Small, complete cross-tab patterns to lift straight into an app, each naming the primitive it leans on and why that one is right."
 sidebar:
   order: 5
 ---
@@ -17,22 +17,22 @@ tomorrow gets its answer from the session cookie, not from an old event. By
 the litmus test, that makes it a **message**, not state:
 
 ```tsx
-type AuthEvents = { 'logged-out': undefined };
-const auth = defineChannel<AuthEvents>('auth');
+type AuthEvents = { "logged-out": undefined };
+const auth = defineChannel<AuthEvents>("auth");
 
 function useLogoutEverywhere() {
   const send = auth.useSend();
 
   // Every tab listens…
-  auth.useOnMessage('logged-out', () => {
-    window.location.assign('/login');
+  auth.useOnMessage("logged-out", () => {
+    window.location.assign("/login");
   });
 
   // …and any tab can trigger.
   return () => {
-    void fetch('/api/logout', { method: 'POST' }).then(() => {
-      send('logged-out', undefined);
-      window.location.assign('/login'); // messages don't echo to the sender
+    void fetch("/api/logout", { method: "POST" }).then(() => {
+      send("logged-out", undefined);
+      window.location.assign("/login"); // messages don't echo to the sender
     });
   };
 }
@@ -50,19 +50,19 @@ from its first frame — so it is **state**:
 
 ```tsx
 function useSingleFlight(key: string) {
-  const [status, setStatus] = useSharedState<'idle' | 'busy' | 'done'>(key, 'idle');
+  const [status, setStatus] = useSharedState<"idle" | "busy" | "done">(key, "idle");
   const clientId = useClientId();
   const [owner, setOwner] = useSharedState<string | null>(`${key}:owner`, null);
 
   const run = async (work: () => Promise<void>) => {
-    if (status !== 'idle') return;
-    setStatus('busy');
+    if (status !== "idle") return;
+    setStatus("busy");
     setOwner(clientId);
     try {
       await work();
-      setStatus('done');
+      setStatus("done");
     } catch {
-      setStatus('idle'); // release the lock on failure
+      setStatus("idle"); // release the lock on failure
       setOwner(null);
     }
   };
@@ -89,7 +89,7 @@ state again, and hydration does literally all the work:
 
 ```tsx
 function DraftEditor() {
-  const [draft, setDraft] = useSharedState('compose-draft', '');
+  const [draft, setDraft] = useSharedState("compose-draft", "");
   return <textarea value={draft} onChange={(e) => setDraft(e.target.value)} />;
 }
 ```
@@ -106,17 +106,17 @@ its output. No worker protocol to design — the worker is just another peer
 writing to the same store:
 
 ```ts title="price-worker.ts"
-import { createSharedStore } from '@use-everywhere/core';
+import { createSharedStore } from "@use-everywhere/core";
 
-const store = createSharedStore('prices', { ticker: {} }, { kind: 'worker' });
+const store = createSharedStore("prices", { ticker: {} }, { kind: "worker" });
 
 setInterval(async () => {
-  store.set('ticker', await fetchPrices());
+  store.set("ticker", await fetchPrices());
 }, 5_000);
 ```
 
 ```tsx title="Prices.tsx"
-const [ticker] = useSharedState('ticker', {}, { store: 'prices' });
+const [ticker] = useSharedState("ticker", {}, { store: "prices" });
 ```
 
 Because the worker announces `kind: 'worker'`, presence can show it (square
@@ -131,7 +131,7 @@ Presence, verbatim:
 ```tsx
 function DuplicateTabBanner() {
   const peers = usePeers();
-  const tabs = peers.filter((p) => p.kind === 'tab');
+  const tabs = peers.filter((p) => p.kind === "tab");
   if (tabs.length === 0) return null;
   return <Banner>This page is open in {tabs.length} other tab(s).</Banner>;
 }
@@ -147,8 +147,8 @@ The full walkthrough lives in
 
 ```tsx
 const pay = useWindowResult<ToPayment, FromPayment, Receipt>(() =>
-  openWindow('https://pay.example.com/checkout', {
-    peerOrigin: 'https://pay.example.com',
+  openWindow("https://pay.example.com/checkout", {
+    peerOrigin: "https://pay.example.com",
   }),
 );
 // pay.open() in a click handler → pay.status / pay.result drive the UI
@@ -165,13 +165,13 @@ Every open tab opening its own WebSocket is the classic multi-tab bug. Elect
 one tab to hold the connection, and let the rest read what it writes:
 
 ```tsx
-import { useLeaderEffect, useSharedState } from 'use-everywhere';
+import { useLeaderEffect, useSharedState } from "use-everywhere";
 
 function useLivePrices() {
-  const [prices, setPrices] = useSharedState<Record<string, number>>('prices', {});
+  const [prices, setPrices] = useSharedState<Record<string, number>>("prices", {});
 
   useLeaderEffect(() => {
-    const socket = new WebSocket('wss://example.com/prices');
+    const socket = new WebSocket("wss://example.com/prices");
     socket.onmessage = (e) => setPrices(JSON.parse(e.data));
     return () => socket.close();
   });
@@ -198,7 +198,7 @@ sessions:
 
 ```tsx
 function TokenRefresher() {
-  const [token, setToken] = useSharedState<string | null>('token', null);
+  const [token, setToken] = useSharedState<string | null>("token", null);
 
   useLeaderEffect(() => {
     const id = setInterval(async () => setToken(await refresh()), 10 * 60_000);
@@ -220,15 +220,15 @@ idempotent.
 one. Give the store a disk and it comes back:
 
 ```tsx
-import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from "use-everywhere";
 
-const drafts = createStoreHooks<{ body: string }>('drafts', {
-  persist: localStorageAdapter('app:drafts'),
+const drafts = createStoreHooks<{ body: string }>("drafts", {
+  persist: localStorageAdapter("app:drafts"),
   persistDebounceMs: 250,
 });
 
 function Composer() {
-  const [body, setBody] = drafts.useSharedState('body', '');
+  const [body, setBody] = drafts.useSharedState("body", "");
   return <textarea value={body} onChange={(e) => setBody(e.target.value)} />;
 }
 ```
@@ -244,7 +244,7 @@ When two tabs disagree and you cannot work out why, stop adding `console.log`
 to five tabs:
 
 ```tsx
-import { Inspector } from 'use-everywhere/devtools';
+import { Inspector } from "use-everywhere/devtools";
 
 {
   import.meta.env.DEV && <Inspector defaultOpen />;

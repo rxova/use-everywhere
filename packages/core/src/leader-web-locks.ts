@@ -1,7 +1,7 @@
-import { getBus } from './bus.js';
-import type { BusOptions } from './bus.types.js';
-import type { Version } from './common.types.js';
-import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from './leader.types.js';
+import { getBus } from "./bus.js";
+import type { BusOptions } from "./bus.types.js";
+import type { Version } from "./common.types.js";
+import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from "./leader.types.js";
 
 const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: false });
 
@@ -68,17 +68,17 @@ export function createWebLocksLeader(
   // would still arbitrate them sanely.
   const term: Version = [1, clientId];
   const announce = () =>
-    bus.post({ v: 1, scope: 'leader', type: 'heartbeat', term, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "heartbeat", term, clientId, kind: bus.kind });
 
   const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'leader') return;
-    if (wire.type === 'hello') {
+    if (wire.scope !== "leader") return;
+    if (wire.type === "hello") {
       // Answer a joiner at once so it never renders an empty seat that is
       // actually taken.
       if (leaderId === clientId) announce();
       return;
     }
-    if (wire.type === 'resign') {
+    if (wire.type === "resign") {
       if (wire.clientId === leaderId) setLeader(null);
       return;
     }
@@ -133,7 +133,7 @@ export function createWebLocksLeader(
     if (leaderId !== clientId) return;
     letGo();
     setLeader(null);
-    bus.post({ v: 1, scope: 'leader', type: 'resign', term, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "resign", term, clientId, kind: bus.kind });
     // Straight back into the queue behind whoever was waiting. If nobody was,
     // the browser hands it back to us — which is correct: an eligible tab
     // standing alone should lead. resign() moves the seat when there is
@@ -142,18 +142,18 @@ export function createWebLocksLeader(
   }
 
   // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-  const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
+  const hasWindow = typeof document !== "undefined" && typeof addEventListener === "function";
   const onPageHide = () => resign();
   // No pageshow counterpart: a tab restored from bfcache still holds, or is
   // still queued for, the lock it had — the browser kept the queue for us.
-  if (hasWindow) addEventListener('pagehide', onPageHide);
+  if (hasWindow) addEventListener("pagehide", onPageHide);
 
-  bus.post({ v: 1, scope: 'leader', type: 'hello', clientId, kind: bus.kind });
+  bus.post({ v: 1, scope: "leader", type: "hello", clientId, kind: bus.kind });
   joinQueue();
 
   return {
     clientId,
-    strategy: 'web-locks',
+    strategy: "web-locks",
     getSnapshot: () => snapshot,
     subscribe(fn) {
       listeners.add(fn);
@@ -161,7 +161,7 @@ export function createWebLocksLeader(
     },
     waitForLeadership() {
       if (leaderId === clientId) return Promise.resolve();
-      if (closed) return Promise.reject(new Error('leader is closed'));
+      if (closed) return Promise.reject(new Error("leader is closed"));
       return new Promise<void>((resolve, reject) => {
         waiters.add({ resolve, reject });
       });
@@ -186,8 +186,8 @@ export function createWebLocksLeader(
       if (leaderId === clientId) resignWithoutRequeue();
       pending?.abort();
       pending = null;
-      if (hasWindow) removeEventListener('pagehide', onPageHide);
-      for (const waiter of waiters) waiter.reject(new Error('leader is closed'));
+      if (hasWindow) removeEventListener("pagehide", onPageHide);
+      for (const waiter of waiters) waiter.reject(new Error("leader is closed"));
       waiters.clear();
       unsubscribe();
       listeners.clear();
@@ -199,6 +199,6 @@ export function createWebLocksLeader(
   function resignWithoutRequeue() {
     letGo();
     setLeader(null);
-    bus.post({ v: 1, scope: 'leader', type: 'resign', term, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "resign", term, clientId, kind: bus.kind });
   }
 }

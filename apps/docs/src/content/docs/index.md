@@ -1,6 +1,6 @@
 ---
-title: 'Getting started'
-description: 'use-everywhere is useState whose value exists in every tab, window and worker on your origin. Install it and share your first value in a few lines.'
+title: "Getting started"
+description: "use-everywhere is useState whose value exists in every tab, window and worker on your origin. Install it and share your first value in a few lines."
 sidebar:
   order: 1
 ---
@@ -42,11 +42,11 @@ from your own **Client Component** — the one file that reads shared state need
 `'use client'` at the top, same as any file using `useState`:
 
 ```tsx title="app/counter.tsx"
-'use client';
-import { useSharedState } from 'use-everywhere';
+"use client";
+import { useSharedState } from "use-everywhere";
 
 export function Counter() {
-  const [count, setCount] = useSharedState('count', 0);
+  const [count, setCount] = useSharedState("count", 0);
   return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
 }
 ```
@@ -60,11 +60,11 @@ the server: on the server the hooks return your `initial` value via
 Swap `useState` for `useSharedState` and give the value a key:
 
 ```tsx title="Counter.tsx"
-import { useSharedState, usePeers } from 'use-everywhere';
+import { useSharedState, usePeers } from "use-everywhere";
 
 function Counter() {
   // useState, but the value exists in every tab on this origin.
-  const [count, setCount] = useSharedState('count', 0);
+  const [count, setCount] = useSharedState("count", 0);
   const peers = usePeers();
 
   return (

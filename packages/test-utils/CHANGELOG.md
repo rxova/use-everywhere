@@ -88,8 +88,8 @@
   ```ts
   const browser = createScenario();
   const a = browser.tab();
-  const survivor = browser.tab().leader('app');
-  a.leader('app');
+  const survivor = browser.tab().leader("app");
+  a.leader("app");
 
   await browser.settle();
   a.crash(); // no goodbye, and the lock the dead tab held is reclaimed

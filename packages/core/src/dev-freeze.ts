@@ -1,4 +1,4 @@
-import { deepFreeze } from '@rxova/ts-utils';
+import { deepFreeze } from "@rxova/ts-utils";
 
 // A shared store's `state` is a *shallow* Proxy: `store.state.step = 2` traps and
 // broadcasts a patch, but `store.state.list.push(x)` or a same-reference mutation
@@ -28,7 +28,7 @@ import { deepFreeze } from '@rxova/ts-utils';
 
 let inDev = false;
 try {
-  inDev = process.env.NODE_ENV !== 'production';
+  inDev = process.env.NODE_ENV !== "production";
 } catch {
   /* v8 ignore next -- defensive: only hit when run unbundled, where `process` is undefined */
 }

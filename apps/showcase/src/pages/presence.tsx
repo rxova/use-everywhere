@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { useClientId, usePeers, usePresenceMetadata } from 'use-everywhere';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
-import { colorOf } from '../shell/Shell.js';
+import { useState } from "react";
+import { useClientId, usePeers, usePresenceMetadata } from "use-everywhere";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
+import { colorOf } from "../shell/Shell.js";
 
 interface Meta {
   name?: string;
   page?: string;
 }
 
-const NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Ken'];
+const NAMES = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Ken"];
 
 export function PresencePage() {
   const self = useClientId();
@@ -17,7 +17,7 @@ export function PresencePage() {
 
   // Published in an effect, on every change. A no-op when the value has not
   // actually changed, so calling it every render costs nothing.
-  usePresenceMetadata({ name, page: 'presence' } satisfies Meta, { includeSelf: true });
+  usePresenceMetadata({ name, page: "presence" } satisfies Meta, { includeSelf: true });
 
   const peers = usePeers({ includeSelf: true });
 
@@ -60,11 +60,11 @@ export function PresencePage() {
               return (
                 <tr key={peer.id}>
                   <td>
-                    <span className="peer" style={{ background: colorOf(peer.id) }} />{' '}
-                    {peer.id === self ? 'this tab' : peer.id.slice(0, 8)}
+                    <span className="peer" style={{ background: colorOf(peer.id) }} />{" "}
+                    {peer.id === self ? "this tab" : peer.id.slice(0, 8)}
                   </td>
                   <td>{peer.kind}</td>
-                  <td>{meta?.name ?? '—'}</td>
+                  <td>{meta?.name ?? "—"}</td>
                 </tr>
               );
             })}
@@ -75,7 +75,7 @@ export function PresencePage() {
       <Card title="Liveness is presence's job, not yours">
         <p className="hint" style={{ marginTop: 0 }}>
           There is no "last seen" column here on purpose. A roster that made you render timestamps
-          would be handing you its bookkeeping: peers ping on a heartbeat, a peer that goes quiet is{' '}
+          would be handing you its bookkeeping: peers ping on a heartbeat, a peer that goes quiet is{" "}
           <strong>probed once</strong> in case it was merely a throttled background tab, and only
           then dropped. The list you get is already the answer — who is here — rather than the
           evidence you would have to interpret.

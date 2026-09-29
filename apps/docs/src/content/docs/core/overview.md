@@ -1,6 +1,6 @@
 ---
-title: 'Core without React'
-description: '@use-everywhere/core is the framework-agnostic engine behind the hooks — everything callable from a worker, a plain script or another framework.'
+title: "Core without React"
+description: "@use-everywhere/core is the framework-agnostic engine behind the hooks — everything callable from a worker, a plain script or another framework."
 sidebar:
   order: 1
 ---
@@ -13,9 +13,9 @@ You already have it. `use-everywhere` re-exports the whole of
 `@use-everywhere/core`, so there is one dependency either way:
 
 ```ts
-import { createSharedStore, newer } from 'use-everywhere';
+import { createSharedStore, newer } from "use-everywhere";
 // identical to:
-import { createSharedStore, newer } from '@use-everywhere/core';
+import { createSharedStore, newer } from "@use-everywhere/core";
 ```
 
 Install `@use-everywhere/core` directly only if you have no React at all.
@@ -24,9 +24,9 @@ Test seams live on a `testing` subpath rather than the package root, so a
 multi-tab simulation harness never reaches your production bundle:
 
 ```ts
-import { MemoryHub } from 'use-everywhere/testing';
+import { MemoryHub } from "use-everywhere/testing";
 // identical to:
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { MemoryHub } from "@use-everywhere/core/testing";
 ```
 
 ## What lives where
@@ -53,7 +53,7 @@ An engine is a **resource**, not a value. It holds a bus, a heartbeat, and
 listeners, so whatever you create, you close:
 
 ```ts
-const store = createSharedStore('settings', { theme: 'dark' });
+const store = createSharedStore("settings", { theme: "dark" });
 // …later
 store.close();
 ```
@@ -66,8 +66,8 @@ Engines sharing a name share a **bus**, and therefore share one `clientId` and
 one underlying `BroadcastChannel`:
 
 ```ts
-const store = createSharedStore('app', {});
-const presence = createPresence('app');
+const store = createSharedStore("app", {});
+const presence = createPresence("app");
 
 store.clientId === presence.clientId; // true — same tab, same identity
 ```

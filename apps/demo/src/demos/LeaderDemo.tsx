@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLeader, useLeaderEffect, useSharedState } from 'use-everywhere';
+import { useState } from "react";
+import { useLeader, useLeaderEffect, useSharedState } from "use-everywhere";
 
 /**
  * One tab drives the ticker; every tab reads it. This is the multi-tab bug the
@@ -9,7 +9,7 @@ import { useLeader, useLeaderEffect, useSharedState } from 'use-everywhere';
 export function LeaderDemo() {
   const [eligible, setEligible] = useState(true);
   const { leaderId, isLeader } = useLeader({ eligible });
-  const [ticks, setTicks] = useSharedState('ticker', 0);
+  const [ticks, setTicks] = useSharedState("ticker", 0);
 
   useLeaderEffect(() => {
     const id = setInterval(() => setTicks((n) => n + 1), 1000);
@@ -26,7 +26,7 @@ export function LeaderDemo() {
 
       <p
         data-testid="ticks"
-        style={{ fontSize: '2rem', margin: '0.4rem 0', fontVariantNumeric: 'tabular-nums' }}
+        style={{ fontSize: "2rem", margin: "0.4rem 0", fontVariantNumeric: "tabular-nums" }}
       >
         {ticks}
       </p>
@@ -41,7 +41,7 @@ export function LeaderDemo() {
         )}
       </p>
       <p data-testid="leader-id" hidden>
-        {leaderId ?? ''}
+        {leaderId ?? ""}
       </p>
 
       <label>
@@ -50,7 +50,7 @@ export function LeaderDemo() {
           type="checkbox"
           checked={eligible}
           onChange={(e) => setEligible(e.target.checked)}
-        />{' '}
+        />{" "}
         this tab may lead
       </label>
     </section>

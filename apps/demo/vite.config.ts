@@ -1,17 +1,17 @@
-import react from '@vitejs/plugin-react';
-import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import react from "@vitejs/plugin-react";
+import { resolve } from "node:path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
       input: {
-        index: resolve(import.meta.dirname, 'index.html'),
-        payment: resolve(import.meta.dirname, 'payment.html'),
-        skew: resolve(import.meta.dirname, 'skew.html'),
-        degradation: resolve(import.meta.dirname, 'degradation.html'),
-        relay: resolve(import.meta.dirname, 'relay.html'),
+        index: resolve(import.meta.dirname, "index.html"),
+        payment: resolve(import.meta.dirname, "payment.html"),
+        skew: resolve(import.meta.dirname, "skew.html"),
+        degradation: resolve(import.meta.dirname, "degradation.html"),
+        relay: resolve(import.meta.dirname, "relay.html"),
       },
     },
   },

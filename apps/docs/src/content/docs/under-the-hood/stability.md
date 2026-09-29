@@ -1,6 +1,6 @@
 ---
-title: 'Stability policy'
-description: 'What use-everywhere promises not to break, and what it reserves the right to change — written before 1.0, in effect since it.'
+title: "Stability policy"
+description: "What use-everywhere promises not to break, and what it reserves the right to change — written before 1.0, in effect since it."
 sidebar:
   order: 7
 ---

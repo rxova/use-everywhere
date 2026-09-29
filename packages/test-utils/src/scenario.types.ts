@@ -11,9 +11,9 @@ import type {
   SharedReducerOptions,
   SharedStore,
   SharedStoreOptions,
-} from '@use-everywhere/core';
-import type { MemoryHub } from '@use-everywhere/core/testing';
-import type { FakeLockManager } from './fake-locks.js';
+} from "@use-everywhere/core";
+import type { MemoryHub } from "@use-everywhere/core/testing";
+import type { FakeLockManager } from "./fake-locks.js";
 
 export interface ScenarioOptions {
   /**
@@ -25,7 +25,7 @@ export interface ScenarioOptions {
    * `'heartbeat'` runs the election that plain-http origins get. Test both if
    * your app ships to one.
    */
-  election?: 'web-locks' | 'heartbeat';
+  election?: "web-locks" | "heartbeat";
 }
 
 export interface TabOptions {

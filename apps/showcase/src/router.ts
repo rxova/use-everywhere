@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from "react";
 
 /**
  * A hash router in twenty lines, and no dependency.
@@ -11,12 +11,12 @@ import { useSyncExternalStore } from 'react';
  * page whose whole purpose is being opened in a second tab.
  */
 const subscribe = (onChange: () => void): (() => void) => {
-  addEventListener('hashchange', onChange);
-  return () => removeEventListener('hashchange', onChange);
+  addEventListener("hashchange", onChange);
+  return () => removeEventListener("hashchange", onChange);
 };
 
-const read = (): string => location.hash.replace(/^#\/?/, '') || 'shared-state';
+const read = (): string => location.hash.replace(/^#\/?/, "") || "shared-state";
 
-export const useRoute = (): string => useSyncExternalStore(subscribe, read, () => 'shared-state');
+export const useRoute = (): string => useSyncExternalStore(subscribe, read, () => "shared-state");
 
 export const hrefFor = (slug: string): string => `#/${slug}`;

@@ -1,6 +1,6 @@
 ---
-title: 'createStoreHooks'
-description: 'Give a shared store a persisted, typed identity — schema, version and migration path — defined once at module scope.'
+title: "createStoreHooks"
+description: "Give a shared store a persisted, typed identity — schema, version and migration path — defined once at module scope."
 sidebar:
   order: 11
 ---
@@ -10,15 +10,15 @@ gone, because the value only ever lived in memory. `createStoreHooks` gives a st
 disk, so it comes back.
 
 ```tsx
-import { createStoreHooks, localStorageAdapter } from 'use-everywhere';
+import { createStoreHooks, localStorageAdapter } from "use-everywhere";
 
-const settings = createStoreHooks<{ theme: string }>('settings', {
-  persist: localStorageAdapter('app:settings'),
+const settings = createStoreHooks<{ theme: string }>("settings", {
+  persist: localStorageAdapter("app:settings"),
 });
 
 function ThemeToggle() {
-  const [theme, setTheme] = settings.useSharedState('theme', 'light');
-  return <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme}</button>;
+  const [theme, setTheme] = settings.useSharedState("theme", "light");
+  return <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>{theme}</button>;
 }
 ```
 
@@ -44,10 +44,10 @@ that a bare hook reaches, so these two touch **one** store, and both get
 persistence:
 
 ```tsx
-const settings = createStoreHooks('settings', { persist: localStorageAdapter('app:settings') });
+const settings = createStoreHooks("settings", { persist: localStorageAdapter("app:settings") });
 
 // elsewhere, no import of `settings` at all:
-const [theme] = useSharedState('theme', 'light', { store: 'settings' });
+const [theme] = useSharedState("theme", "light", { store: "settings" });
 ```
 
 If `createStoreHooks` runs _after_ that store already exists, it **warns in
@@ -66,8 +66,8 @@ The returned object carries the store itself, for code that is not a component
 — a module-level handler, a worker, a test:
 
 ```ts
-settings.store().set('theme', 'dark'); // the same instance the hooks read
-settings.store() === getSharedStore('settings'); // true
+settings.store().set("theme", "dark"); // the same instance the hooks read
+settings.store() === getSharedStore("settings"); // true
 ```
 
 `store()` is a getter, not a factory: it resolves the singleton for the name and
@@ -76,8 +76,8 @@ scope you bound, building it on first use exactly as the hooks would.
 ## Adapters
 
 ```tsx
-localStorageAdapter('key'); // survives closing every tab
-sessionStorageAdapter('key'); // survives reloads, dies with the tab
+localStorageAdapter("key"); // survives closing every tab
+sessionStorageAdapter("key"); // survives reloads, dies with the tab
 ```
 
 Both degrade to a **silent no-op** if storage is unavailable — a sandboxed
@@ -102,11 +102,11 @@ restore.
 ## Options
 
 ```tsx
-createStoreHooks('settings', {
-  persist: localStorageAdapter('app:settings'),
-  persistKeys: ['theme'], // persist only these keys
+createStoreHooks("settings", {
+  persist: localStorageAdapter("app:settings"),
+  persistKeys: ["theme"], // persist only these keys
   persistDebounceMs: 100, // coalesce writes
-  scope: 'everywhere', // as in useSharedState
+  scope: "everywhere", // as in useSharedState
 });
 ```
 

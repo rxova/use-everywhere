@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Inspector } from 'use-everywhere/devtools';
-import { Card, Page } from '../shell/Page.js';
-import { Code } from '../shell/Code.js';
+import { useState } from "react";
+import { Inspector } from "use-everywhere/devtools";
+import { Card, Page } from "../shell/Page.js";
+import { Code } from "../shell/Code.js";
 
 export function DevtoolsPage() {
   const [mounted, setMounted] = useState(true);
@@ -18,14 +18,14 @@ export function DevtoolsPage() {
         </>
       }
     >
-      <Card title="The Inspector" aside={mounted ? 'mounted' : 'unmounted'}>
+      <Card title="The Inspector" aside={mounted ? "mounted" : "unmounted"}>
         <div className="row">
           <button
             type="button"
-            className={mounted ? '' : 'primary'}
+            className={mounted ? "" : "primary"}
             onClick={() => setMounted((value) => !value)}
           >
-            {mounted ? 'unmount it' : 'mount it'}
+            {mounted ? "unmount it" : "mount it"}
           </button>
           <span className="hint" style={{ margin: 0 }}>
             look bottom-right — click the bar to expand
@@ -44,7 +44,7 @@ export function DevtoolsPage() {
         <p className="hint" style={{ marginTop: 0 }}>
           <strong>pause</strong> freezes the log and only the log — the panel keeps observing, so
           there is no hole in it, and the crown keeps updating because leadership is state rather
-          than history. <strong>clear</strong> empties it. <strong>filter</strong> matches on{' '}
+          than history. <strong>clear</strong> empties it. <strong>filter</strong> matches on{" "}
           <code>scope/type</code> and on the sender, so <code>leader</code> shows the election and
           six characters of a client id shows one tab.
         </p>
@@ -82,7 +82,7 @@ function App() {
 }`}</Code>
 
       <div className="note">
-        <strong>A separate entry point, on purpose.</strong> It lives on the <code>devtools</code>{' '}
+        <strong>A separate entry point, on purpose.</strong> It lives on the <code>devtools</code>{" "}
         subpath, so if you do not import it, it is not in your bundle. Guard it behind your dev flag
         and it never reaches production at all.
       </div>

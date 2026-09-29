@@ -1,6 +1,6 @@
 ---
-title: 'structured-clone-safe'
-description: 'Flags values in shared state that the structured clone algorithm cannot carry, before they fail quietly on the wire.'
+title: "structured-clone-safe"
+description: "Flags values in shared state that the structured clone algorithm cannot carry, before they fail quietly on the wire."
 sidebar:
   order: 4
 ---
@@ -21,7 +21,7 @@ differently.
 
 ```tsx
 // ✗ Throws on write, in this tab, at the line that set it.
-useSharedState('cart', { items: [], onCheckout: () => {} });
+useSharedState("cart", { items: [], onCheckout: () => {} });
 ```
 
 The library pre-checks the value and throws before mutating locally, so the tab
@@ -32,7 +32,7 @@ key, not the property. Lint names the property.
 
 ```tsx
 // ✗ Arrives on the other side as { name: 'ada' } — no prototype, no methods.
-useSharedState('user', new User('ada'));
+useSharedState("user", new User("ada"));
 ```
 
 Nothing throws. The writing tab has a `User`; every other tab has an object that
@@ -45,10 +45,10 @@ typed arrays clone with their identity intact, and are not flagged.
 ## Correct
 
 ```tsx
-useSharedState('cart', { items: [], total: 0, updatedAt: new Date() });
+useSharedState("cart", { items: [], total: 0, updatedAt: new Date() });
 
 // Share data; keep behaviour local.
-useSharedState('user', { name: 'ada' });
+useSharedState("user", { name: "ada" });
 const user = useMemo(() => new User(shared.name), [shared.name]);
 ```
 
@@ -62,7 +62,7 @@ The rule reads literals. A value it cannot see through — a variable holding an
 object, a function call's result, a spread — goes unjudged:
 
 ```tsx
-useSharedState('cart', buildInitialCart()); // not judged
+useSharedState("cart", buildInitialCart()); // not judged
 ```
 
 The runtime pre-check still covers those; this rule catches them earlier, when

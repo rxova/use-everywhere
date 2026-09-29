@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
-import type { BusWire } from '../bus.types.js';
-import type { Persisted } from '../persist.types.js';
-import { createSharedStore } from '../shared-store.js';
-import { MemoryHub } from '../transport/memory-hub.js';
-import { snapshotWindow, tick } from './helpers/tick.js';
+import { describe, expect, it, vi } from "vitest";
+import type { BusWire } from "../bus.types.js";
+import type { Persisted } from "../persist.types.js";
+import { createSharedStore } from "../shared-store.js";
+import { MemoryHub } from "../transport/memory-hub.js";
+import { snapshotWindow, tick } from "./helpers/tick.js";
 
 /**
  * Store behaviour nothing was checking, found by the mutation run: the wires it
@@ -17,24 +17,24 @@ const uniqueName = () => `sc-${++n}`;
 const build = (hub: MemoryHub, name: string, initial: Shape = { a: 0 }, extra = {}) =>
   createSharedStore<Shape>(name, initial, { transport: () => hub.connect(), ...extra });
 
-describe('wires the store refuses', () => {
-  it('ignores every scope but its own', async () => {
+describe("wires the store refuses", () => {
+  it("ignores every scope but its own", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
     let changes = 0;
     store.subscribe(() => changes++);
 
-    for (const scope of ['presence', 'leader', 'event'] as const) {
+    for (const scope of ["presence", "leader", "event"] as const) {
       hub.connect().post({
         v: 1,
         scope,
-        type: 'patch',
-        key: 'a',
+        type: "patch",
+        key: "a",
         value: 99,
-        version: [9, 'x'],
-        clientId: 'x',
-        kind: 'tab',
-        ...(scope === 'event' ? { payload: null, msgId: 'm' } : {}),
+        version: [9, "x"],
+        clientId: "x",
+        kind: "tab",
+        ...(scope === "event" ? { payload: null, msgId: "m" } : {}),
       } as unknown as BusWire);
     }
     await tick();
@@ -44,39 +44,39 @@ describe('wires the store refuses', () => {
     store.close();
   });
 
-  it('drops a patch whose key is not a string', async () => {
+  it("drops a patch whose key is not a string", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
 
     hub.connect().post({
       v: 1,
-      scope: 'state',
-      type: 'patch',
+      scope: "state",
+      type: "patch",
       key: 42,
       value: 99,
-      version: [9, 'x'],
-      clientId: 'x',
-      kind: 'tab',
+      version: [9, "x"],
+      clientId: "x",
+      kind: "tab",
     } as unknown as BusWire);
     await tick();
 
     expect(store.getSnapshot().a).toBe(0);
-    expect(Object.keys(store.getSnapshot())).toEqual(['a']);
+    expect(Object.keys(store.getSnapshot())).toEqual(["a"]);
     store.close();
   });
 
-  it('drops a snapshot whose versions map is a primitive', async () => {
+  it("drops a snapshot whose versions map is a primitive", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
 
     hub.connect().post({
       v: 1,
-      scope: 'state',
-      type: 'snapshot',
+      scope: "state",
+      type: "snapshot",
       state: { a: 99 },
-      versions: 'nope',
-      clientId: 'x',
-      kind: 'tab',
+      versions: "nope",
+      clientId: "x",
+      kind: "tab",
     } as unknown as BusWire);
     await tick();
 
@@ -85,20 +85,20 @@ describe('wires the store refuses', () => {
   });
 });
 
-describe('subscription bookkeeping', () => {
-  it('forgets a key once its last per-key subscriber goes', () => {
+describe("subscription bookkeeping", () => {
+  it("forgets a key once its last per-key subscriber goes", () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
     let calls = 0;
-    const first = store.subscribeKey('a', () => calls++);
-    const second = store.subscribeKey('a', () => calls++);
+    const first = store.subscribeKey("a", () => calls++);
+    const second = store.subscribeKey("a", () => calls++);
 
-    store.set('a', 1);
+    store.set("a", 1);
     expect(calls).toBe(2);
 
     first();
     second();
-    store.set('a', 2);
+    store.set("a", 2);
 
     // Both gone: nothing should be called, and the empty set should not be
     // left behind growing the map for every key ever watched.
@@ -106,23 +106,23 @@ describe('subscription bookkeeping', () => {
     store.close();
   });
 
-  it('keeps notifying while one per-key subscriber remains', () => {
+  it("keeps notifying while one per-key subscriber remains", () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
     let calls = 0;
-    const first = store.subscribeKey('a', () => calls++);
-    store.subscribeKey('a', () => calls++);
+    const first = store.subscribeKey("a", () => calls++);
+    store.subscribeKey("a", () => calls++);
 
     first();
-    store.set('a', 1);
+    store.set("a", 1);
 
     expect(calls).toBe(1);
     store.close();
   });
 });
 
-describe('close', () => {
-  it('is idempotent and stops delivering', async () => {
+describe("close", () => {
+  it("is idempotent and stops delivering", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
     let changes = 0;
@@ -133,13 +133,13 @@ describe('close', () => {
 
     hub.connect().post({
       v: 1,
-      scope: 'state',
-      type: 'patch',
-      key: 'a',
+      scope: "state",
+      type: "patch",
+      key: "a",
       value: 99,
-      version: [9, 'x'],
-      clientId: 'x',
-      kind: 'tab',
+      version: [9, "x"],
+      clientId: "x",
+      kind: "tab",
     } satisfies BusWire);
     await tick();
 
@@ -147,8 +147,8 @@ describe('close', () => {
     store.close();
   });
 
-  it('warns about a second store on one name, and stops once the first closes', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it("warns about a second store on one name, and stops once the first closes", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const name = uniqueName();
     const first = createSharedStore<Shape>(name, { a: 0 });
     const second = createSharedStore<Shape>(name, { a: 0 });
@@ -167,8 +167,8 @@ describe('close', () => {
     warn.mockRestore();
   });
 
-  it('gives the name back when the last store on it closes', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it("gives the name back when the last store on it closes", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const name = uniqueName();
 
     const first = createSharedStore<Shape>(name, { a: 0 });
@@ -186,8 +186,8 @@ describe('close', () => {
     warn.mockRestore();
   });
 
-  it('leaves the count alone for a store on its own transport', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it("leaves the count alone for a store on its own transport", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const hub = new MemoryHub();
     const name = uniqueName();
 
@@ -206,10 +206,10 @@ describe('close', () => {
     warn.mockRestore();
   });
 
-  it('stops answering lifecycle events', async () => {
+  it("stops answering lifecycle events", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
-    store.set('a', 1);
+    store.set("a", 1);
     await snapshotWindow();
     store.close();
 
@@ -217,7 +217,7 @@ describe('close', () => {
     const wire = hub.connect();
     wire.subscribe((data) => seen.push(data as BusWire));
 
-    const restored = new Event('pageshow') as Event & { persisted?: boolean };
+    const restored = new Event("pageshow") as Event & { persisted?: boolean };
     restored.persisted = true;
     dispatchEvent(restored);
     await tick();
@@ -226,7 +226,7 @@ describe('close', () => {
     wire.close();
   });
 
-  it('re-runs the late-joiner handshake on a bfcache restore, and not otherwise', async () => {
+  it("re-runs the late-joiner handshake on a bfcache restore, and not otherwise", async () => {
     const hub = new MemoryHub();
     const store = build(hub, uniqueName());
     await tick();
@@ -234,26 +234,26 @@ describe('close', () => {
     const wire = hub.connect();
     wire.subscribe((data) => seen.push(data as BusWire));
 
-    const ordinary = new Event('pageshow') as Event & { persisted?: boolean };
+    const ordinary = new Event("pageshow") as Event & { persisted?: boolean };
     ordinary.persisted = false;
     dispatchEvent(ordinary);
     await tick();
-    expect(seen.filter((w) => w.scope === 'state' && w.type === 'hello')).toHaveLength(0);
+    expect(seen.filter((w) => w.scope === "state" && w.type === "hello")).toHaveLength(0);
 
-    const restored = new Event('pageshow') as Event & { persisted?: boolean };
+    const restored = new Event("pageshow") as Event & { persisted?: boolean };
     restored.persisted = true;
     dispatchEvent(restored);
     await tick();
-    expect(seen.filter((w) => w.scope === 'state' && w.type === 'hello')).toHaveLength(1);
+    expect(seen.filter((w) => w.scope === "state" && w.type === "hello")).toHaveLength(1);
 
     store.close();
     wire.close();
   });
 });
 
-describe('a restore it refuses', () => {
-  it('says which schema it found and which one it wanted', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+describe("a restore it refuses", () => {
+  it("says which schema it found and which one it wanted", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const hub = new MemoryHub();
     const store = build(
       hub,
@@ -263,7 +263,7 @@ describe('a restore it refuses', () => {
         persist: {
           adapter: {
             read: () =>
-              ({ v: 1, schema: 9, state: { a: 1 }, versions: { a: [1, 'x'] } }) as Persisted,
+              ({ v: 1, schema: 9, state: { a: 1 }, versions: { a: [1, "x"] } }) as Persisted,
             write: () => {},
           },
           version: 2,
@@ -275,9 +275,9 @@ describe('a restore it refuses', () => {
     // the whole diagnosis — disk was written by a build ahead of this one, so
     // the store stayed on its initial values rather than guess at the shape.
     const line = String(warn.mock.calls[0]?.[0]);
-    expect(line).toContain('UE1002');
-    expect(line).toContain('v9');
-    expect(line).toContain('expected v2');
+    expect(line).toContain("UE1002");
+    expect(line).toContain("v9");
+    expect(line).toContain("expected v2");
     expect(store.getSnapshot().a).toBe(0);
 
     store.close();
@@ -285,8 +285,8 @@ describe('a restore it refuses', () => {
   });
 });
 
-describe('persistence timing', () => {
-  it('coalesces a burst of writes into one disk write', async () => {
+describe("persistence timing", () => {
+  it("coalesces a burst of writes into one disk write", async () => {
     vi.useFakeTimers();
     const hub = new MemoryHub();
     const writes: Persisted[] = [];
@@ -302,9 +302,9 @@ describe('persistence timing', () => {
       },
     );
 
-    store.set('a', 1);
-    store.set('a', 2);
-    store.set('a', 3);
+    store.set("a", 1);
+    store.set("a", 2);
+    store.set("a", 3);
     expect(writes).toHaveLength(0);
 
     await vi.advanceTimersByTimeAsync(60);
@@ -318,7 +318,7 @@ describe('persistence timing', () => {
     vi.useRealTimers();
   });
 
-  it('flushes what it has on pagehide', async () => {
+  it("flushes what it has on pagehide", async () => {
     const hub = new MemoryHub();
     const writes: Persisted[] = [];
     const store = build(
@@ -332,9 +332,9 @@ describe('persistence timing', () => {
         },
       },
     );
-    store.set('a', 7);
+    store.set("a", 7);
 
-    dispatchEvent(new Event('pagehide'));
+    dispatchEvent(new Event("pagehide"));
 
     // Long debounce, so only the pagehide flush can have produced this.
     expect(writes).toHaveLength(1);

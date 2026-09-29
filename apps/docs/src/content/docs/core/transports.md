@@ -1,6 +1,6 @@
 ---
-title: 'Transports'
-description: 'A transport is the wire an engine talks over: a three-method interface you can swap to test without a browser, or to turn syncing off entirely.'
+title: "Transports"
+description: "A transport is the wire an engine talks over: a three-method interface you can swap to test without a browser, or to turn syncing off entirely."
 sidebar:
   order: 4
 ---
@@ -20,9 +20,9 @@ interface Transport {
 Pass a **factory**, not an instance — the engine gives it the bus name:
 
 ```ts
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { MemoryHub } from "@use-everywhere/core/testing";
 
-createSharedStore('settings', {}, { transport: (name) => new MemoryHub().connect() });
+createSharedStore("settings", {}, { transport: (name) => new MemoryHub().connect() });
 ```
 
 ## The six that ship
@@ -38,13 +38,13 @@ microtask, structured-cloned per delivery, with no self-echo — the exact
 semantics of `BroadcastChannel`.
 
 ```ts
-import { MemoryHub } from '@use-everywhere/core/testing';
+import { MemoryHub } from "@use-everywhere/core/testing";
 
 const hub = new MemoryHub();
 const options = { transport: () => hub.connect() };
 
-const tabA = createSharedStore('checkout', { step: 0 }, options);
-const tabB = createSharedStore('checkout', { step: 0 }, options);
+const tabA = createSharedStore("checkout", { step: 0 }, options);
+const tabB = createSharedStore("checkout", { step: 0 }, options);
 // one connect() = one simulated tab
 ```
 
@@ -86,17 +86,17 @@ It is opt-in, and it needs a script URL:
 
 ```js
 // sw-relay.js — a file your app serves
-import 'use-everywhere/shared-worker';
+import "use-everywhere/shared-worker";
 ```
 
 ```ts
-import { createSharedStore, SharedWorkerTransport } from 'use-everywhere';
+import { createSharedStore, SharedWorkerTransport } from "use-everywhere";
 
 createSharedStore(
-  'cart',
+  "cart",
   { items: [] },
   {
-    transport: () => new SharedWorkerTransport({ url: new URL('./sw-relay.js', import.meta.url) }),
+    transport: () => new SharedWorkerTransport({ url: new URL("./sw-relay.js", import.meta.url) }),
   },
 );
 ```
@@ -115,24 +115,24 @@ to join its own relay as one more peer:
 
 ```js
 // socket-worker.js — the file your app serves
-import { relay } from 'use-everywhere/shared-worker';
-import { createSharedStore } from 'use-everywhere';
+import { relay } from "use-everywhere/shared-worker";
+import { createSharedStore } from "use-everywhere";
 
-const store = createSharedStore('feed', { tick: null }, { transport: () => relay.connect() });
+const store = createSharedStore("feed", { tick: null }, { transport: () => relay.connect() });
 
-const socket = new WebSocket('wss://example.com/feed');
-socket.onmessage = (event) => store.set('tick', JSON.parse(event.data));
+const socket = new WebSocket("wss://example.com/feed");
+socket.onmessage = (event) => store.set("tick", JSON.parse(event.data));
 ```
 
 Tabs point at that script and change nothing else:
 
 ```ts
 createSharedStore(
-  'feed',
+  "feed",
   { tick: null },
   {
     transport: () =>
-      new SharedWorkerTransport({ url: new URL('./socket-worker.js', import.meta.url) }),
+      new SharedWorkerTransport({ url: new URL("./socket-worker.js", import.meta.url) }),
   },
 );
 ```
@@ -174,9 +174,9 @@ The question worth being able to answer when nothing syncs and the code looks
 right:
 
 ```ts
-import { getTransportKind } from 'use-everywhere';
+import { getTransportKind } from "use-everywhere";
 
-getTransportKind('use-everywhere');
+getTransportKind("use-everywhere");
 // 'broadcast-channel' | 'storage' | 'shared-worker' | 'none' | 'custom' | null
 ```
 

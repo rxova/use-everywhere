@@ -17,11 +17,11 @@ import {
   type SharedStore,
   type SharedStoreOptions,
   type Transport,
-} from '@use-everywhere/core';
-import { MemoryHub } from '@use-everywhere/core/testing';
-import { FakeLockManager } from './fake-locks.js';
-import { tick } from './timing.js';
-import type { Scenario, ScenarioOptions, Tab, TabOptions } from './scenario.types.js';
+} from "@use-everywhere/core";
+import { MemoryHub } from "@use-everywhere/core/testing";
+import { FakeLockManager } from "./fake-locks.js";
+import { tick } from "./timing.js";
+import type { Scenario, ScenarioOptions, Tab, TabOptions } from "./scenario.types.js";
 
 /** A closeable thing a tab created. Every primitive has exactly this much in common. */
 type Closeable = { close(): void };
@@ -29,18 +29,18 @@ type Closeable = { close(): void };
 class SimulatedTab implements Tab {
   private readonly wires: Transport[] = [];
   private readonly created: Closeable[] = [];
-  private state: 'open' | 'closed' | 'crashed' = 'open';
+  private state: "open" | "closed" | "crashed" = "open";
 
   constructor(
     readonly id: string,
     private readonly hub: MemoryHub,
     private readonly locks: FakeLockManager,
-    private readonly election: 'web-locks' | 'heartbeat',
-    private readonly kind: TabOptions['kind'],
+    private readonly election: "web-locks" | "heartbeat",
+    private readonly kind: TabOptions["kind"],
   ) {}
 
   get gone(): boolean {
-    return this.state !== 'open';
+    return this.state !== "open";
   }
 
   store<S extends Record<string, unknown>>(
@@ -72,9 +72,9 @@ class SimulatedTab implements Tab {
 
   leader(name: string, options: LeaderOptions = {}): Leader {
     const election: LeaderOptions =
-      this.election === 'web-locks'
-        ? { strategy: 'web-locks', locks: this.locks.forOwner(this.id) }
-        : { strategy: 'heartbeat' };
+      this.election === "web-locks"
+        ? { strategy: "web-locks", locks: this.locks.forOwner(this.id) }
+        : { strategy: "heartbeat" };
     return this.track(createLeader(name, { ...this.common(), ...election, ...options }));
   }
 
@@ -85,14 +85,14 @@ class SimulatedTab implements Tab {
    */
   close(): void {
     if (this.gone) return;
-    this.state = 'closed';
+    this.state = "closed";
     for (const closeable of this.created) closeable.close();
     for (const wire of this.wires) wire.close();
   }
 
   crash(): void {
     if (this.gone) return;
-    this.state = 'crashed';
+    this.state = "crashed";
     for (const wire of this.wires) wire.close();
     // The platform reclaims what a dead tab was holding. Nothing else about
     // this tab runs again — its primitives are never closed, on purpose: a
@@ -144,7 +144,7 @@ class SimulatedTab implements Tab {
 export function createScenario(options: ScenarioOptions = {}): Scenario {
   const hub = new MemoryHub();
   const locks = new FakeLockManager();
-  const election = options.election ?? 'web-locks';
+  const election = options.election ?? "web-locks";
   const tabs: SimulatedTab[] = [];
 
   return {

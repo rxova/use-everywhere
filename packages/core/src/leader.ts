@@ -1,9 +1,9 @@
-import { getBus } from './bus.js';
-import type { BusOptions } from './bus.types.js';
-import { isVersion, newer } from './clock.js';
-import type { Version } from './common.types.js';
-import { createWebLocksLeader } from './leader-web-locks.js';
-import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from './leader.types.js';
+import { getBus } from "./bus.js";
+import type { BusOptions } from "./bus.types.js";
+import { isVersion, newer } from "./clock.js";
+import type { Version } from "./common.types.js";
+import { createWebLocksLeader } from "./leader-web-locks.js";
+import type { Leader, LeaderOptions, LeaderSnapshot, LockManagerLike } from "./leader.types.js";
 
 const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: false });
 
@@ -16,7 +16,7 @@ const NO_LEADER: LeaderSnapshot = Object.freeze({ leaderId: null, isLeader: fals
 function availableLocks(options: LeaderOptions): LockManagerLike | undefined {
   if (options.locks) return options.locks;
   const locks = (globalThis.navigator as { locks?: LockManagerLike } | undefined)?.locks;
-  return typeof locks?.request === 'function' ? locks : undefined;
+  return typeof locks?.request === "function" ? locks : undefined;
 }
 
 /**
@@ -33,11 +33,11 @@ function availableLocks(options: LeaderOptions): LockManagerLike | undefined {
  * timers are throttled can lose a lease it deserved to keep.
  */
 export function createLeader(name: string, options: LeaderOptions = {}): Leader {
-  const strategy = options.strategy ?? 'auto';
-  if (strategy !== 'heartbeat') {
+  const strategy = options.strategy ?? "auto";
+  if (strategy !== "heartbeat") {
     const locks = availableLocks(options);
     if (locks) return createWebLocksLeader(name, options, locks);
-    if (strategy === 'web-locks') {
+    if (strategy === "web-locks") {
       throw new Error(
         'strategy: "web-locks" was requested but navigator.locks is unavailable. ' +
           'Web Locks needs a secure context (https, or localhost) — use "auto" to fall back to the heartbeat election.',
@@ -105,13 +105,13 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
   }
 
   function heartbeat() {
-    bus.post({ v: 1, scope: 'leader', type: 'heartbeat', term, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "heartbeat", term, clientId, kind: bus.kind });
   }
 
   function claim() {
     term = [term[0] + 1, clientId];
     setLeader(clientId);
-    bus.post({ v: 1, scope: 'leader', type: 'claim', term, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "claim", term, clientId, kind: bus.kind });
     clearInterval(beat);
     beat = setInterval(heartbeat, heartbeatMs);
   }
@@ -123,16 +123,16 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
   }
 
   const unsubscribe = bus.subscribe((wire) => {
-    if (wire.scope !== 'leader') return;
+    if (wire.scope !== "leader") return;
 
-    if (wire.type === 'hello') {
+    if (wire.type === "hello") {
       // Answer a joiner immediately so it adopts us instead of sitting
       // leaderless for a lease. Mirrors presence/hello -> ping.
       if (leaderId === clientId) heartbeat();
       return;
     }
 
-    if (wire.type === 'resign') {
+    if (wire.type === "resign") {
       if (wire.clientId !== leaderId) return;
       // Keep our term: the next claim must strictly beat the one just vacated.
       setLeader(null);
@@ -165,17 +165,17 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
     if (leaderId !== clientId) return;
     const resigning = term;
     stepDown(null);
-    bus.post({ v: 1, scope: 'leader', type: 'resign', term: resigning, clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "resign", term: resigning, clientId, kind: bus.kind });
     // Receivers re-arm at 0; we wait a full lease, or we would instantly
     // re-elect ourselves and resign() would be a no-op.
     armLease(leaseMs);
   }
 
   const sayHello = () =>
-    bus.post({ v: 1, scope: 'leader', type: 'hello', clientId, kind: bus.kind });
+    bus.post({ v: 1, scope: "leader", type: "hello", clientId, kind: bus.kind });
 
   // Stryker disable next-line all: environment detection — both halves are true in every browser-like test env and false in every Node one, so no mutant of this line is distinguishable.
-  const hasWindow = typeof document !== 'undefined' && typeof addEventListener === 'function';
+  const hasWindow = typeof document !== "undefined" && typeof addEventListener === "function";
   const onPageHide = () => resign();
   // Restored from bfcache: we resigned on the way out and heard nothing while
   // cached, so whoever leads now is unknown. Rejoin exactly like at creation —
@@ -187,8 +187,8 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
     armLease(heartbeatMs);
   };
   if (hasWindow) {
-    addEventListener('pagehide', onPageHide);
-    addEventListener('pageshow', onPageShow);
+    addEventListener("pagehide", onPageHide);
+    addEventListener("pageshow", onPageShow);
   }
 
   sayHello();
@@ -199,7 +199,7 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
 
   return {
     clientId,
-    strategy: 'heartbeat',
+    strategy: "heartbeat",
     getSnapshot: () => snapshot,
     subscribe(fn) {
       listeners.add(fn);
@@ -207,7 +207,7 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
     },
     waitForLeadership() {
       if (leaderId === clientId) return Promise.resolve();
-      if (closed) return Promise.reject(new Error('leader is closed'));
+      if (closed) return Promise.reject(new Error("leader is closed"));
       return new Promise<void>((resolve, reject) => {
         waiters.add({ resolve, reject });
       });
@@ -229,13 +229,13 @@ function createHeartbeatLeader(name: string, options: LeaderOptions): Leader {
       if (closed) return;
       closed = true;
       resign();
-      for (const waiter of waiters) waiter.reject(new Error('leader is closed'));
+      for (const waiter of waiters) waiter.reject(new Error("leader is closed"));
       waiters.clear();
       clearInterval(beat);
       clearTimeout(lease);
       if (hasWindow) {
-        removeEventListener('pagehide', onPageHide);
-        removeEventListener('pageshow', onPageShow);
+        removeEventListener("pagehide", onPageHide);
+        removeEventListener("pageshow", onPageShow);
       }
       unsubscribe();
       listeners.clear();
