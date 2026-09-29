@@ -29,10 +29,10 @@ your own if the project mixes languages.
 
 | Rule                                                                                                 | Recommended | What it catches                                                            |
 | ---------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------- |
-| [`define-at-module-scope`](https://rxova.org/packages/use-everywhere/eslint/define-at-module-scope/) | error       | `createStoreHooks` / `defineChannel` / `createNamespace` inside a function |
-| [`no-dynamic-name`](https://rxova.org/packages/use-everywhere/eslint/no-dynamic-name/)               | error       | A bus name computed at runtime                                             |
-| [`structured-clone-safe`](https://rxova.org/packages/use-everywhere/eslint/structured-clone-safe/)   | error       | Functions, symbols and class instances in shared state                     |
-| [`leader-effect-captures`](https://rxova.org/packages/use-everywhere/eslint/leader-effect-captures/) | warn        | A `useLeaderEffect` closing over a value that changes between renders      |
+| [`define-at-module-scope`](https://rxova.dev/packages/use-everywhere/eslint/define-at-module-scope/) | error       | `createStoreHooks` / `defineChannel` / `createNamespace` inside a function |
+| [`no-dynamic-name`](https://rxova.dev/packages/use-everywhere/eslint/no-dynamic-name/)               | error       | A bus name computed at runtime                                             |
+| [`structured-clone-safe`](https://rxova.dev/packages/use-everywhere/eslint/structured-clone-safe/)   | error       | Functions, symbols and class instances in shared state                     |
+| [`leader-effect-captures`](https://rxova.dev/packages/use-everywhere/eslint/leader-effect-captures/) | warn        | A `useLeaderEffect` closing over a value that changes between renders      |
 
 `leader-effect-captures` is a warning on purpose: a captured value that never
 actually changes is harmless, and no syntactic rule can tell the difference.

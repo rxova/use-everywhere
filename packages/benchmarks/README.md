@@ -21,5 +21,5 @@ runner slows the baseline too.
   throughput against the `broadcast-channel` package, and the late-joiner
   snapshot storm.
 
-See [the docs page](https://rxova.org/packages/use-everywhere/under-the-hood/benchmarks/)
+See [the docs page](https://rxova.dev/packages/use-everywhere/under-the-hood/benchmarks/)
 for the current numbers and what they mean.

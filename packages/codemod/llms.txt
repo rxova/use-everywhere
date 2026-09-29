@@ -50,7 +50,7 @@ crosses a module boundary is worth a grep after the run.
 
 ## Docs
 
-- Migration guide: https://rxova.org/packages/use-everywhere/guides/migration.md
+- Migration guide: https://rxova.dev/packages/use-everywhere/guides/migration.md
 - RFC 0001, the reasoning: https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md
-- Full documentation: https://rxova.org/packages/use-everywhere/
+- Full documentation: https://rxova.dev/packages/use-everywhere/
 - Source: https://github.com/rxova/use-everywhere

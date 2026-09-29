@@ -75,10 +75,10 @@ store.set({ theme: 'dark' });
 
 ## Docs
 
-- Full documentation: https://rxova.org/packages/use-everywhere/
-- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Full documentation: https://rxova.dev/packages/use-everywhere/
+- Agent-facing index: https://rxova.dev/packages/use-everywhere/llms.txt
 - Every page as raw markdown: add `.md` to any docs URL
-- Core section: https://rxova.org/packages/use-everywhere/core/overview.md
-- Generated reference: https://rxova.org/packages/use-everywhere/api/core/readme.md
-- Error codes: https://rxova.org/packages/use-everywhere/errors.md
+- Core section: https://rxova.dev/packages/use-everywhere/core/overview.md
+- Generated reference: https://rxova.dev/packages/use-everywhere/api/core/readme.md
+- Error codes: https://rxova.dev/packages/use-everywhere/errors.md
 - Source: https://github.com/rxova/use-everywhere

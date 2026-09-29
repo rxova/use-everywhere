@@ -25,8 +25,8 @@
 Your app already runs in more than one tab. `useState` doesn't know that. This library gives you the primitives that do, without a server, a Provider, or a state-management rewrite.
 
 **[→ Try it in two tabs](https://rxova.github.io/use-everywhere/)** ·
-**[Read the documentation](https://rxova.org/packages/use-everywhere/)** ·
-**[Compared to the alternatives](https://rxova.org/packages/use-everywhere/learn/comparison/)**
+**[Read the documentation](https://rxova.dev/packages/use-everywhere/)** ·
+**[Compared to the alternatives](https://rxova.dev/packages/use-everywhere/learn/comparison/)**
 
 ```bash
 npm install use-everywhere
@@ -88,7 +88,7 @@ function LiveFeed() {
 }
 ```
 
-Leadership is **advisory, not a distributed lock** — good for "don't open five sockets", not for guarding money. See [Limitations](https://rxova.org/packages/use-everywhere/under-the-hood/limitations).
+Leadership is **advisory, not a distributed lock** — good for "don't open five sockets", not for guarding money. See [Limitations](https://rxova.dev/packages/use-everywhere/under-the-hood/limitations).
 
 **A window on another origin.** Open it, hand it typed data, await its result.
 
@@ -160,17 +160,17 @@ export cannot leave the file describing an API that no longer exists.
 - [`llms.txt`](llms.txt) — the repository index: which package is which, and what
   to read next.
 - [`AGENTS.md`](AGENTS.md) — for an agent _editing_ this repo, not using it.
-- [Every docs page as raw markdown](https://rxova.org/packages/use-everywhere/) —
+- [Every docs page as raw markdown](https://rxova.dev/packages/use-everywhere/) —
   add `.md` to any URL.
-- [`llms.txt`](https://rxova.org/packages/use-everywhere/llms.txt) ·
-  [`llms-full.txt`](https://rxova.org/packages/use-everywhere/llms-full.txt) — the
+- [`llms.txt`](https://rxova.dev/packages/use-everywhere/llms.txt) ·
+  [`llms-full.txt`](https://rxova.dev/packages/use-everywhere/llms-full.txt) — the
   docs index, and every page inlined.
 
 ## Getting help
 
 - [Report a bug](https://github.com/rxova/use-everywhere/issues/new?template=bug_report.yml) — say how many contexts were involved and of what kind; a cross-tab bug that reproduces in one tab is a different bug.
 - [Request a feature](https://github.com/rxova/use-everywhere/issues/new?template=feature_request.yml)
-- [Limitations & FAQ](https://rxova.org/packages/use-everywhere/under-the-hood/limitations) and [error codes](https://rxova.org/packages/use-everywhere/errors/) answer most of what gets filed.
+- [Limitations & FAQ](https://rxova.dev/packages/use-everywhere/under-the-hood/limitations) and [error codes](https://rxova.dev/packages/use-everywhere/errors/) answer most of what gets filed.
 - [Support](SUPPORT.md) · [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## Contributing & releases

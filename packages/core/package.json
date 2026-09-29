@@ -9,7 +9,7 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/core"
   },
-  "homepage": "https://rxova.org/packages/use-everywhere/core/overview/",
+  "homepage": "https://rxova.dev/packages/use-everywhere/core/overview/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "broadcastchannel",

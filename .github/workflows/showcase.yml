@@ -3,7 +3,7 @@ name: Showcase
 # The interactive showcase, published to GitHub Pages.
 #
 # Separate from the Docs workflow on purpose: the documentation is composed into
-# rxova.org by the aggregator, while this is a standalone app that has to be
+# rxova.dev by the aggregator, while this is a standalone app that has to be
 # opened in two tabs to make its point — so it wants its own origin, and Pages
 # gives it one for free.
 #

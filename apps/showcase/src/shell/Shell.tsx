@@ -74,7 +74,7 @@ function TopBar() {
       >
         GitHub
       </a>
-      <a className="tag" href="https://rxova.org/packages/use-everywhere/">
+      <a className="tag" href="https://rxova.dev/packages/use-everywhere/">
         Docs
       </a>
     </header>

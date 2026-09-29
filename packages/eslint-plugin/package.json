@@ -9,7 +9,7 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/eslint-plugin"
   },
-  "homepage": "https://rxova.org/packages/use-everywhere/eslint/overview/",
+  "homepage": "https://rxova.dev/packages/use-everywhere/eslint/overview/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "eslint",

@@ -21,7 +21,7 @@ them.
 
 Five names are wrong in ways that are cheap to fix now and expensive to fix
 after 1.0, when the [stability
-policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/)
+policy](https://rxova.dev/packages/use-everywhere/under-the-hood/stability/)
 makes each one a major version. This RFC proposes the renames, the deprecation
 path, and — for the names it leaves alone — the argument for doing so.
 
