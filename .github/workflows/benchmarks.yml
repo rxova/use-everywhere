@@ -21,7 +21,7 @@ on:
     #
     # Deliberately off the hour: GitHub queues scheduled jobs across every
     # repository, and the top of the hour is where they pile up.
-    - cron: '23 4 * * 1'
+    - cron: "23 4 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -31,20 +31,14 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# Matches ci.yml: the benchmark gate builds and imports the same packages, and
-# this workflow now runs on the Node 26 `setup-pnpm` default. Kept in step so a
-# scheduled run does not diverge from the one that gates pull requests.
-env:
-  NODE_OPTIONS: --no-experimental-webstorage
-
 jobs:
   benchmarks:
     name: performance budgets
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
-      - uses: ./.github/actions/turbo-cache
+      - uses: rxova/shared/actions/setup-pnpm@main
+      - uses: rxova/shared/actions/turbo-cache@main
       - run: pnpm install --frozen-lockfile
       # The suites import the workspace package, which resolves to its dist —
       # so the thing measured is the built library, exactly as published, rather

@@ -14,16 +14,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/showcase/**'
-      - 'packages/core/**'
-      - 'packages/react/**'
-      - '.github/workflows/showcase.yml'
+      - "apps/showcase/**"
+      - "packages/core/**"
+      - "packages/react/**"
+      - ".github/workflows/showcase.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One deploy at a time, and never cancel one in flight: a half-published Pages
 # deployment is a broken site rather than an out-of-date one.
@@ -32,31 +30,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
-      - uses: ./.github/actions/turbo-cache
-      - run: pnpm install --frozen-lockfile
+  pages:
+    name: Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: rxova/shared/.github/workflows/pages-deploy.yml@main
+    with:
       # The app imports the workspace packages, which resolve to their dist —
       # so what ships is the built library, exactly as published.
-      - run: pnpm run libs:build
-      - name: Build the showcase
-        env:
-          SHOWCASE_BASE: /use-everywhere/
-        run: pnpm --filter @use-everywhere/showcase build
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: apps/showcase/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - id: deploy
-        uses: actions/deploy-pages@v5
+      build-command: >-
+        pnpm run libs:build &&
+        SHOWCASE_BASE=/use-everywhere/ pnpm --filter @use-everywhere/showcase build
+      path: apps/showcase/dist

@@ -1,0 +1,8 @@
+{
+  // The Playwright specs: Node for the runner, the DOM for what they evaluate in the page.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["."]
+}

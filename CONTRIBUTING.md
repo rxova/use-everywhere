@@ -19,11 +19,12 @@ Published:
 
 Not published:
 
-- `packages/tooling`: the repo-specific scripts (the llms.txt check, the
-  mutation-score gate, the one-package changeset helper, the error-code test),
-  each with tests. The verify gate, the changeset check and the pack smoke test
-  are `rxova-repo-config` commands from `@rxova/repo-config`, as are the shared
-  tsdown, vitest, commitlint, prettier and tsconfig presets.
+- `scripts/`: the repo-specific pieces (the mutation-score gate and the
+  error-code test), with tests, run as root Turbo tasks. The verify gate, the
+  llms.txt check, the one-package changeset helper, the changeset check and the
+  pack smoke test are `rxova-repo-config` commands from `@rxova/repo-config`, as
+  are the shared tsdown, vitest, ESLint, commitlint, lint-staged, knip, prettier,
+  changelog and tsconfig presets. CI calls rxova/shared's reusable workflows.
 - `packages/benchmarks`: what the library costs over a raw `BroadcastChannel`,
   with ratio-based budgets.
 - `apps/demo`: Vite playground, including the cross-origin payment flow, and the
@@ -93,8 +94,8 @@ job. Run it yourself with `pnpm e2e` when you touch anything cross-tab.
 Every `devWarn` call site carries the guard literally:
 
 ```ts
-if (process.env.NODE_ENV !== 'production') {
-  devWarn('UE1234', `…`);
+if (process.env.NODE_ENV !== "production") {
+  devWarn("UE1234", `…`);
 }
 ```
 
@@ -102,7 +103,7 @@ Every warning also carries a **code**, and the code is permanent — a retired o
 is never reused, because an old build in somebody's browser is still emitting
 it. `UE1xxx` belongs to core, `UE2xxx` to the React package. Add the matching
 `## UEnnnn` entry to `apps/docs/src/content/docs/errors.md` in the same commit:
-`packages/tooling/error-codes.test.ts` fails on a code with no entry, and on an
+`scripts/repo/error-codes.test.ts` fails on a code with no entry, and on an
 entry whose code no longer exists.
 
 `devWarn` already checks `NODE_ENV` at runtime, so the guard is not about

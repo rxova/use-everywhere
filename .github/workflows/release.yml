@@ -28,62 +28,15 @@ permissions:
 
 jobs:
   release:
-    # workflow_run fires on both success and failure, so the conclusion has to
-    # be checked explicitly. A manual dispatch has no upstream run to gate on.
+    # workflow_run fires on failure as well, so the conclusion is checked.
     if: >-
       github.repository == 'rxova/use-everywhere' &&
       (github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success')
-    runs-on: ubuntu-latest
-    env:
-      # Disable Husky for the whole job. The changesets action makes a version
-      # commit, which would otherwise fire the pre-commit hook and run
-      # `turbo run typecheck test` against a tree whose libraries have not been
-      # built yet — core would have no .d.ts and every react import would fail
-      # to resolve. CI already gated this code on the PR.
-      HUSKY: '0'
     permissions:
       contents: write # version commit and tags
-      pull-requests: write # the version PR
-      # npm trusted publishing (OIDC): publish with provenance and no
-      # long-lived NPM_TOKEN in the repository.
-      id-token: write
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          # Check out main by name (not the workflow_run's detached SHA) so the
-          # changesets action knows its base branch when opening the version PR.
-          # Safe here in a way the old hand-rolled flow was not: the action
-          # publishes only what the merged version PR contains, and that PR is
-          # itself gated by this same workflow.
-          ref: main
-          fetch-depth: 0
-      - uses: ./.github/actions/setup-pnpm
-        with:
-          registry-url: 'https://registry.npmjs.org'
-      - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@^11.5.1
-      - run: pnpm install --frozen-lockfile
-
-      - name: Create version PR or publish
-        uses: changesets/action@v2
-        with:
-          # v2 renamed every input this step passes (`version` ->
-          # `version-script`, `publish` -> `publish-script`, `commit` ->
-          # `commit-message`, `title` -> `pr-title`) and stopped reading the
-          # token from the `GITHUB_TOKEN` env var. An unknown input is not an
-          # error to Actions, so keeping the v1 names would not fail the job —
-          # the action would just fall back to its defaults and open a
-          # `Version Packages` PR that runs `changeset version` without our
-          # build step. Nothing in PR CI exercises this file, so that would
-          # have surfaced as a bad release, not a red check.
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # `pnpm run release` builds the published packages through Turbo before
-          # publishing — the demo and docs are not published, so a full
-          # `turbo run build` would be wasted work here.
-          version-script: pnpm exec changeset version
-          publish-script: pnpm run release
-          commit-message: 'chore: version packages'
-          pr-title: 'chore: version packages'
-        env:
-          NPM_CONFIG_PROVENANCE: 'true'
+      pull-requests: write # the version pull request
+      id-token: write # npm trusted publishing (OIDC), with provenance
+    # `pnpm run release` builds the published packages through Turbo, then
+    # `changeset publish`; the demo and docs are not published.
+    uses: rxova/shared/.github/workflows/changesets-release.yml@main
