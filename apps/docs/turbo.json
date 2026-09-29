@@ -12,7 +12,7 @@
       // (see astro.config.mjs) and change every emitted URL, so they belong in
       // the cache key. Without them a root-base build could replay for the
       // /packages/use-everywhere/ build in CI, and the breakage would stay
-      // invisible until rxova.org served it.
+      // invisible until rxova.dev served it.
       //
       // Declared here rather than on the root task so setting them does not also
       // invalidate the two library builds, which never read them.

@@ -9,7 +9,7 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/react"
   },
-  "homepage": "https://rxova.org/packages/use-everywhere/",
+  "homepage": "https://rxova.dev/packages/use-everywhere/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "react",
@@ -156,7 +156,7 @@
       "name": "createStoreHooks (persisted)",
       "path": "dist/index.js",
       "import": "{ createStoreHooks, localStorageAdapter }",
-      "limit": "4.67 kB"
+      "limit": "4.68 kB"
     },
     {
       "name": "Inspector (devtools subpath)",

@@ -10,7 +10,7 @@ here:
 
 ```
 [use-everywhere] UE1001: second shared store for "cart" in this tab — …
-  → https://rxova.org/packages/use-everywhere/errors/#ue1001
+  → https://rxova.dev/packages/use-everywhere/errors/#ue1001
 ```
 
 The code is the durable part. A message can be reworded between versions,

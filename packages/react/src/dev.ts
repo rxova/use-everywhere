@@ -7,7 +7,7 @@ import { createDevWarner, isDevelopment } from "@rxova/ts-utils";
 // for. The trailing slash keeps the link exactly as core prints it.
 const warner = createDevWarner({
   prefix: "use-everywhere",
-  docsUrl: "https://rxova.org/packages/use-everywhere/errors/",
+  docsUrl: "https://rxova.dev/packages/use-everywhere/errors/",
 });
 
 /**

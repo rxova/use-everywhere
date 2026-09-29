@@ -5,7 +5,7 @@ Most changes do not need one. Open a pull request.
 An RFC exists for the changes a pull request cannot carry: the ones where the
 argument matters more than the diff, and where being wrong is expensive to
 undo — because after 1.0 the [stability
-policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/)
+policy](https://rxova.dev/packages/use-everywhere/under-the-hood/stability/)
 means undoing it costs a major version.
 
 ## When an RFC is required

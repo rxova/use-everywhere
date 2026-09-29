@@ -6,7 +6,7 @@ Please report security issues privately.
 
 Use one of the following:
 
-- Email: jonatan@rxova.org
+- Email: jonyk@rxova.dev
 - [GitHub Security Advisory form](https://github.com/rxova/use-everywhere/security/advisories/new)
 
 If the advisory link is unavailable, use email.
@@ -22,7 +22,7 @@ Public disclosure should happen after a fix is available.
 ## Supported Versions
 
 Fixes land on the **current minor** and ship as a patch; older minors are not
-backported. See the [stability policy](https://rxova.org/packages/use-everywhere/under-the-hood/stability/)
+backported. See the [stability policy](https://rxova.dev/packages/use-everywhere/under-the-hood/stability/)
 for the reasoning and for what else the project does and does not promise.
 
 ## Scope Notes

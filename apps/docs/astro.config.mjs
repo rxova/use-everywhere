@@ -7,10 +7,10 @@ import rehypeMermaid from "rehype-mermaid";
 import { sharedStarlightConfig } from "@rxova/astro-ui/starlight";
 
 /**
- * Defaults keep the standalone build working; the rxova.org aggregator sets
+ * Defaults keep the standalone build working; the rxova.dev aggregator sets
  * DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/use-everywhere/.
  */
-const site = process.env.DOCS_URL ?? "https://rxova.org";
+const site = process.env.DOCS_URL ?? "https://rxova.dev";
 const base = process.env.DOCS_BASE_URL ?? "/";
 
 /**
@@ -68,7 +68,7 @@ export default defineConfig({
     // Emitted at the mount, not the domain root: under the aggregator this build
     // lives at /packages/use-everywhere/, so the file lands at
     // <base>sitemap-index.xml and lists only URLs beneath that prefix — which is
-    // exactly the scope a sitemap at a subpath is allowed to claim. rxova.org's
+    // exactly the scope a sitemap at a subpath is allowed to claim. rxova.dev's
     // root robots.txt is what points at it; this repo cannot serve a robots.txt
     // that any crawler would honour, because robots.txt is only read from the
     // origin root and this build never owns one.

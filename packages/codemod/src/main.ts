@@ -16,7 +16,7 @@ export const USAGE = [
   "  --dry-run   list the files that would change, and write nothing",
   "  --version   print the version and exit",
   "",
-  "Migration guide: https://rxova.org/packages/use-everywhere/guides/migration/",
+  "Migration guide: https://rxova.dev/packages/use-everywhere/guides/migration/",
 ].join("\n");
 
 const TRANSFORMS = new Set(["rename-1.0"]);

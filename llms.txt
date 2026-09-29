@@ -39,16 +39,16 @@ read when you are writing calling code.
 
 ## Docs
 
-- [Documentation](https://rxova.org/packages/use-everywhere/): every page also
+- [Documentation](https://rxova.dev/packages/use-everywhere/): every page also
   exists as raw markdown — add `.md` to any URL.
-- [llms.txt](https://rxova.org/packages/use-everywhere/llms.txt): the docs index,
+- [llms.txt](https://rxova.dev/packages/use-everywhere/llms.txt): the docs index,
   under 24 kB by budget.
-- [llms-full.txt](https://rxova.org/packages/use-everywhere/llms-full.txt): every
+- [llms-full.txt](https://rxova.dev/packages/use-everywhere/llms-full.txt): every
   page inlined, when one fetch should be the whole thing.
-- [Compared to the alternatives](https://rxova.org/packages/use-everywhere/learn/comparison.md):
+- [Compared to the alternatives](https://rxova.dev/packages/use-everywhere/learn/comparison.md):
   hand-rolled BroadcastChannel, localStorage events, Zustand, Jotai, Redux — and
   where this library is the wrong answer.
-- [Error codes](https://rxova.org/packages/use-everywhere/errors.md): every
+- [Error codes](https://rxova.dev/packages/use-everywhere/errors.md): every
   `UEnnnn` a dev build can emit.
 
 ## Contributing

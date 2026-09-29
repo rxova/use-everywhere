@@ -105,9 +105,9 @@ in `@use-everywhere/core` is re-exported from here too — see that package's
 
 ## Docs
 
-- Full documentation: https://rxova.org/packages/use-everywhere/
-- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Full documentation: https://rxova.dev/packages/use-everywhere/
+- Agent-facing index: https://rxova.dev/packages/use-everywhere/llms.txt
 - Every page as raw markdown: add `.md` to any docs URL
-- Hooks reference: https://rxova.org/packages/use-everywhere/hooks/overview.md
-- Error codes: https://rxova.org/packages/use-everywhere/errors.md
+- Hooks reference: https://rxova.dev/packages/use-everywhere/hooks/overview.md
+- Error codes: https://rxova.dev/packages/use-everywhere/errors.md
 - Source: https://github.com/rxova/use-everywhere

@@ -72,7 +72,7 @@ const { source, changed, warnings } = transform(code, "Cart.tsx");
 
 ## Docs
 
-- [Migrating to 1.0](https://rxova.org/packages/use-everywhere/guides/migration/)
+- [Migrating to 1.0](https://rxova.dev/packages/use-everywhere/guides/migration/)
 - [RFC 0001 — naming sweep](https://github.com/rxova/use-everywhere/blob/main/rfcs/0001-naming-sweep.md)
 
 ## License

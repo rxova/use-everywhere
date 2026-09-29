@@ -90,8 +90,8 @@ multi-tab code is hard, and testing only `close()` is testing the easy half.
 
 ## Docs
 
-- Full documentation: https://rxova.org/packages/use-everywhere/
-- Agent-facing index: https://rxova.org/packages/use-everywhere/llms.txt
+- Full documentation: https://rxova.dev/packages/use-everywhere/
+- Agent-facing index: https://rxova.dev/packages/use-everywhere/llms.txt
 - Every page as raw markdown: add `.md` to any docs URL
-- Testing guide: https://rxova.org/packages/use-everywhere/guides/testing.md
+- Testing guide: https://rxova.dev/packages/use-everywhere/guides/testing.md
 - Source: https://github.com/rxova/use-everywhere

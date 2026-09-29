@@ -9,7 +9,7 @@
     "url": "git+https://github.com/rxova/use-everywhere.git",
     "directory": "packages/test-utils"
   },
-  "homepage": "https://rxova.org/packages/use-everywhere/guides/testing/",
+  "homepage": "https://rxova.dev/packages/use-everywhere/guides/testing/",
   "bugs": "https://github.com/rxova/use-everywhere/issues",
   "keywords": [
     "testing",

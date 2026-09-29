@@ -9,7 +9,7 @@ import { createDevWarner } from "@rxova/ts-utils";
 // The trailing slash keeps the link exactly as before: `…/errors/#ue1001`.
 const warner = createDevWarner({
   prefix: "use-everywhere",
-  docsUrl: "https://rxova.org/packages/use-everywhere/errors/",
+  docsUrl: "https://rxova.dev/packages/use-everywhere/errors/",
 });
 
 /**

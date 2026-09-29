@@ -31,7 +31,7 @@ jobs:
     uses: rxova/shared/.github/workflows/commit-messages.yml@main
 
   # The docs site is left out of the build: docs.yml builds it at the base path
-  # rxova.org mounts it on, and it needs a browser for the mermaid diagrams.
+  # rxova.dev mounts it on, and it needs a browser for the mermaid diagrams.
   checks:
     name: lint · format · types · build
     needs: [commitlint]
