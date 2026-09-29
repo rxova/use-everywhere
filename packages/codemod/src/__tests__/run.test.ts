@@ -1,8 +1,11 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { collectFiles, run } from "../run.js";
+
+/** Paths come back in the platform's separator; the expectations are written with `/`. */
+const posix = (path: string): string => path.split(sep).join("/");
 
 const made: string[] = [];
 afterEach(() => {
@@ -39,7 +42,7 @@ describe("collectFiles", () => {
       "src/nested/deep/k.ts": "",
     });
 
-    const found = collectFiles(join(root, "src")).map((path) => path.slice(root.length + 1));
+    const found = collectFiles(join(root, "src")).map((path) => posix(path.slice(root.length + 1)));
 
     expect(found.sort()).toEqual([
       "src/a.ts",
@@ -79,8 +82,8 @@ describe("run", () => {
 
     const result = run({ paths: ["src"], cwd: root });
 
-    expect([...result.scanned].sort()).toEqual(["src/a.tsx", "src/b.ts"]);
-    expect(result.changed).toEqual(["src/a.tsx"]);
+    expect([...result.scanned].map(posix).sort()).toEqual(["src/a.tsx", "src/b.ts"]);
+    expect(result.changed.map(posix)).toEqual(["src/a.tsx"]);
     expect(readFileSync(join(root, "src/a.tsx"), "utf8")).toBe(NEW);
     expect(readFileSync(join(root, "src/b.ts"), "utf8")).toBe(`export const x = 1;\n`);
   });
