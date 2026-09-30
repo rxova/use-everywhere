@@ -63,7 +63,9 @@ Raise the floor as survivors die. Never lower it.
 | Module                | Score     | Survivors |
 | --------------------- | --------- | --------- |
 | `clock.ts`            | 97.14     | 1         |
+| `leader.ts`           | 95.00     | 8         |
 | `wire.ts`             | 94.29     | 4         |
+| `shared-reducer.ts`   | 94.17     | 7         |
 | `channel.ts`          | 94.03     | 4         |
 | `leader-web-locks.ts` | 93.33     | 8         |
 | `bus.ts`              | 92.11     | 12        |
@@ -71,13 +73,9 @@ Raise the floor as survivors die. Never lower it.
 | `serializer.ts`       | 91.84     | 4         |
 | `schema.ts`           | 91.67     | 4         |
 | `presence.ts`         | 90.74     | 10        |
-| `leader.ts`           | 90.00     | 16        |
-| `shared-reducer.ts`   | 90.00     | 12        |
-| **total**             | **91.97** | **98**    |
+| **total**             | **93.03** | **85**    |
 
-Started at 84.63 with 195 survivors. `leader.ts` and `shared-reducer.ts` sit
-exactly on 90, so they are the two to watch: the next change to either is the one
-that drops below.
+Started at 84.63 with 195 survivors. `presence.ts` is now the closest to the floor.
 
 Two modules have already been below and come back. `leader-web-locks.ts` (88.33)
 and `shared-store.ts` (89.90) both failed the gate the run after 0.11.0 landed —
@@ -162,6 +160,30 @@ after `devWarn` moved to `@rxova/ts-utils`. Three separate causes:
   partial peer in finding 1 covered the informed peer on `a` came from the
   tie-break between two random client ids. A second test makes the partial peer
   strictly newer on `a` and missing `b`, so standing down would lose `b`.
+
+**9. `leader.ts` and `shared-reducer.ts` sat exactly on the floor.** Each had
+survivors that were real, untested behaviour, and two existing tests looked
+like they covered them but could not fail:
+
+- The "setEligible is a no-op" test called it while already leading, where
+  skipping the no-op check changes nothing. Called before the first beat, a
+  broken check claims the seat without waiting for an incumbent to answer.
+- The "non-leader traffic" test sent a presence `ping`, which is dropped
+  before the scope check. A presence `hello` is what reaches it.
+- New cases pin that a no-op leader change notifies nobody,
+  `waitForLeadership` stays pending while another tab leads, only the leader
+  answers a `hello`, only the leader's heartbeat holds the lease, a follower
+  made eligible does not take a held seat, and only a bfcache `pageshow`
+  re-announces.
+- For the reducer: a snapshot at the current commit number is ignored,
+  numbering carries on correctly after a snapshot replays a buffered commit,
+  the reducer builds its leader on its own transport with its
+  `leaderOptions`, and closing it hands the seat to a survivor.
+
+The rest are equivalent: a second `close()` is absorbed by the bus's own
+`released` guard, buffered commits at or below a snapshot are never read
+again, and an empty `strategy` falls through to the heartbeat election just
+as `auto` does without Web Locks.
 
 ## Mutants deliberately left alive
 
