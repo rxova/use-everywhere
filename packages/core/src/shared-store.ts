@@ -26,6 +26,7 @@ export function createSharedStore<S extends Record<string, unknown>>(
   if (onSharedBus) {
     const live = liveStores.get(name) ?? 0;
     if (live > 0) {
+      // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
       if (process.env.NODE_ENV !== "production") {
         devWarn(
           "UE1001",
@@ -280,7 +281,10 @@ export function createSharedStore<S extends Record<string, unknown>>(
 
     const refuse = (error: RestoreError) => {
       if (onRestoreError) onRestoreError(error);
-      else if (process.env.NODE_ENV !== "production") {
+      else if (
+        // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
+        process.env.NODE_ENV !== "production"
+      ) {
         devWarn(
           "UE1002",
           `${name}: persisted schema v${error.found} not restored, ` +

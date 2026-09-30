@@ -84,6 +84,7 @@ export function recordSkew(name: string, version: number): void {
   versions.add(version);
   // Terse on purpose, with the explanation behind a link. The NODE_ENV guard
   // around the call keeps it out of production bundles entirely; see env.d.ts.
+  // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
   if (process.env.NODE_ENV !== "production") {
     devWarn(
       "UE1007",

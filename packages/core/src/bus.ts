@@ -203,6 +203,7 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
     // otherwise be silently ignored — an origin-wide setting set from the
     // wrong call site with no test failing.
     if (options.heartbeatMs !== undefined && options.heartbeatMs !== core.heartbeatMs) {
+      // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
       if (process.env.NODE_ENV !== "production") {
         devWarn(
           "UE1004",
@@ -211,6 +212,7 @@ export function getBus(name: string, options: BusOptions = {}): Bus {
       }
     }
     if (options.kind !== undefined && options.kind !== core.kind) {
+      // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
       if (process.env.NODE_ENV !== "production") {
         devWarn("UE1005", `bus "${name}": kind ignored — the first creator fixes bus options`);
       }

@@ -63,17 +63,17 @@ Raise the floor as survivors die. Never lower it.
 | Module                | Score     | Survivors |
 | --------------------- | --------- | --------- |
 | `clock.ts`            | 97.14     | 1         |
+| `wire.ts`             | 94.29     | 4         |
 | `channel.ts`          | 94.03     | 4         |
 | `leader-web-locks.ts` | 93.33     | 8         |
-| `bus.ts`              | 92.41     | 12        |
-| `shared-store.ts`     | 92.26     | 23        |
-| `schema.ts`           | 92.16     | 4         |
-| `serializer.ts`       | 91.84     | 3         |
-| `presence.ts`         | 90.74     | 8         |
-| `wire.ts`             | 90.41     | 7         |
+| `bus.ts`              | 92.11     | 12        |
+| `shared-store.ts`     | 92.10     | 23        |
+| `serializer.ts`       | 91.84     | 4         |
+| `schema.ts`           | 91.67     | 4         |
+| `presence.ts`         | 90.74     | 10        |
 | `leader.ts`           | 90.00     | 16        |
 | `shared-reducer.ts`   | 90.00     | 12        |
-| **total**             | **91.84** | **98**    |
+| **total**             | **91.97** | **98**    |
 
 Started at 84.63 with 195 survivors. `leader.ts` and `shared-reducer.ts` sit
 exactly on 90, so they are the two to watch: the next change to either is the one
@@ -143,15 +143,40 @@ warned yet, where silence is a real assertion, and a store on a custom
 transport — never counted on the way in — is checked not to discount on the way
 out.
 
+**8. Three modules fell below the floor after `createDevWarner` (2026-09-30).**
+`wire.ts` (87.67), `schema.ts` (88.24) and `bus.ts` (89.87) failed the first run
+after `devWarn` moved to `@rxova/ts-utils`. Three separate causes:
+
+- The `process.env.NODE_ENV !== "production"` guard around each warning became
+  an equivalent mutant. The old `devWarn` read `NODE_ENV` once at import, so
+  the runtime guard tests could only pass through the outer guard. The new warner
+  checks on every call, so forcing or blanking the guard changes nothing a test
+  can see. The guard is still needed: it is what lets a bundler strip the string
+  (`dev-stripping.test.ts`). Its `ConditionalExpression` and `StringLiteral`
+  mutants are now disabled with that reason; `===` stays mutated and is killed.
+- The wire-skew warning test for the older direction named its bus
+  `skew-older`. The bus name is in the message, so `toContain("older")` passed
+  whichever direction the message gave. The bus is now `skew-past`, and the
+  `UE1007` code is asserted.
+- `coveredBy` surviving `every` → `some` was down to chance. Whether the
+  partial peer in finding 1 covered the informed peer on `a` came from the
+  tie-break between two random client ids. A second test makes the partial peer
+  strictly newer on `a` and missing `b`, so standing down would lose `b`.
+
 ## Mutants deliberately left alive
 
-Two categories, marked in the source with `// Stryker disable next-line` and a
+Three categories, marked in the source with `// Stryker disable next-line` and a
 reason rather than left as unexplained survivors:
 
 - **Environment detection.** `typeof document !== 'undefined' && typeof
 addEventListener === 'function'` is true in every browser-like test environment
   and false in every Node one, so no mutant of it is distinguishable by anything
   we run.
+- **Development-warning guards.** `process.env.NODE_ENV !== "production"` around
+  a `devWarn` call is for the bundler, which strips the warning when it folds the
+  guard. At runtime `devWarn` makes the same check itself, so forcing or blanking
+  the guard's condition is not observable. Only `ConditionalExpression` and
+  `StringLiteral` are disabled; `===` is still mutated and still killed.
 - **Message text.** Warning and error prose is not asserted on. Pinning it makes
   every reworded warning a failing test, which is a real cost for no real
   safety. The `UE` code is the exception, and is asserted: it is the part that

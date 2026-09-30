@@ -59,7 +59,10 @@ export function createGate(
     // Terse, with the explanation behind the link — a warning earns its length
     // in a console, not in prose. The NODE_ENV guard around the call is what
     // keeps this string out of production bundles; see env.d.ts.
-    else if (process.env.NODE_ENV !== "production") {
+    else if (
+      // Stryker disable next-line ConditionalExpression,StringLiteral: the guard exists so bundlers strip the warning (dev-stripping.test.ts); at runtime devWarn checks NODE_ENV itself, so forcing or blanking this condition changes nothing a test can observe. `===` stays mutated and is killed.
+      process.env.NODE_ENV !== "production"
+    ) {
       devWarn(
         "UE1003",
         `${name}/${key}: ${direction}bound payload rejected by its schema — ` +

@@ -102,8 +102,10 @@ describe("a peer speaking another wire protocol version", () => {
     await tick();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0]?.[0]).toContain("wire protocol v2");
-    expect(warn.mock.calls[0]?.[0]).toContain("newer");
+    const line = String(warn.mock.calls[0]?.[0]);
+    expect(line).toContain("UE1007");
+    expect(line).toContain("wire protocol v2");
+    expect(line).toContain("newer");
 
     store.close();
     nextWeek.close();
@@ -112,7 +114,9 @@ describe("a peer speaking another wire protocol version", () => {
   it("calls a lower version older", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const hub = new MemoryHub();
-    const store = createSharedStore("skew-older", { a: 1 }, { transport: () => hub.connect() });
+    // Not `skew-older`: the bus name is in the message, and a name holding the
+    // word would satisfy the assertion whichever direction the warning gave.
+    const store = createSharedStore("skew-past", { a: 1 }, { transport: () => hub.connect() });
     const lastWeek = hub.connect();
 
     lastWeek.post(foreign({ v: 0 }));
