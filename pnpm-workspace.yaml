@@ -17,7 +17,13 @@ overrides:
   # GHSA-rgw5-rvv9-x895: <5.0.9 is a DoS via unbounded intermediate arrays that
   # bypasses the earlier CVE-2026-14257 mitigation. Reached through eslint's
   # minimatch, so dev-only, but `audit:check` gates on high and turns main red.
-  brace-expansion: ^5.0.9
+  #
+  # Raised to 5.0.12 for GHSA-6j4f-fj2g-mc7p (parseCommaParts recursion, high,
+  # fixed in 5.0.10), GHSA-qhr7-859c-m2p7 (nested brace group recursion, high,
+  # fixed in 5.0.11) and GHSA-q2hr-2g5m-vwhr (quadratic `{a},b}` rewrite,
+  # moderate, fixed in 5.0.12). minimatch and typedoc already accept ^5.0.8, so
+  # this only moves the floor. Drop once minimatch asks for >=5.0.12 itself.
+  brace-expansion: ^5.0.12
   # <=3.4.12. Moderate, reached only through mermaid (below) in the docs build.
   # Taken for the same reason as postcss: one line, and it goes with mermaid's.
   dompurify: ">=3.4.13"
@@ -33,7 +39,11 @@ overrides:
   # file here changing. 4.1.3 is the patched floor for the 4.x line ajv now
   # asks for; left open at the top to match the entries around it, so a 5.x
   # would need this raised again.
-  fast-uri: ">=4.1.3"
+  #
+  # Raised to 4.1.5 for GHSA-hrr3-gc8f-f4qj and GHSA-jvvf-x445-j334 (host case
+  # normalisation and mailto header injection via percent-encoded octets, both
+  # moderate) — same ajv paths, taken with the brace-expansion bump.
+  fast-uri: ">=4.1.5"
   # GHSA-5p4m-2wfm-xmqj: `!!omap` resolution is quadratic in the number of keys,
   # so a hostile YAML document costs CPU out of proportion to its size. High, and
   # it lands on both live majors — the 3.x line through @manypkg's read-yaml-file
@@ -49,6 +59,11 @@ overrides:
   # was not widened and stays put.
   js-yaml@3: ">=3.15.1 <4"
   js-yaml@4: ">=4.3.2 <5"
+  # GHSA-253c-mchw-3w2r: with `linkify: true`, two quadratic paths let a few
+  # hundred KB of markdown block the event loop. Moderate, reached only through
+  # typedoc in the docs build, which renders TSDoc this repo writes. Scoped to
+  # the 14.x line typedoc asks for. Drop once typedoc depends on >=14.3.1.
+  markdown-it@14: ">=14.3.1 <15"
   # Five advisories, low and moderate, all fixed in 11.16.1. The only path is
   # rehype-mermaid -> mermaid-isomorphic in the docs build, which renders the
   # diagrams at build time — dev-only. Closed at the top: mermaid-isomorphic
