@@ -1,5 +1,13 @@
 # @use-everywhere/test-utils
 
+## 1.0.3
+
+### Patch Changes
+
+- [#149](https://github.com/rxova/use-everywhere/pull/149) [`af63cca`](https://github.com/rxova/use-everywhere/commit/af63ccab31bd8be074925af5fa57517263bfbef0) - Point links at rxova.dev
+- Updated dependencies [[`e86f998`](https://github.com/rxova/use-everywhere/commit/e86f9988e2db61290ea404ea1f12b6c9599e3d36), [`8707caa`](https://github.com/rxova/use-everywhere/commit/8707caa1a2be1d6e691891c028e8f8c84cd45c01), [`af63cca`](https://github.com/rxova/use-everywhere/commit/af63ccab31bd8be074925af5fa57517263bfbef0)]:
+  - @use-everywhere/core@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # use-everywhere-codemod
 
+## 0.2.0
+
+### Minor Changes
+
+- [#143](https://github.com/rxova/use-everywhere/pull/143) [`1cc5d88`](https://github.com/rxova/use-everywhere/commit/1cc5d88217ded942273f621b1359c8da0e4317a4) - `use-everywhere-codemod --version` (or `-v`) prints the installed version and exits.
+
+### Patch Changes
+
+- [#149](https://github.com/rxova/use-everywhere/pull/149) [`af63cca`](https://github.com/rxova/use-everywhere/commit/af63ccab31bd8be074925af5fa57517263bfbef0) - Point links at rxova.dev
+
 ## 0.1.1
 
 ### Patch Changes
