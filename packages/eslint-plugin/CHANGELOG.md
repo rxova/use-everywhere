@@ -1,5 +1,11 @@
 # eslint-plugin-use-everywhere
 
+## 1.0.2
+
+### Patch Changes
+
+- [#149](https://github.com/rxova/use-everywhere/pull/149) [`af63cca`](https://github.com/rxova/use-everywhere/commit/af63ccab31bd8be074925af5fa57517263bfbef0) - Point links at rxova.dev
+
 ## 1.0.1
 
 ### Patch Changes
