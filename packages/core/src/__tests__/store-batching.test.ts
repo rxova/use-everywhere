@@ -184,6 +184,44 @@ describe("answering a late joiner", () => {
     joiner.close();
   });
 
+  it("is not silenced by a peer that is current on one key and missing another", async () => {
+    // The case above leaves whether the partial peer's `a` covers the informed
+    // peer's `a` to the tie-break between two random client ids. This one
+    // makes it certain: the partial peer writes `a` twice, so its snapshot is
+    // strictly newer on `a` and says nothing about `b`. Covering *some* of what
+    // this peer wrote is not covering it, and standing down would lose `b`.
+    const hub = new MemoryHub();
+    const informed = createSharedStore<Shape>(
+      "storm-covers-some",
+      { a: 0, b: 0 },
+      { transport: () => hub.connect(), snapshotDelayMs: 300 },
+    );
+    informed.set("a", 1);
+    informed.set("b", 2);
+
+    const partial = createSharedStore<Shape>(
+      "storm-covers-some",
+      { a: 0, b: 0 },
+      { transport: () => hub.connect(), snapshotDelayMs: 1, accept: () => false },
+    );
+    partial.set("a", 8);
+    partial.set("a", 9);
+    await snapshotWindow();
+
+    const joiner = createSharedStore<Shape>(
+      "storm-covers-some",
+      { a: 0, b: 0 },
+      { transport: () => hub.connect() },
+    );
+    await snapshotWindow(500);
+
+    expect(joiner.getSnapshot().b).toBe(2);
+
+    informed.close();
+    partial.close();
+    joiner.close();
+  });
+
   it("says nothing when it has nothing written to say", async () => {
     const hub = new MemoryHub();
     const empty = build(hub, "storm-empty", { a: 0 });
