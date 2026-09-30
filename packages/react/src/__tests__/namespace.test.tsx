@@ -1,12 +1,12 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { createNamespace } from "../namespace.js";
 import { useSharedState } from "../use-shared-state.js";
 
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 // Real timers and short timings, the same reason use-leader.test.tsx does it:
-// fake timers, act() and BroadcastChannel's async delivery interact badly.
-const wait = (ms: number) => act(() => new Promise<void>((r) => setTimeout(r, ms)));
+// fake timers, act() and BroadcastChannel's async delivery interact badly. The
+// election is awaited with waitFor, not a fixed sleep a slow runner can outlast.
 const FAST = { heartbeatMs: 20, leaseMs: 60 };
 
 /**
@@ -139,13 +139,12 @@ describe("createNamespace (React)", () => {
       );
     }
     render(<App />);
-    await wait(80);
 
     // A namespaced channel and a namespaced leader resolve against the same
     // prefixed bus as everything else in the app. This tab is alone on it, so
     // once the lease settles the seat is its own.
-    expect(screen.getByTestId("leader-id").textContent).toBe("seated");
-    expect(ranAsLeader).toBe(1);
+    await waitFor(() => expect(screen.getByTestId("leader-id").textContent).toBe("seated"));
+    await waitFor(() => expect(ranAsLeader).toBe(1));
 
     act(() => screen.getByText("go").click());
     await flush();

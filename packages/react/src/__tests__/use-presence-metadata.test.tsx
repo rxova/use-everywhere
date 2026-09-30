@@ -1,9 +1,11 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createPresence } from "@use-everywhere/core";
 import { useState } from "react";
 import { usePeers, usePresenceMetadata } from "../use-peers.js";
 
+// For what happens inside this tab. What crosses to another tab arrives on
+// BroadcastChannel's schedule, not in one tick, so those assertions use waitFor.
 const flush = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
 let n = 0;
@@ -26,13 +28,11 @@ describe("usePresenceMetadata", () => {
       return <button onClick={() => setWho("Grace")}>{who}</button>;
     }
     render(<Me />);
-    await flush();
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" });
+    await waitFor(() => expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" }));
 
     act(() => screen.getByText("Ada").click());
-    await flush();
 
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Grace" });
+    await waitFor(() => expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Grace" }));
     watcher.close();
   });
 
@@ -45,9 +45,8 @@ describe("usePresenceMetadata", () => {
       return null;
     }
     render(<Me />);
-    await flush();
 
-    expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" });
+    await waitFor(() => expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" }));
     watcher.close();
   });
 
@@ -63,7 +62,9 @@ describe("usePresenceMetadata", () => {
       return <button onClick={() => bump((v) => v + 1)}>bump</button>;
     }
     render(<Me />);
-    await flush();
+    // Subscribe only once the first announcement has landed, or it is the one
+    // counted, and the test fails on a slow runner for a churn that never was.
+    await waitFor(() => expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Ada" }));
     watcher.subscribe(() => notifications++);
 
     act(() => screen.getByText("bump").click());
