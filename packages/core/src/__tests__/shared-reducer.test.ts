@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createSharedReducer } from "../shared-reducer.js";
 import { createSharedStore } from "../shared-store.js";
 import { MemoryHub } from "../transport/memory-hub.js";
@@ -649,5 +649,116 @@ describe("a shared reducer", () => {
     // is identical must not wake useSyncExternalStore.
     expect(calls).toBe(0);
     a.close();
+  });
+});
+
+// Each case below pins a behaviour a mutation run found untested: the code was
+// right, but a test that could tell it apart from its neighbour was missing.
+describe("shared reducer, on what a mutation run found untested", () => {
+  const snapshotAt = (seq: number, state: number) => ({
+    v: 1,
+    scope: "op",
+    type: "snapshot",
+    key: "default",
+    state,
+    seq,
+    clientId: "peer",
+    kind: "tab",
+  });
+  const commitAt = (seq: number, by: number) => ({
+    v: 1,
+    scope: "op",
+    type: "commit",
+    key: "default",
+    action: { type: "inc", by },
+    opId: `op-${String(seq)}`,
+    seq,
+    clientId: "leader",
+    kind: "tab",
+  });
+
+  it("ignores a snapshot at the commit number it already has", async () => {
+    const hub = new MemoryHub();
+    const leader = build(hub, true);
+    leader.dispatch({ type: "inc", by: 7 });
+    const wire = hub.connect();
+    await tick();
+
+    // Same number, different state: nothing new in it, so nothing to adopt.
+    wire.post(snapshotAt(1, 999));
+    await tick();
+
+    expect(leader.getSnapshot()).toBe(7);
+    leader.close();
+    wire.close();
+  });
+
+  it("carries on numbering after replaying a buffered commit behind a snapshot", async () => {
+    const hub = new MemoryHub();
+    const follower = build(hub, false);
+    const wire = hub.connect();
+    await tick();
+
+    wire.post(commitAt(4, 400)); // early: 1..3 have not arrived
+    await tick();
+    wire.post(snapshotAt(3, 300)); // folds 1..3 in and unblocks 4
+    await tick();
+    expect(follower.getSnapshot()).toBe(700);
+
+    // Only right if replaying 4 left the counter at 4, so 5 is next in line.
+    wire.post(commitAt(5, 5));
+    await tick();
+    expect(follower.getSnapshot()).toBe(705);
+
+    follower.close();
+    wire.close();
+  });
+
+  it("builds its leader on its own transport, with its leaderOptions", async () => {
+    const hub = new MemoryHub();
+    const ear = hub.connect();
+    const heard: { scope?: string; type?: string; kind?: string }[] = [];
+    ear.subscribe((data) => heard.push(data as (typeof heard)[number]));
+
+    const reducer = createSharedReducer<number, Action>("red-own-bus", counter, 0, {
+      transport: () => hub.connect(),
+      leaderOptions: { strategy: "heartbeat", kind: "worker" },
+    });
+    await tick();
+
+    // The election runs where the reducer's ops do — a leader on another bus
+    // would order dispatches nobody here can see — and as the kind asked for.
+    const hello = heard.find((w) => w.scope === "leader" && w.type === "hello");
+    expect(hello?.kind).toBe("worker");
+
+    reducer.close();
+    ear.close();
+  });
+
+  it("gives up the seat it built when it closes, so a survivor can carry on", async () => {
+    vi.useFakeTimers();
+    try {
+      const hub = new MemoryHub();
+      const make = () =>
+        createSharedReducer<number, Action>("red-handover", counter, 0, {
+          transport: () => hub.connect(),
+          leaderOptions: { strategy: "heartbeat", heartbeatMs: 100, leaseMs: 300 },
+        });
+      const first = make();
+      await vi.advanceTimersByTimeAsync(100);
+      const second = make();
+      await vi.advanceTimersByTimeAsync(100);
+
+      first.close();
+      await vi.advanceTimersByTimeAsync(1_000);
+      second.dispatch({ type: "inc", by: 2 });
+      await vi.advanceTimersByTimeAsync(100);
+
+      expect(second.getSnapshot()).toBe(2);
+      expect(second.pendingCount()).toBe(0);
+      second.close();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

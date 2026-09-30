@@ -519,3 +519,143 @@ describe("waitForLeadership, on the heartbeat strategy", () => {
     vi.useRealTimers();
   });
 });
+
+// Each case below pins a behaviour a mutation run found untested: the code was
+// right, but a test that could tell it apart from its neighbour was missing.
+describe("createLeader, on what must not happen", () => {
+  let hub: MemoryHub;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    hub = new MemoryHub();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const tab = (name: string, options: LeaderOptions = {}) =>
+    createLeader(name, { strategy: "heartbeat", transport: () => hub.connect(), ...options });
+
+  /** Every wire on the bus, as a bystander on the same hub hears it. */
+  const listen = () => {
+    const heard: BusWire[] = [];
+    const ear = hub.connect();
+    ear.subscribe((data) => heard.push(data as BusWire));
+    return { heard, ear };
+  };
+
+  it("does not tell subscribers about a change that did not happen", async () => {
+    // Ineligible and alone: the lease runs out with no leader either side of it.
+    const a = tab("quiet", { eligible: false });
+    const onChange = vi.fn();
+    a.subscribe(onChange);
+
+    await vi.advanceTimersByTimeAsync(LEASE * 3);
+
+    expect(a.getSnapshot().leaderId).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
+    a.close();
+  });
+
+  it("keeps waitForLeadership pending while another tab takes the seat", async () => {
+    const incumbent = tab("wait-other");
+    await vi.advanceTimersByTimeAsync(HEARTBEAT);
+
+    const joiner = tab("wait-other");
+    let seated = false;
+    void joiner.waitForLeadership().then(() => (seated = true));
+    await vi.advanceTimersByTimeAsync(LEASE);
+
+    // The joiner learned who leads — that is not the joiner leading.
+    expect(joiner.getSnapshot().leaderId).toBe(incumbent.clientId);
+    expect(seated).toBe(false);
+
+    incumbent.close();
+    await vi.advanceTimersByTimeAsync(LEASE);
+    expect(seated).toBe(true);
+    joiner.close();
+  });
+
+  it("answers a leader hello from the leader only, and ignores another scope's hello", async () => {
+    const leader = tab("hello-answer");
+    await vi.advanceTimersByTimeAsync(HEARTBEAT);
+    const follower = tab("hello-answer");
+    await vi.advanceTimersByTimeAsync(0);
+    const { heard, ear } = listen();
+
+    ear.post({ v: 1, scope: "leader", type: "hello", clientId: "joiner", kind: "tab" });
+    await vi.advanceTimersByTimeAsync(0);
+    const answers = heard.filter((w) => w.scope === "leader" && w.type === "heartbeat");
+    expect(answers.map((w) => w.clientId)).toEqual([leader.clientId]);
+
+    heard.length = 0;
+    ear.post({ v: 1, scope: "presence", type: "hello", clientId: "joiner", kind: "tab" });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(heard.filter((w) => w.scope === "leader")).toEqual([]);
+
+    leader.close();
+    follower.close();
+    ear.close();
+  });
+
+  it("lets only the leader's heartbeat hold the lease", async () => {
+    const follower = tab("lease-holder");
+    const { ear } = listen();
+    // A leader follows by claim, then goes silent...
+    ear.post({
+      v: 1,
+      scope: "leader",
+      type: "claim",
+      term: [5, "ghost"],
+      clientId: "ghost",
+      kind: "tab",
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(follower.getSnapshot().leaderId).toBe("ghost");
+
+    // ...while somebody else keeps talking on an older term. That is not the
+    // leader, so it must not keep a dead leader's lease alive.
+    const chatter = setInterval(() => {
+      ear.post({
+        v: 1,
+        scope: "leader",
+        type: "heartbeat",
+        term: [1, "other"],
+        clientId: "other",
+        kind: "tab",
+      });
+    }, HEARTBEAT / 2);
+    await vi.advanceTimersByTimeAsync(LEASE + HEARTBEAT);
+    clearInterval(chatter);
+
+    expect(follower.getSnapshot().isLeader).toBe(true);
+    follower.close();
+    ear.close();
+  });
+
+  it("does not claim early when made eligible before its first beat", async () => {
+    const a = tab("eligible-early");
+    // Already eligible: this must not skip the wait for an incumbent's answer.
+    a.setEligible(true);
+
+    await vi.advanceTimersByTimeAsync(HEARTBEAT - 1);
+    expect(a.getSnapshot().leaderId).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(a.getSnapshot().isLeader).toBe(true);
+    a.close();
+  });
+
+  it("does not take a held seat when a follower becomes eligible", async () => {
+    const leader = tab("eligible-held");
+    await vi.advanceTimersByTimeAsync(HEARTBEAT);
+    const standby = tab("eligible-held", { eligible: false });
+    await vi.advanceTimersByTimeAsync(0);
+
+    standby.setEligible(true);
+    await vi.advanceTimersByTimeAsync(HEARTBEAT * 2);
+
+    expect(leader.getSnapshot().isLeader).toBe(true);
+    expect(standby.getSnapshot()).toEqual({ leaderId: leader.clientId, isLeader: false });
+    leader.close();
+    standby.close();
+  });
+});

@@ -108,6 +108,31 @@ describe("bfcache restore", () => {
     leader.close();
   });
 
+  it("the leader says hello again on a persisted pageshow, and only then", async () => {
+    const leader = createLeader("bf-lead-hello", {
+      strategy: "heartbeat",
+      transport: () => hub.connect(),
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    const rogue = hub.connect();
+    const hellos: BusWire[] = [];
+    rogue.subscribe((data) => {
+      const wire = data as BusWire;
+      if (wire.scope === "leader" && wire.type === "hello") hellos.push(wire);
+    });
+
+    dispatchEvent(new Event("pageshow")); // a normal load: not a restore
+    await vi.advanceTimersByTimeAsync(0);
+    expect(hellos).toEqual([]);
+
+    restore();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(hellos.map((w) => w.clientId)).toEqual([leader.clientId]);
+
+    leader.close();
+    rogue.close();
+  });
+
   it("a restored tab adopts the incumbent that answers its hello instead of stealing the seat", async () => {
     const leader = createLeader("bf-lead-adopt", {
       strategy: "heartbeat",
