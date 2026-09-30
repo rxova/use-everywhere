@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createPresence } from "@use-everywhere/core";
 import { usePeers } from "../use-peers.js";
@@ -19,11 +19,11 @@ describe("usePeers", () => {
     const peer = createPresence("p1", {
       transport: (n) => new BroadcastChannelTransport(n),
     });
-    await flush();
-    expect(screen.getByTestId("peers").textContent).toBe(peer.clientId);
+    // Another tab's hello and bye arrive on BroadcastChannel's schedule, which
+    // is not one tick on a loaded runner.
+    await waitFor(() => expect(screen.getByTestId("peers").textContent).toBe(peer.clientId));
 
     act(() => peer.close()); // posts bye
-    await flush();
-    expect(screen.getByTestId("peers").textContent).toBe("");
+    await waitFor(() => expect(screen.getByTestId("peers").textContent).toBe(""));
   });
 });
