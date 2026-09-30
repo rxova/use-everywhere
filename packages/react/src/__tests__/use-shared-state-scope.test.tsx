@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createSharedStore } from "@use-everywhere/core";
 import { useSharedState } from "../use-shared-state.js";
@@ -37,9 +37,13 @@ describe("useSharedState scope option", () => {
     }
     render(<Pair />);
     const peer = otherClient("s1", "tab");
+    // A third client that does hear the write: once it has, silence in the
+    // component is the scope at work, not a message still in flight.
+    const witness = otherClient("s1", "tab");
     await flush();
 
     act(() => peer.set("count", 99)); // another tab writes — must NOT arrive
+    await waitFor(() => expect(witness.getSnapshot().count).toBe(99));
     await flush();
     expect(screen.getByTestId("a").textContent).toBe("0");
 
@@ -48,6 +52,7 @@ describe("useSharedState scope option", () => {
     expect(screen.getByTestId("a").textContent).toBe("5");
 
     expect(peer.getSnapshot().count).toBe(99); // and nothing leaked out
+    witness.close();
     peer.close();
   });
 
@@ -58,12 +63,14 @@ describe("useSharedState scope option", () => {
     await flush();
 
     act(() => worker.set("count", 13));
+    // `tab` accepts every kind of writer, so it hearing 13 means the worker's
+    // write has reached this page, and the component ignored it.
+    await waitFor(() => expect(tab.getSnapshot().count).toBe(13));
     await flush();
     expect(screen.getByTestId("count").textContent).toBe("0");
 
     act(() => tab.set("count", 2));
-    await flush();
-    expect(screen.getByTestId("count").textContent).toBe("2");
+    await waitFor(() => expect(screen.getByTestId("count").textContent).toBe("2"));
 
     worker.close();
     tab.close();
@@ -75,9 +82,8 @@ describe("useSharedState scope option", () => {
     await flush();
 
     act(() => worker.set("count", 8));
-    await flush();
 
-    expect(screen.getByTestId("count").textContent).toBe("8");
+    await waitFor(() => expect(screen.getByTestId("count").textContent).toBe("8"));
     worker.close();
   });
 
@@ -97,9 +103,8 @@ describe("useSharedState scope option", () => {
     await flush();
 
     act(() => peer.set("count", 3));
-    await flush();
 
-    expect(screen.getByTestId("shared").textContent).toBe("3");
+    await waitFor(() => expect(screen.getByTestId("shared").textContent).toBe("3"));
     expect(screen.getByTestId("local").textContent).toBe("0");
     peer.close();
   });

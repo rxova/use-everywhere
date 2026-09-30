@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createChannel } from "@use-everywhere/core";
 import { useState } from "react";
@@ -28,9 +28,9 @@ describe("defineChannel", () => {
     await flush();
 
     act(() => peer.post("ping", { n: 7 }));
-    await flush();
 
-    expect(screen.getByTestId("last").textContent).toBe("7");
+    // A real BroadcastChannel: wait for the message, not for one tick.
+    await waitFor(() => expect(screen.getByTestId("last").textContent).toBe("7"));
     peer.close();
   });
 
@@ -51,9 +51,8 @@ describe("defineChannel", () => {
       self = meta.self;
     });
     act(() => screen.getByText("go").click());
-    await flush();
 
-    expect(received).toEqual([3]);
+    await waitFor(() => expect(received).toEqual([3]));
     expect(self).toBe(false);
     peer.close();
   });
@@ -84,11 +83,11 @@ describe("defineChannel", () => {
     await flush();
 
     act(() => peer.post("ping", { n: 10 }));
-    await flush();
+    // Rendered before the second message, or a stale handler would pass too.
+    await waitFor(() => expect(screen.getByTestId("sum").textContent).toBe("10"));
     act(() => peer.post("ping", { n: 5 }));
-    await flush();
 
-    expect(screen.getByTestId("sum").textContent).toBe("15");
+    await waitFor(() => expect(screen.getByTestId("sum").textContent).toBe("15"));
     peer.close();
   });
 });

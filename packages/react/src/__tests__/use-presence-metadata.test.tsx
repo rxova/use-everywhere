@@ -57,9 +57,15 @@ describe("usePresenceMetadata", () => {
 
     function Me() {
       const [, bump] = useState(0);
+      const [display, setDisplay] = useState("Ada");
       // A new object every render, which is what a hook caller writes.
-      usePresenceMetadata({ display: "Ada" }, { name });
-      return <button onClick={() => bump((v) => v + 1)}>bump</button>;
+      usePresenceMetadata({ display }, { name });
+      return (
+        <>
+          <button onClick={() => bump((v) => v + 1)}>bump</button>
+          <button onClick={() => setDisplay("Grace")}>rename</button>
+        </>
+      );
     }
     render(<Me />);
     // Subscribe only once the first announcement has landed, or it is the one
@@ -68,10 +74,15 @@ describe("usePresenceMetadata", () => {
     watcher.subscribe(() => notifications++);
 
     act(() => screen.getByText("bump").click());
-    await flush();
+    // A real change after the re-render, as a marker: one sender's messages
+    // arrive in order, so once the watcher has it, anything the re-render
+    // announced would already have been counted.
+    act(() => screen.getByText("rename").click());
+    await waitFor(() => expect(watcher.getPeers()[0]?.metadata).toEqual({ display: "Grace" }));
 
-    // Compared by contents, so re-rendering does not churn every other tab.
-    expect(notifications).toBe(0);
+    // Compared by contents, so re-rendering does not churn every other tab:
+    // the rename is the only thing the watcher heard.
+    expect(notifications).toBe(1);
     watcher.close();
   });
 });
