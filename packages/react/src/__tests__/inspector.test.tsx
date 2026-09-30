@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderToString } from "react-dom/server";
 import {
@@ -56,9 +56,11 @@ describe("<Inspector />", () => {
       leaseMs: 60,
       transport: (busName) => new BroadcastChannelTransport(busName),
     });
-    await flush(60);
-
-    expect(ui().getByTestId("ue-crown").textContent).toContain(leader.clientId.slice(0, 6));
+    // Heartbeats arrive over a real BroadcastChannel: wait for the crown, not
+    // for a fixed stretch of time a slow runner can outlast.
+    await waitFor(() =>
+      expect(ui().getByTestId("ue-crown").textContent).toContain(leader.clientId.slice(0, 6)),
+    );
 
     leader.close();
   });
@@ -72,9 +74,8 @@ describe("<Inspector />", () => {
     // Inspector then sees its *own outbound* claim, which is precisely the half
     // of the traffic the debug seam exists to expose.
     const mine = createLeader(name, { heartbeatMs: 20, leaseMs: 60 });
-    await flush(60);
 
-    expect(ui().getByTestId("ue-crown").textContent).toContain("this tab");
+    await waitFor(() => expect(ui().getByTestId("ue-crown").textContent).toContain("this tab"));
     expect(ui().getByTestId("ue-inspector").textContent).toContain("leader");
 
     mine.close();
@@ -85,7 +86,7 @@ describe("<Inspector />", () => {
     render(<Inspector name={name} leaseMs={60} defaultOpen />);
 
     const ghost = new BroadcastChannelTransport(name);
-    await act(async () => {
+    act(() => {
       ghost.post({
         v: 1,
         scope: "leader",
@@ -94,14 +95,11 @@ describe("<Inspector />", () => {
         clientId: "ghost",
         kind: "tab",
       });
-      await new Promise<void>((r) => setTimeout(r, 10));
     });
-    expect(ui().queryByTestId("ue-crown")).not.toBeNull();
+    await waitFor(() => expect(ui().queryByTestId("ue-crown")).not.toBeNull());
 
     // Silence past the lease: a leader that stopped talking is no leader.
-    await flush(140);
-
-    expect(ui().queryByTestId("ue-crown")).toBeNull();
+    await waitFor(() => expect(ui().queryByTestId("ue-crown")).toBeNull());
     ghost.close();
   });
 
@@ -110,7 +108,7 @@ describe("<Inspector />", () => {
     render(<Inspector name={name} defaultOpen />);
 
     const peer = new BroadcastChannelTransport(name);
-    await act(async () => {
+    act(() => {
       peer.post({
         v: 1,
         scope: "leader",
@@ -119,11 +117,10 @@ describe("<Inspector />", () => {
         clientId: "p",
         kind: "tab",
       });
-      await new Promise<void>((r) => setTimeout(r, 10));
     });
-    expect(ui().queryByTestId("ue-crown")).not.toBeNull();
+    await waitFor(() => expect(ui().queryByTestId("ue-crown")).not.toBeNull());
 
-    await act(async () => {
+    act(() => {
       peer.post({
         v: 1,
         scope: "leader",
@@ -132,10 +129,11 @@ describe("<Inspector />", () => {
         clientId: "p",
         kind: "tab",
       });
-      await new Promise<void>((r) => setTimeout(r, 10));
     });
 
-    expect(ui().queryByTestId("ue-crown")).toBeNull();
+    // The default lease is seconds long, so a crown that goes before it runs
+    // out went because of the resign, not the silence after it.
+    await waitFor(() => expect(ui().queryByTestId("ue-crown")).toBeNull());
     peer.close();
   });
 
@@ -164,7 +162,7 @@ describe("<Inspector />", () => {
 
     // Inbound: a peer speaking.
     const peer = new BroadcastChannelTransport(name);
-    await act(async () => {
+    act(() => {
       peer.post({
         v: 1,
         scope: "presence",
@@ -172,10 +170,9 @@ describe("<Inspector />", () => {
         clientId: "peer-1",
         kind: "tab",
       });
-      await new Promise<void>((r) => setTimeout(r, 10));
     });
 
-    expect(ui().getByTestId("ue-inspector").textContent).toContain("←");
+    await waitFor(() => expect(ui().getByTestId("ue-inspector").textContent).toContain("←"));
     peer.close();
   });
 
@@ -455,7 +452,9 @@ describe("<Inspector />", () => {
       });
 
       act(() => store.set("count", 1));
-      await flush(60);
+      // The leader's traffic comes over a real BroadcastChannel: wait until it
+      // is in the log, rather than for a stretch a slow runner can outlast.
+      await waitFor(() => expect(ui().getByTestId("ue-wires").textContent).toContain("leader/"));
 
       const all = ui().getByTestId("ue-wires").textContent ?? "";
       expect(all).toContain("state/patch");

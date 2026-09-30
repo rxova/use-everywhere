@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   BroadcastChannelTransport,
@@ -39,9 +39,12 @@ describe("defineChannel with a schema", () => {
 
   it("keeps a payload from another build away from the handler", async () => {
     const seen: unknown[] = [];
+    let rejected = 0;
     const bound = defineChannel<Messages>("dcs1", {
       schema: { ping: pingSchema },
-      onInvalid: () => {},
+      onInvalid: () => {
+        rejected++;
+      },
     });
     function Listener() {
       const [last, setLast] = useState<string>("none");
@@ -57,13 +60,15 @@ describe("defineChannel with a schema", () => {
 
     // What last week's deploy thought the shape was.
     act(() => peer.post("ping", { count: 7 }));
+    // Rejected is the positive signal that the payload arrived; only then does
+    // an empty `seen` mean the handler was kept away from it.
+    await waitFor(() => expect(rejected).toBe(1));
     await flush();
     expect(seen).toEqual([]);
     expect(screen.getByTestId("last").textContent).toBe("none");
 
     act(() => peer.post("ping", { n: 7 }));
-    await flush();
-    expect(screen.getByTestId("last").textContent).toBe("7");
+    await waitFor(() => expect(screen.getByTestId("last").textContent).toBe("7"));
 
     peer.close();
   });

@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createSharedStore } from "@use-everywhere/core";
 import { useSharedState } from "../use-shared-state.js";
@@ -29,9 +29,10 @@ describe("useSharedState", () => {
     const peer = otherTab("t1", { count: 0 });
     await flush();
     act(() => peer.set("count", 41));
-    await flush();
 
-    expect(screen.getByTestId("count").textContent).toBe("41");
+    // Another tab's write arrives over a real BroadcastChannel, which happy-dom
+    // delivers on its own task queue: wait for it rather than for one tick.
+    await waitFor(() => expect(screen.getByTestId("count").textContent).toBe("41"));
     peer.close();
   });
 
@@ -41,10 +42,9 @@ describe("useSharedState", () => {
     await flush();
 
     act(() => screen.getByTestId("count").click());
-    await flush();
 
     expect(screen.getByTestId("count").textContent).toBe("1");
-    expect(peer.getSnapshot().count).toBe(1);
+    await waitFor(() => expect(peer.getSnapshot().count).toBe(1));
     peer.close();
   });
 
@@ -73,11 +73,9 @@ describe("useSharedState", () => {
     await flush();
 
     render(<Counter store="t4" />); // registry store for t4 is created now
-    // hello → snapshot → hydrate. The peer answers after a jittered pause now,
-    // so that only one of N peers replies; a single flush is no longer enough.
-    await act(() => new Promise<void>((r) => setTimeout(r, 80)));
-
-    expect(screen.getByTestId("count").textContent).toBe("7");
+    // hello → snapshot → hydrate. The peer answers after a jittered pause, so
+    // that only one of N peers replies: wait for the hydration itself.
+    await waitFor(() => expect(screen.getByTestId("count").textContent).toBe("7"));
     peer.close();
   });
 });

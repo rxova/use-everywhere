@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createChannel } from "@use-everywhere/core";
 import { useState } from "react";
@@ -27,9 +27,10 @@ describe("useOnMessage", () => {
     await flush();
 
     act(() => peer.post("ping", { n: 42 }));
-    await flush();
 
-    expect(screen.getByTestId("last").textContent).toBe("42");
+    // A real BroadcastChannel, delivered on happy-dom's own task queue: wait for
+    // the message rather than for one tick.
+    await waitFor(() => expect(screen.getByTestId("last").textContent).toBe("42"));
     peer.close();
   });
 
@@ -46,11 +47,12 @@ describe("useOnMessage", () => {
     await flush();
 
     act(() => peer.post("ping", { n: 10 }));
-    await flush();
+    // The first message has to have rendered before the second is sent, or a
+    // stale handler would pass too.
+    await waitFor(() => expect(screen.getByTestId("sum").textContent).toBe("10"));
     act(() => peer.post("ping", { n: 5 }));
-    await flush();
 
-    expect(screen.getByTestId("sum").textContent).toBe("15");
+    await waitFor(() => expect(screen.getByTestId("sum").textContent).toBe("15"));
     peer.close();
   });
 
@@ -65,11 +67,19 @@ describe("useOnMessage", () => {
     const peer = otherTab("m3");
     await flush();
 
+    // A second tab that hears the same message: once it has, the unmounted
+    // listener has had its chance too, so silence there means something.
+    const witness = otherTab("m3");
+    const heard: number[] = [];
+    witness.on("ping", ({ n }) => heard.push(n));
+
     unmount();
     act(() => peer.post("ping", { n: 1 }));
+    await waitFor(() => expect(heard).toEqual([1]));
     await flush();
 
     expect(calls).toBe(0);
+    witness.close();
     peer.close();
   });
 });

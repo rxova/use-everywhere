@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BroadcastChannelTransport, createChannel } from "@use-everywhere/core";
 import { useState } from "react";
@@ -17,6 +17,18 @@ const otherTab = (name: string) =>
     transport: (busName) => new BroadcastChannelTransport(busName),
   });
 
+/**
+ * A second tab that records every ping it hears. Once it has heard one, the
+ * component under test has had its chance at the same message, so a handler
+ * that stayed silent was really not subscribed, rather than not reached yet.
+ */
+function witness(name: string) {
+  const channel = otherTab(name);
+  const heard: number[] = [];
+  channel.on("ping", (value) => heard.push(value));
+  return { heard, close: () => channel.close() };
+}
+
 describe("useOnMessage options", () => {
   it("does not subscribe when disabled, and subscribes when enabled turns on", async () => {
     const name = uniqueName();
@@ -30,9 +42,11 @@ describe("useOnMessage options", () => {
     }
     render(<Listener />);
     const peer = otherTab(name);
+    const other = witness(name);
     await flush();
 
     act(() => peer.post("ping", 1));
+    await waitFor(() => expect(other.heard).toEqual([1]));
     await flush();
     // Unsubscribed, not filtered inside the handler — the point is that a
     // component which is not interested costs nothing.
@@ -41,9 +55,9 @@ describe("useOnMessage options", () => {
     act(() => screen.getByText("enable").click());
     await flush();
     act(() => peer.post("ping", 2));
-    await flush();
-    expect(seen).toEqual([2]);
+    await waitFor(() => expect(seen).toEqual([2]));
 
+    other.close();
     peer.close();
   });
 
@@ -58,14 +72,17 @@ describe("useOnMessage options", () => {
     }
     render(<Listener />);
     const peer = otherTab(name);
+    const other = witness(name);
     await flush();
 
     act(() => peer.post("ping", 1));
-    await flush();
+    await waitFor(() => expect(seen).toEqual([1]));
     act(() => peer.post("ping", 2));
+    await waitFor(() => expect(other.heard).toEqual([1, 2]));
     await flush();
 
     expect(seen).toEqual([1]);
+    other.close();
     peer.close();
   });
 });
@@ -147,10 +164,7 @@ describe("useAnswer and useAsk", () => {
     await flush();
 
     act(() => screen.getByText("idle").click());
-    await flush();
-    await flush();
-
-    expect(answered).toBe("light");
+    await waitFor(() => expect(answered).toBe("light"));
     // Re-rendered with new state, same function — safe in a dependency array.
     expect(seen.size).toBe(1);
 
