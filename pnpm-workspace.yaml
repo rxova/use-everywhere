@@ -57,7 +57,7 @@ overrides:
   # written; the advisory has since moved it to 4.3.2, so the pin went stale on
   # its own — the same drift the nanoid and sharp notes describe. The 3.x range
   # was not widened and stays put.
-  js-yaml@3: ">=3.15.1 <4"
+  js-yaml@3: ">=3.15.1 <6"
   js-yaml@4: ">=4.3.2 <5"
   # GHSA-253c-mchw-3w2r: with `linkify: true`, two quadratic paths let a few
   # hundred KB of markdown block the event loop. Moderate, reached only through
