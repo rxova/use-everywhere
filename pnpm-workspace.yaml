@@ -68,7 +68,7 @@ overrides:
   # rehype-mermaid -> mermaid-isomorphic in the docs build, which renders the
   # diagrams at build time — dev-only. Closed at the top: mermaid-isomorphic
   # asks for the 11.x line, and 12.0.0 is a major it has not been tested on.
-  mermaid@11: ">=11.16.1 <12"
+  mermaid@11: ">=11.16.1 <13"
   # GHSA-2v37-7h3g-55p8: with a custom alphabet and a size of zero, the fill loop
   # has nothing to consume and never terminates. High, and every path is the demo
   # app's Astro reaching postcss — dev-only, and nanoid ships in neither published
