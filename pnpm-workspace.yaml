@@ -83,7 +83,7 @@ overrides:
   # 16 Aug against an unchanged tree. This is the case `audit:check` is kept out
   # of Turbo's cache for, and it is why the floor is worth re-reading rather than
   # trusting whenever this advisory resurfaces.
-  nanoid@3: ">=3.3.18 <4"
+  nanoid@3: ">=3.3.18 <7"
   # <=8.5.22. Moderate, so it does not trip the high-only gate on its own —
   # taken here because it is one line and the alternative is carrying a known
   # advisory until something else forces the issue.
