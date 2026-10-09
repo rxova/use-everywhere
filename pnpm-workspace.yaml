@@ -63,7 +63,7 @@ overrides:
   # hundred KB of markdown block the event loop. Moderate, reached only through
   # typedoc in the docs build, which renders TSDoc this repo writes. Scoped to
   # the 14.x line typedoc asks for. Drop once typedoc depends on >=14.3.1.
-  markdown-it@14: ">=14.3.1 <15"
+  markdown-it@14: ">=14.3.1 <16"
   # Five advisories, low and moderate, all fixed in 11.16.1. The only path is
   # rehype-mermaid -> mermaid-isomorphic in the docs build, which renders the
   # diagrams at build time — dev-only. Closed at the top: mermaid-isomorphic
