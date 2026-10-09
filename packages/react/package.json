@@ -168,7 +168,7 @@
       "name": "SharedWorker relay (shared-worker subpath)",
       "path": "dist/shared-worker.js",
       "import": "*",
-      "limit": "410 B"
+      "limit": "440 B"
     },
     {
       "name": "MemoryHub (testing subpath)",
@@ -191,7 +191,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@size-limit/preset-small-lib": "^13.0.3",
+    "@size-limit/preset-small-lib": "^14.1.0",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -200,7 +200,7 @@
     "publint": "^0.3.24",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "size-limit": "^13.0.3",
+    "size-limit": "^14.1.0",
     "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"

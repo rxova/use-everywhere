@@ -169,7 +169,7 @@
       "name": "SharedWorker relay (shared-worker subpath)",
       "path": "dist/shared-worker.js",
       "import": "*",
-      "limit": "410 B"
+      "limit": "440 B"
     },
     {
       "name": "MemoryHub (testing subpath)",
@@ -180,7 +180,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@size-limit/preset-small-lib": "^13.0.3",
+    "@size-limit/preset-small-lib": "^14.1.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
     "@vitest/coverage-v8": "^4.1.11",
@@ -189,7 +189,7 @@
     "fast-check": "^4.9.0",
     "happy-dom": "^20.11.15",
     "publint": "^0.3.24",
-    "size-limit": "^13.0.3",
+    "size-limit": "^14.1.0",
     "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
