@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@use-everywhere/core": "workspace:*",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "use-everywhere": "workspace:*"
   },
   "devDependencies": {

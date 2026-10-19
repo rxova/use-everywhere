@@ -183,16 +183,16 @@
     "@size-limit/preset-small-lib": "^14.2.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@vitest/coverage-v8": "^5.0.5",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
     "fast-check": "^4.10.2",
     "happy-dom": "^20.14.6",
     "publint": "^0.3.25",
     "size-limit": "^14.2.0",
-    "tsdown": "^0.23.0",
+    "tsdown": "^0.23.1",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.5"
   },
   "typesVersions": {
     "*": {
