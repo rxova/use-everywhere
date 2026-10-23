@@ -40,6 +40,12 @@ jobs:
     with:
       build-command: pnpm exec turbo run build size --filter='!@use-everywhere/docs'
       extra-command: pnpm run check:llms
+      # `typecheck` reaches the docs site, and `astro check` depends on `astro
+      # sync`, which renders the mermaid diagrams through rehype-mermaid — in a
+      # browser, even though the docs build itself is filtered out above. Without
+      # this the job passes only while Turbo replays a cached `sync`.
+      playwright: true
+      playwright-browsers: chromium
 
   test:
     name: unit
