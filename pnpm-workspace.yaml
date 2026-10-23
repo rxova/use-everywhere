@@ -26,7 +26,13 @@ overrides:
   brace-expansion: ^5.0.12
   # <=3.4.12. Moderate, reached only through mermaid (below) in the docs build.
   # Taken for the same reason as postcss: one line, and it goes with mermaid's.
-  dompurify: ">=3.4.16"
+  #
+  # Raised to 3.4.17 for GHSA-mrv2-3pqr-j5jr (critical): with `IN_PLACE`, a hook
+  # that removes a parent or sibling leaves the detached subtree's event handlers
+  # armed — an incomplete fix for GHSA-p98j-92pf-mc4p, so the earlier floor
+  # stopped covering it without this file changing. Same mermaid path, still only
+  # the docs build, but `audit:check` gates on high and this is critical.
+  dompurify: ">=3.4.17"
   # Four advisories against the same parser, all host confusion: a backslash
   # parsed as an authority introducer, a percent-encoded scheme that normalises
   # into a different one, a skipped IDN conversion, and two SSRF paths out of
@@ -63,7 +69,22 @@ overrides:
   # hundred KB of markdown block the event loop. Moderate, reached only through
   # typedoc in the docs build, which renders TSDoc this repo writes. Scoped to
   # the 14.x line typedoc asks for. Drop once typedoc depends on >=14.3.1.
-  markdown-it@14: ">=14.3.1 <16"
+  #
+  # Raised to 14.3.3 for GHSA-gfr2-rv44-r23c: a single multi-line link reference
+  # definition renders in quadratic time. The earlier floor went stale the same
+  # way the js-yaml and nanoid notes describe.
+  markdown-it@14: ">=14.3.3 <16"
+  # GHSA-w02v-q2wq-9vqm (moderate): an attacker-controlled selector drives the
+  # parser into quadratic backtracking. Reached only through @rxova/astro-ui >
+  # Starlight > expressive-code > postcss-nested, parsing expressive-code's own
+  # selectors at build time. Scoped to the 7.x line postcss-nested asks for.
+  postcss-selector-parser@7: ">=7.1.6 <8"
+  # GHSA-cgc2-w5c9-6j4h (low): \htmlData and friends allow attribute injection
+  # when `trust` is enabled. Same rehype-mermaid > mermaid-isomorphic path as
+  # mermaid and dompurify below, rendering diagrams this repo authors at build
+  # time, and `trust` is off. Low, so it is under the gate; pinned to keep it
+  # from drifting up into the range that is not.
+  katex: ">=0.18.2"
   # Five advisories, low and moderate, all fixed in 11.16.1. The only path is
   # rehype-mermaid -> mermaid-isomorphic in the docs build, which renders the
   # diagrams at build time — dev-only. Closed at the top: mermaid-isomorphic
