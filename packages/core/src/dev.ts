@@ -1,4 +1,4 @@
-import { createDevWarner } from "@rxova/ts-utils";
+import { createDevWarner } from "@rxova/ts-utils/env";
 
 // The warner is `createDevWarner` from @rxova/ts-utils, inlined at build time
 // like `deepFreeze` in dev-freeze.ts. It reads `isDevelopment()` on every call:

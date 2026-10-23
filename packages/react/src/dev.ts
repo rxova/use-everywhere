@@ -1,4 +1,4 @@
-import { createDevWarner, isDevelopment } from "@rxova/ts-utils";
+import { createDevWarner, isDevelopment } from "@rxova/ts-utils/env";
 
 // The same shared warner core uses, `createDevWarner` from @rxova/ts-utils,
 // inlined at build time. React keeps its own instance rather than importing
