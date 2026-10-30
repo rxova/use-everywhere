@@ -4,9 +4,9 @@
 pnpm run mutation
 ```
 
-Roughly eleven minutes on a sixteen-core laptop, and longer on a CI runner.
-Reports at `reports/mutation/mutation.html` (browsable) and `mutation.json`
-(what the gate reads).
+Roughly six minutes, on a CI runner and on a laptop that is not busy doing
+something else. Reports at `reports/mutation/mutation.html` (browsable) and
+`mutation.json` (what the gate reads).
 
 Most of that is the 196 **static** mutants — ones whose code runs at import
 rather than inside a test, so Stryker has to re-run the whole suite for each.
