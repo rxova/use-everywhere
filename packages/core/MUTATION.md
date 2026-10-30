@@ -4,8 +4,16 @@
 pnpm run mutation
 ```
 
-Roughly seven minutes. Reports at `reports/mutation/mutation.html` (browsable)
-and `mutation.json` (what the gate reads).
+Roughly eleven minutes on a sixteen-core laptop, and longer on a CI runner.
+Reports at `reports/mutation/mutation.html` (browsable) and `mutation.json`
+(what the gate reads).
+
+Most of that is the 196 **static** mutants — ones whose code runs at import
+rather than inside a test, so Stryker has to re-run the whole suite for each.
+They are 16% of the mutants and about 60% of the wall clock. `ignoreStatic`
+would buy the time back by not testing them at all; it is left off, because
+module-level initialisation is exactly where this library sets up transports and
+clocks.
 
 **CI runs it on a schedule, not per PR** (`.github/workflows/mutation.yml` —
 Sunday, Wednesday and Friday at 03:17 UTC, plus `workflow_dispatch` for an
@@ -57,6 +65,40 @@ out of both. Counting them would punish the annotation that records a considered
 decision.
 
 Raise the floor as survivors die. Never lower it.
+
+## When the number itself is wrong
+
+A mutation score can fail for a reason that has nothing to do with the tests, and
+this one has. Between 2026-10-11 and 2026-10-28 the scheduled run failed eight
+times in a row — 93.03, then 13.59, then 0.72 — on a tree with no commit and no
+dependency change behind it. `clock.ts` reported 0.00 in CI and 97.14 locally on
+the same commit.
+
+Nothing had rotted. Stryker's Vitest runner defaults `vitest.related` **on**: for
+each mutant it takes the test files `perTest` coverage selected and asks Vitest
+to prune them to the ones its module graph calls related to the mutated file.
+That pruning reads a Vite module graph whose contents depend on what the process
+has already transformed, so it is not reproducible — the same commit gave 8.40
+and then 69.37 tests per mutant on two consecutive local runs. When it prunes too
+hard the mutant runs almost nothing and is reported **Survived**, which is a lie:
+the suite kills it, Vitest was simply never asked to run it.
+
+So the config sets `"related": false`, and Stryker's own `perTest` filter decides
+what runs. The tell, if this ever returns: **the clear-text reporter's "Ran _n_
+tests per mutant on average" line.** It tracks the score almost exactly — 11.84
+at 93.03, 7.04 at 13.59, 0.99 at 0.72. A plausible score with a collapsed
+tests-per-mutant number is a tooling failure, not a regression, and no amount of
+writing tests will move it.
+
+Turning `related` off means the whole suite now runs in the dry run, which is why
+`stryker.config.json` points at
+[`vitest.mutation.config.ts`](vitest.mutation.config.ts) rather than
+`vitest.config.ts`: `dev-stripping.test.ts` bundles `src/index.ts` and asserts
+that minification strips every development warning, and instrumented source
+cannot be folded by a bundler, so it fails against the sandbox while passing
+against the real tree. `related` had been excluding it by accident. It measures
+what the bundler strips, not whether anything checks behaviour, so it has nothing
+to say about a mutant either way.
 
 ## Where it stands
 

@@ -39,6 +39,13 @@ export default baseKnipConfig({
       // next to the diff they produced". Dead by design, not by accident.
       ignore: ["scripts/migrate-content.mjs"],
     },
+    "packages/core": {
+      // The Vitest config Stryker runs the suite under, named as a string in
+      // `vitest.configFile` in stryker.config.json. Knip reads the Stryker
+      // config for its `mutate` globs but not for the test runner's own
+      // options, so nothing here resolves it as an import.
+      entry: ["vitest.mutation.config.ts"],
+    },
     ".": {
       // Repo scripts, invoked by path from package.json and CI, never imported.
       entry: ["scripts/**/*.ts"],

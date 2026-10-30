@@ -4,8 +4,10 @@
   "packageManager": "pnpm",
   "testRunner": "vitest",
   "vitest": {
-    "configFile": "vitest.config.ts"
+    "configFile": "vitest.mutation.config.ts",
+    "related": false
   },
+  "vitest_comment": "`related` off. The runner defaults it on: for every mutant it hands Vitest the test files `perTest` coverage selected, then asks Vitest to prune that list to the ones its module graph calls related to the mutated file. The pruning is not reproducible — it reads a Vite module graph whose contents depend on what the process has already transformed — and when it prunes too hard the mutant runs almost no tests and is reported Survived. That is a false survivor: the suite does kill it, Vitest was never asked to run it. It cost this repo eight straight scheduled failures (2026-10-11 to 10-28), the score falling 93.03 -> 13.59 -> 0.72 as the pruning got more aggressive, on a tree with no commit and no dependency change — `clock.ts` scored 0.00 in CI and 97.14 locally on the same commit. With it off, Stryker's own `perTest` filter decides which tests run, which is the thing we actually want to measure.",
   "reporters": ["html", "json", "clear-text", "progress"],
   "coverageAnalysis": "perTest",
   "mutate": [
@@ -30,8 +32,8 @@
   "concurrency": 4,
   "tempDirName": ".stryker-tmp",
   "plugins": ["@stryker-mutator/vitest-runner"],
-  "_comment_plugins": "Named explicitly: pnpm's strict node_modules means Stryker's auto-discovery walks a tree the plugin is not hoisted into.",
-  "_comment_thresholds": "break is the roadmap's target, now met, and it applies to the overall score. Every individual module is also >=90 (see MUTATION.md); Stryker cannot gate per file, so that part is a review target. Ratchet this up as survivors die \u2014 never down.",
+  "plugins_comment": "Named explicitly: pnpm's strict node_modules means Stryker's auto-discovery walks a tree the plugin is not hoisted into.",
+  "thresholds_comment": "break is the roadmap's target, now met, and it applies to the overall score. Every individual module is also >=90 (see MUTATION.md); Stryker cannot gate per file, so that part is a review target. Ratchet this up as survivors die \u2014 never down.",
   "jsonReporter": {
     "fileName": "reports/mutation/mutation.json"
   }
