@@ -58,6 +58,54 @@ decision.
 
 Raise the floor as survivors die. Never lower it.
 
+## When the number itself is wrong
+
+A mutation score can collapse for a reason that has nothing to do with the tests,
+and this one has. The scheduled run failed eight times between 2026-10-11 and
+2026-10-30, reporting an overall **0.72** with 1383 survivors, on a tree whose
+tests had not changed.
+
+Nothing had rotted. Renovate took Vitest to 5 and StrykerJS to 10 on the same day
+(2026-10-09); the next scheduled run was the first failure.
+`@stryker-mutator/vitest-runner` 10.0.0 builds its per-test filter by joining the
+suite chain with a plain space, but Vitest 5 matches `testNamePattern` against the
+chain joined with `' > '`. Every test in this package lives inside a `describe`,
+so the filter matched nothing, every non-static mutant ran **zero** tests, and
+Stryker recorded each one as Survived — a false survivor in the most literal
+sense: the suite kills it, Vitest was never asked to run it.
+
+Two tells, and the second is the one that names the cause:
+
+- **"Ran _n_ tests per mutant on average"**, from the clear-text reporter. It
+  tracks the score almost exactly. At 0.72 it read 0.99; a healthy run reads
+  about 10.5. A plausible-looking score with a collapsed tests-per-mutant number
+  is a tooling failure, not a regression, and no amount of writing tests will
+  move it.
+- **Every killed mutant is `static`.** Static mutants re-run the whole suite
+  instead of a filtered selection, so they are the only ones that still die when
+  the filter is broken. The 0.72 run killed 10 mutants, all 10 static, and
+  survived 1383, all non-static. A score where the per-file survivors are
+  precisely the non-static mutants is not a statement about the tests.
+
+The fix was `@stryker-mutator/vitest-runner` **10.1.1**, which introduces a
+`VITEST_MODERN_TEST_NAME_SEPARATOR` and picks the separator by Vitest version. No
+Stryker option works around 10.0.0: both `vitest.related: false` and
+`coverageAnalysis: "all"` still give 0.00 tests per mutant, because neither
+avoids the name filter.
+
+Worth knowing how it got in: the runner's peer range on Vitest is `>=2.0.0`, open
+at the top, so pnpm resolved a pairing the runner did not support without a
+warning, and the job reported a number instead of failing. When this job goes red
+after a dependency bump, read the tests-per-mutant line before reading the diff.
+
+One thing the repaired run makes visible: StrykerJS 10 mutates more than 9.6 did.
+On unchanged source, `channel.ts` went from 67 counted mutants to 89, `bus.ts`
+from 152 to 169 and `presence.ts` from 108 to 126 (`clock.ts` is untouched at 35).
+The new mutants are not killed, so those three modules now sit under the floor at
+85.39, 89.35 and 88.89 against an overall 90.48. Nothing rotted and no test got
+worse — the measurement got stricter, and the table below still reflects the 9.6
+mutant set.
+
 ## Where it stands
 
 | Module                | Score     | Survivors |
