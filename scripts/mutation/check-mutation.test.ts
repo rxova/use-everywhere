@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { FLOOR, report, scoreByFile } from "./check-mutation.js";
+import { FLOOR, report, runnerFailure, scoreByFile } from "./check-mutation.js";
 
 const file = (statuses: string[]) => ({ mutants: statuses.map((status) => ({ status })) });
+
+/** A module whose mutants carry the static/non-static split the runner check reads. */
+const mixed = (
+  nonStatic: string[],
+  staticStatuses: string[] = [],
+): { mutants: { status: string; static: boolean }[] } => ({
+  mutants: [
+    ...nonStatic.map((status) => ({ status, static: false })),
+    ...staticStatuses.map((status) => ({ status, static: true })),
+  ],
+});
 
 describe("scoreByFile", () => {
   it("scores a module by what its tests actually killed", () => {
@@ -96,5 +107,77 @@ describe("report", () => {
     expect(lines[0]).toContain("✖");
     expect(lines[0]).toContain("src/bad.ts");
     expect(lines[1]).toContain("✔");
+  });
+});
+
+describe("runnerFailure", () => {
+  it("names the shape of the failure that cost this repo eight scheduled runs", () => {
+    // The real 2026-10-30 report: 1383 non-static survivors, and the only ten
+    // kills were static mutants, which re-run the whole suite and so never go
+    // through the per-test filter at all.
+    const broken = runnerFailure({
+      files: {
+        "src/a.ts": mixed(Array(1383).fill("Survived"), Array(10).fill("Killed")),
+      },
+    });
+
+    expect(broken).toContain("1383 non-static mutants");
+    expect(broken).toContain("10 static mutants were");
+  });
+
+  it("stays quiet when any non-static mutant died, however bad the score", () => {
+    // A genuinely weak module must still be reported as a score, not mistaken
+    // for a broken runner — that is the whole point of the floor check.
+    const scores = mixed([...Array(99).fill("Survived"), "Killed"]);
+
+    expect(runnerFailure({ files: { "src/a.ts": scores } })).toBeUndefined();
+    expect(report(scoreByFile({ files: { "src/a.ts": scores } })).ok).toBe(false);
+  });
+
+  it("stays quiet on too few non-static mutants to mean anything", () => {
+    // Below the sample size a module may legitimately kill none of them.
+    expect(
+      runnerFailure({ files: { "src/a.ts": mixed(Array(19).fill("Survived"), ["Killed"]) } }),
+    ).toBeUndefined();
+  });
+
+  it("ignores mutants that never ran when judging the sample", () => {
+    // `Ignored` and `CompileError` are outside the score, so they cannot make up
+    // the sample that decides whether the runner is at fault.
+    expect(
+      runnerFailure({
+        files: {
+          "src/a.ts": mixed(
+            [...Array(30).fill("Ignored"), ...Array(5).fill("Survived")],
+            ["Killed"],
+          ),
+        },
+      }),
+    ).toBeUndefined();
+  });
+
+  it("counts a timeout as a non-static mutant dying", () => {
+    // A timeout killed the mutant, so the filter plainly ran something.
+    expect(
+      runnerFailure({
+        files: { "src/a.ts": mixed([...Array(30).fill("Survived"), "Timeout"], ["Killed"]) },
+      }),
+    ).toBeUndefined();
+  });
+
+  it("keeps the count readable when a single static mutant carried the whole score", () => {
+    // A `mutate` list of one small module can produce exactly one static kill,
+    // and the message is the only thing a reader of the CI log gets.
+    expect(
+      runnerFailure({ files: { "src/a.ts": mixed(Array(30).fill("Survived"), ["Killed"]) } }),
+    ).toContain("1 static mutant was");
+  });
+
+  it("reads a report with no static mutants at all as a broken runner too", () => {
+    // Nothing here says the kills must be static — only that no non-static
+    // mutant died, which is the thing that cannot happen to a working suite.
+    expect(runnerFailure({ files: { "src/a.ts": mixed(Array(40).fill("Survived")) } })).toContain(
+      "40 non-static mutants",
+    );
   });
 });

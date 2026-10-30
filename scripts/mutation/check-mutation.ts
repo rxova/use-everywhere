@@ -23,6 +23,7 @@ export interface FileScore {
 
 interface MutantResult {
   status: string;
+  static?: boolean;
 }
 
 interface MutationReport {
@@ -38,6 +39,47 @@ interface MutationReport {
  */
 const COUNTED = new Set(["Killed", "Survived", "Timeout", "NoCoverage"]);
 const SUCCESSFUL = new Set(["Killed", "Timeout"]);
+
+/**
+ * The smallest number of non-static mutants worth drawing a conclusion from.
+ *
+ * Below this a module legitimately might kill none of them, so the check keeps
+ * quiet rather than failing a small `mutate` list for the wrong reason.
+ */
+const RUNNER_FAILURE_SAMPLE = 20;
+
+/**
+ * Whether the report is describing a broken test runner rather than weak tests.
+ *
+ * A **static** mutant — one whose code runs at import — makes Stryker re-run the
+ * whole suite, so it dies without the per-test filter being involved. Every
+ * other mutant is run through that filter. When the filter is broken the two
+ * come apart completely: static mutants keep dying and non-static ones all
+ * survive having executed no tests at all.
+ *
+ * That is not a score. It happened here for eight scheduled runs in a row
+ * (@stryker-mutator/vitest-runner 10.0.0 against Vitest 5, which joined the
+ * suite chain differently when matching `testNamePattern`): 10 killed, all
+ * static, against 1383 survived, all non-static, reported as 0.72%. See
+ * `packages/core/MUTATION.md`. A version floor cannot prevent the next one — no
+ * dependency range expresses "the runner must support the installed Vitest" —
+ * so the signature is checked here instead.
+ */
+export function runnerFailure(report: MutationReport): string | undefined {
+  const counted = Object.values(report.files)
+    .flatMap((data) => data.mutants)
+    .filter((m) => COUNTED.has(m.status));
+  const nonStatic = counted.filter((m) => m.static !== true);
+  if (nonStatic.length < RUNNER_FAILURE_SAMPLE) return undefined;
+  if (nonStatic.some((m) => SUCCESSFUL.has(m.status))) return undefined;
+
+  const killed = counted.filter((m) => SUCCESSFUL.has(m.status));
+  return (
+    `not one of ${String(nonStatic.length)} non-static mutants was killed, ` +
+    `while ${String(killed.length)} static ${killed.length === 1 ? "mutant was" : "mutants were"}. ` +
+    `The per-test filter is selecting no tests, so this score measures the runner, not the suite.`
+  );
+}
 
 export function scoreByFile(report: MutationReport): FileScore[] {
   return Object.entries(report.files)
@@ -72,7 +114,17 @@ function main(): void {
     console.error(`✖ no mutation report at ${path} — run \`pnpm run mutation\` first`);
     process.exit(1);
   }
-  const scores = scoreByFile(JSON.parse(raw) as MutationReport);
+  const parsed = JSON.parse(raw) as MutationReport;
+  const broken = runnerFailure(parsed);
+  if (broken !== undefined) {
+    console.error(`✖ this report is not a mutation score: ${broken}`);
+    console.error(
+      `  Check the runner against the installed Vitest before touching a test — ` +
+        `"When the number itself is wrong" in packages/core/MUTATION.md.`,
+    );
+    process.exit(1);
+  }
+  const scores = scoreByFile(parsed);
   const { ok, lines } = report(scores);
   console.log(`Mutation score per module (floor ${String(FLOOR)}%):`);
   console.log(lines.join("\n"));

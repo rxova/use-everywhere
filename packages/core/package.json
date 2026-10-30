@@ -181,8 +181,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/preset-small-lib": "^14.2.0",
-    "@stryker-mutator/core": "^10.0.0",
-    "@stryker-mutator/vitest-runner": "^10.0.0",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
     "@vitest/coverage-v8": "^5.0.5",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.6",

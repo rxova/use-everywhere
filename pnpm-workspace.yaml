@@ -148,6 +148,13 @@ overrides:
   # 4.1.0 tightens the matching; no plugin API changed. Drop once Astro depends
   # on >=4.1.0 itself.
   svgo: ">=4.1.0 <5"
+  # Four high advisories against the same release line (<8.12.2): a TLS 1.2
+  # renegotiation DoS, and three more that land on the same fetch path. Every
+  # one of the 16 paths is apps/docs -> astro -> unifont, so it is dev-only and
+  # in no published package, but `audit:check` gates on high and fails the
+  # pre-push hook as well as CI. Open at the top: unifont asks for the 8.x line
+  # and this only moves the floor. Drop once astro depends on >=8.12.2 itself.
+  undici: ">=8.12.2"
   uuid: ^14.0.2
 
 # The advisory lookup is the one request whose result is advisory rather than
