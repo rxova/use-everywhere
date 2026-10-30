@@ -44,6 +44,15 @@ overrides:
   # normalisation and mailto header injection via percent-encoded octets, both
   # moderate) — same ajv paths, taken with the brace-expansion bump.
   fast-uri: ">=4.1.5"
+  # GHSA-c8p4-j97h-3vg8 (SSRF when parsing untrusted HTML, fixed in 21.0.0) and
+  # GHSA-qrxm-fqhp-jwvm (<=21.0.3). High, and dev-only: happy-dom is the DOM the
+  # unit suites run under and ships in neither published package. `packages/core`
+  # and `packages/react` declare ^21.0.4 directly, but every other workspace
+  # reaches it as Vitest's optional peer and resolved the 20.x line on its own,
+  # so the floor has to be forced from the root to clear the high-only gate.
+  # Closed at the top: 21 is the first major with both fixes, and a 22 would want
+  # the unit suites run against it before it is picked up silently.
+  happy-dom: ">=21.0.4 <22"
   # GHSA-5p4m-2wfm-xmqj: `!!omap` resolution is quadratic in the number of keys,
   # so a hostile YAML document costs CPU out of proportion to its size. High, and
   # it lands on both live majors — the 3.x line through @manypkg's read-yaml-file
