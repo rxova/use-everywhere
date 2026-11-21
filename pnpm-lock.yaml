@@ -180,6 +180,7 @@ overrides:
   sharp: '>=0.35.5'
   smol-toml: '>=1.7.1 <2'
   svgo: '>=4.1.0 <5'
+  undici: '>=8.12.2 <9'
   uuid: ^14.0.2
 
 importers:
@@ -205,11 +206,11 @@ importers:
         specifier: ^1.64.1
         version: 1.64.1
       '@rxova/astro-ui':
-        specifier: ^0.7.0
-        version: 0.7.0(@astrojs/starlight@0.42.6(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+        specifier: ^0.8.0
+        version: 0.8.0(@astrojs/starlight@0.42.6(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       '@rxova/brand':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.7.0
+        version: 1.7.0
       '@rxova/docs-kit':
         specifier: ^0.1.1
         version: 0.1.1
@@ -2362,8 +2363,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@rxova/astro-ui@0.7.0':
-    resolution: {integrity: sha512-o4/w3RPH19SJMakGbr7c7Zj8ZZamohSTDgEMBlJo3VCk6WftMS3Bjicu1cKOGYUqP27CAsmPBcwDTBhO3F54ig==}
+  '@rxova/astro-ui@0.8.0':
+    resolution: {integrity: sha512-wduLfia8/DU7ZTWVal1p9SG7Obtgc+EpfbvncODiUGvKCq8eWLCiQ4ccLGjxnbEBEKQbt66jonbqoBERPejuwQ==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
       '@astrojs/starlight': '>=0.36.0'
@@ -2372,8 +2373,8 @@ packages:
       '@astrojs/starlight':
         optional: true
 
-  '@rxova/brand@1.4.0':
-    resolution: {integrity: sha512-0h744WyoTAg2T+Zx2AynsbAM1HBtZ/tLgMbPf0kxn/Q3DJyCsr3ZO8PAHbSYv24j69ogmX52NwYS5S6inMM+2A==}
+  '@rxova/brand@1.7.0':
+    resolution: {integrity: sha512-fY2iwY2wyK7JzR/o/LzGoWAr8ZowzBnngaKAc7Fo43HPQmMQIHyyjAJ/Wlt2EtNMpNqaqEqCCITMPNwrMza6Fg==}
     engines: {node: '>=24.0.0'}
 
   '@rxova/docs-kit@0.1.1':
@@ -4656,8 +4657,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-static@1.53.0:
-    resolution: {integrity: sha512-xddbAP/qViJOeURl46uiTwmX6hn79PcaHW4xDQcM/bCiO1wd1eYE6hIVXr1dko14aK5HAadZNmAqaEWusc8q1A==}
+  lucide-static@1.77.0:
+    resolution: {integrity: sha512-v+BzpQrjlwDRWPDzzAu5IFhOkI6jVKb91fsjw1ZSS7Tsb2YvRX5olRN0DXGW99LF2wV4fycuTf5aPOMC62ZW0g==}
 
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
@@ -5934,8 +5935,8 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@8.11.2:
-    resolution: {integrity: sha512-u4UB2/IrKdU6lFxumHmmo1a3fCQO5tzQllRorfoRS63txhrB7xTpSn1PftwC4qEHkOaqP95fCWW4lJzwErwzhQ==}
+  undici@8.13.0:
+    resolution: {integrity: sha512-mxbeyRlRhHUTWE1zf/FwDOXTKMhE1vMQRz/o2oOir/5fIWsB79TeZrByMkj019EdDuxPg03jprCjFLxLkmxTCQ==}
     engines: {node: '>=22.19.0'}
 
   unicode-emoji-modifier-base@1.0.0:
@@ -8149,15 +8150,15 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@rxova/astro-ui@0.7.0(@astrojs/starlight@0.42.6(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))':
+  '@rxova/astro-ui@0.8.0(@astrojs/starlight@0.42.6(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
-      '@rxova/brand': 1.4.0
+      '@rxova/brand': 1.7.0
       astro: 7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
-      lucide-static: 1.53.0
+      lucide-static: 1.77.0
     optionalDependencies:
       '@astrojs/starlight': 0.42.6(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3)
 
-  '@rxova/brand@1.4.0':
+  '@rxova/brand@1.7.0':
     dependencies:
       '@fontsource/ibm-plex-mono': 5.3.0
       '@fontsource/space-grotesk': 5.3.0
@@ -10786,7 +10787,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-static@1.53.0: {}
+  lucide-static@1.77.0: {}
 
   lunr@2.3.9: {}
 
@@ -12589,7 +12590,7 @@ snapshots:
 
   undici-types@8.9.0: {}
 
-  undici@8.11.2: {}
+  undici@8.13.0: {}
 
   unicode-emoji-modifier-base@1.0.0: {}
 
@@ -12610,7 +12611,7 @@ snapshots:
       css-tree: 3.2.1
       fnv1a-64: 0.1.2
       std-env: 4.3.0
-      undici: 8.11.2
+      undici: 8.13.0
 
   unist-util-find-after@5.0.0:
     dependencies:

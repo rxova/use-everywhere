@@ -148,6 +148,13 @@ overrides:
   # 4.1.0 tightens the matching; no plugin API changed. Drop once Astro depends
   # on >=4.1.0 itself.
   svgo: ">=4.1.0 <5"
+  # GHSA-2m5v-pch6-74hx, GHSA-qrxm-fqhp-jwvm and two siblings: <8.12.2 drops TLS
+  # options in Agent (certificate validation bypass), mishandles TLS 1.2
+  # renegotiation and excessive content-encodings (DoS), and poisons its cache
+  # across cross-origin redirects. All high, so `audit:check` turns main red.
+  # Reached only through unifont > astro in the docs build, which pins an older
+  # 8.x and has no release to bump to. Drop once astro depends on >=8.12.2.
+  undici: ">=8.12.2 <9"
   uuid: ^14.0.2
 
 # The advisory lookup is the one request whose result is advisory rather than
