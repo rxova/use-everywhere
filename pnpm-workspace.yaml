@@ -155,6 +155,12 @@ overrides:
   # Reached only through unifont > astro in the docs build, which pins an older
   # 8.x and has no release to bump to. Drop once astro depends on >=8.12.2.
   undici: ">=8.12.2 <9"
+  # Not a security pin: @astrojs/astro2tsx accepts `^1.7.1 || 2.0.0-beta.2 ||
+  # 2.0.0-beta.3` and pnpm takes the highest, pairing a 2.0 prerelease runtime
+  # with a stable @emnapi/core, which makes `astro check` die on
+  # `this.bridge.setLastError is not a function`. Hold the stable line; drop
+  # once astro2tsx stops offering the prereleases.
+  "@emnapi/runtime": "^1.11.3"
   uuid: ^14.0.2
 
 # The advisory lookup is the one request whose result is advisory rather than
