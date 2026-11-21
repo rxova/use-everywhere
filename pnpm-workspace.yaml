@@ -49,7 +49,7 @@ overrides:
   # Raised to 4.1.5 for GHSA-hrr3-gc8f-f4qj and GHSA-jvvf-x445-j334 (host case
   # normalisation and mailto header injection via percent-encoded octets, both
   # moderate) — same ajv paths, taken with the brace-expansion bump.
-  fast-uri: ">=4.2.1"
+  fast-uri: ">=4.2.3"
   # GHSA-5p4m-2wfm-xmqj: `!!omap` resolution is quadratic in the number of keys,
   # so a hostile YAML document costs CPU out of proportion to its size. High, and
   # it lands on both live majors — the 3.x line through @manypkg's read-yaml-file
