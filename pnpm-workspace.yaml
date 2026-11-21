@@ -112,7 +112,7 @@ overrides:
   # Three moderate advisories, all fixed in 6.16.0. The only path is
   # typed-rest-client inside @stryker-mutator/core, the mutation-testing
   # devDependency — nothing here parses a query string at runtime.
-  qs: ">=6.16.0"
+  qs: ">=6.17.1"
   # Not a security pin — a lockfile-determinism one, carried over from
   # rxova/brand. Astro 7.3 moved its markdown pipeline to
   # `@astrojs/markdown-satteri` 0.4, which wants satteri ^0.10, while
